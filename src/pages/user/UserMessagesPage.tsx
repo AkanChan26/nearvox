@@ -815,24 +815,36 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-[12px]">
+                <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 space-y-[6px]">
                   {otherIsBlocked && (
                     <div className="text-center py-2">
                       <p className="text-[9px] text-destructive/70 border border-destructive/20 inline-block px-3 py-1">⚠ YOU HAVE BLOCKED THIS USER</p>
                     </div>
                   )}
                   {chatMessages && chatMessages.length > 0 ? (
-                    chatMessages.map((msg) => {
+                    chatMessages.map((msg, idx) => {
                       const isMine = msg.sender_id === user?.id;
                       const msgReactions = getReactionsForMsg(msg.id);
                       const isGroup = activeConversation?.type === "group";
                       const reply = parseReply(msg.content);
                       const displayContent = reply ? reply.mainText : msg.content;
+                      const msgDate = new Date(msg.created_at);
+                      const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
+                      const showDateSep = !prevMsg || !isSameDay(msgDate, new Date(prevMsg.created_at));
                       return (
-                        <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group relative`}>
-                          <div className="relative inline-block" style={{ maxWidth: "65%" }}>
+                        <div key={msg.id}>
+                          {/* Date separator */}
+                          {showDateSep && (
+                            <div className="flex items-center gap-3 my-4">
+                              <div className="flex-1 border-t border-border/30" />
+                              <span className="text-[8px] text-muted-foreground/50 tracking-[0.3em]">{formatDateSeparator(msgDate)}</span>
+                              <div className="flex-1 border-t border-border/30" />
+                            </div>
+                          )}
+                          <div className={`flex ${isMine ? "justify-end" : "justify-start"} group/msg relative`}>
+                          <div className="relative inline-block" style={{ maxWidth: "70%" }}>
                             {/* Hover actions */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover/msg:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
                               <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
                                 className="text-muted-foreground hover:text-foreground p-1">
                                 <Reply className="h-3 w-3" />
