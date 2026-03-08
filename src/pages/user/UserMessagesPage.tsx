@@ -564,12 +564,12 @@ export default function UserMessagesPage() {
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
       <div className="px-4 sm:px-8 py-6">
-        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(82vh, 700px)", minHeight: "450px" }}>
+        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(85vh, 720px)", minHeight: "450px" }}>
           {/* Subtle scanline overlay */}
           <div className="absolute inset-0 scanline pointer-events-none z-0" />
 
-          {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-[320px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
+          {/* ── LEFT: Conversation List (30%) ── */}
+          <div className={`w-full md:w-[30%] md:max-w-[280px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
             {/* Section label */}
             <div className="px-4 pt-4 pb-2">
               <p className="text-[9px] tracking-[0.3em] text-muted-foreground uppercase">// conversations</p>
