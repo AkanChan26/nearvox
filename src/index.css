@@ -52,6 +52,12 @@
     --info: 120 60% 40%;
     --info-foreground: 0 0% 0%;
 
+    /* Admin identity color - cyber blue */
+    --admin: 199 91% 56%;
+    --admin-foreground: 0 0% 0%;
+    --admin-bg: 199 80% 6%;
+    --admin-border: 199 91% 25%;
+
     --font-terminal: 'VT323', monospace;
     --font-mono: 'Share Tech Mono', monospace;
   }
@@ -65,16 +71,9 @@
     font-family: var(--font-terminal);
   }
 
-  /* Custom scrollbar */
-  ::-webkit-scrollbar {
-    width: 4px;
-  }
-  ::-webkit-scrollbar-track {
-    background: hsl(0 0% 0%);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: hsl(120 100% 20%);
-  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: hsl(0 0% 0%); }
+  ::-webkit-scrollbar-thumb { background: hsl(120 100% 20%); }
 }
 
 @layer utilities {
@@ -100,13 +99,13 @@
   .glow-text {
     text-shadow: 0 0 8px hsl(120 100% 50% / 0.6), 0 0 20px hsl(120 100% 50% / 0.3);
   }
+  .glow-admin {
+    text-shadow: 0 0 8px hsl(199 91% 56% / 0.6), 0 0 20px hsl(199 91% 56% / 0.3);
+  }
   .scanline {
     background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      hsl(120 100% 50% / 0.02) 2px,
-      hsl(120 100% 50% / 0.02) 4px
+      0deg, transparent, transparent 2px,
+      hsl(120 100% 50% / 0.02) 2px, hsl(120 100% 50% / 0.02) 4px
     );
     pointer-events: none;
   }
@@ -116,5 +115,18 @@
   }
   @keyframes blink {
     50% { opacity: 0; }
+  }
+  /* Admin content styling */
+  .admin-box {
+    background: hsl(var(--admin-bg));
+    border: 1px solid hsl(var(--admin-border));
+  }
+  .admin-text {
+    color: hsl(var(--admin));
+  }
+  .admin-badge {
+    color: hsl(var(--admin-foreground));
+    background: hsl(var(--admin));
+    @apply text-[9px] uppercase tracking-[0.2em] font-bold px-1.5 py-0.5;
   }
 }

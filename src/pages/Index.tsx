@@ -34,6 +34,17 @@ const Index = () => {
       <PageHeader title="SYSTEM DASHBOARD" description="// REAL-TIME PLATFORM MONITORING" />
 
       <div className="p-6 space-y-6">
+        {/* Admin Identity Banner */}
+        <div className="admin-box px-4 py-3">
+          <div className="flex items-center gap-2 text-[10px] mb-1">
+            <span className="admin-text glow-admin font-bold text-sm">TheCaptain</span>
+            <span className="admin-badge">ADMIN</span>
+            <span className="text-muted-foreground ml-2">LOGGED IN — ROOT ACCESS</span>
+            <span className="ml-auto text-muted-foreground">SESSION: ACTIVE</span>
+          </div>
+          <p className="text-[10px] text-muted-foreground">// All admin actions will be attributed to this identity</p>
+        </div>
+
         {/* System Status Block */}
         <div className="terminal-box">
           <div className="terminal-header">SYSTEM STATUS</div>
@@ -71,11 +82,7 @@ const Index = () => {
           <div className="terminal-box">
             <div className="terminal-header">LOCATION ACTIVITY MONITOR</div>
             <div className="text-[10px] text-muted-foreground flex items-center justify-between mb-2 pb-1">
-              <span>RANK</span>
-              <span>CITY</span>
-              <span>USERS</span>
-              <span>POSTS</span>
-              <span>LOAD</span>
+              <span>RANK</span><span>CITY</span><span>USERS</span><span>POSTS</span><span>LOAD</span>
             </div>
             {trendingLocations.map((loc) => {
               const load = Math.round((loc.users / 3200) * 100);
@@ -98,10 +105,10 @@ const Index = () => {
         <div className="terminal-box">
           <div className="terminal-header">SYSTEM LOG</div>
           <div className="text-xs space-y-1">
-            <p><span className="text-muted-foreground">[08:24:01]</span> <span className="text-foreground">User SilentFalcon flagged post #89201</span></p>
+            <p><span className="text-muted-foreground">[08:24:01]</span> <span className="admin-text glow-admin">TheCaptain</span> <span className="admin-badge">ADMIN</span> <span className="text-foreground">posted announcement: Community Guidelines Update</span></p>
             <p><span className="text-muted-foreground">[08:22:45]</span> <span className="text-foreground">New marketplace listing from CodeWalker</span></p>
-            <p><span className="text-muted-foreground">[08:20:12]</span> <span className="text-foreground">Auto-mod removed spam post in DELHI sector</span></p>
-            <p><span className="text-muted-foreground">[08:18:33]</span> <span className="text-foreground">User UrbanGhost suspended — REASON: spam</span></p>
+            <p><span className="text-muted-foreground">[08:20:12]</span> <span className="admin-text glow-admin">TheCaptain</span> <span className="admin-badge">ADMIN</span> <span className="text-foreground">removed spam post in DELHI sector</span></p>
+            <p><span className="text-muted-foreground">[08:18:33]</span> <span className="admin-text glow-admin">TheCaptain</span> <span className="admin-badge">ADMIN</span> <span className="text-foreground">suspended user UrbanGhost — REASON: spam</span></p>
             <p><span className="text-muted-foreground">[08:15:07]</span> <span className="text-foreground">System backup completed successfully</span></p>
             <p className="cursor-blink"><span className="text-muted-foreground">[08:14:59]</span> <span className="text-foreground">Monitoring active</span></p>
           </div>
