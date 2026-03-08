@@ -608,7 +608,7 @@ export default function UserPostsPage() {
                     )}
 
                     {/* Delete (own) */}
-                    {isOwner && (
+                    {(isOwner || userIsAdmin) && (
                       <button
                         onClick={() => handleDelete(item)}
                         className="flex items-center gap-0.5 text-destructive hover:underline ml-auto"
