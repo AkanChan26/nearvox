@@ -9,7 +9,7 @@ import {
   Send, Users, User, X, Search, ArrowLeft,
   MessageSquare, Hash, UserPlus, MoreVertical,
   Pencil, Trash2, Ban, SmilePlus, Check, Shield,
-  CheckCheck,
+  CheckCheck, Reply, CornerDownRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
