@@ -16,6 +16,7 @@ export default function JoinPage() {
   const [code, setCode] = useState(inviteCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [validating, setValidating] = useState(false);
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
 
