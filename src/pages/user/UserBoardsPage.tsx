@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { Plus, Users, FileText, Search } from "lucide-react";
+import { Plus, Users, FileText, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function UserBoardsPage() {
@@ -76,6 +76,27 @@ export default function UserBoardsPage() {
     onError: () => toast.error("Failed to create board"),
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("is_admin").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const deleteBoard = useMutation({
+    mutationFn: async (boardId: string) => {
+      const { error } = await supabase.from("boards").delete().eq("id", boardId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Board deleted");
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+    },
+    onError: () => toast.error("Failed to delete board"),
+  });
+
   const filtered = boards?.filter((b: any) =>
     b.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -137,6 +158,18 @@ export default function UserBoardsPage() {
                     </span>
                     {isMember && (
                       <span className="text-foreground text-[10px] tracking-wider ml-auto">JOINED</span>
+                    )}
+                    {(board.created_by === user?.id || profile?.is_admin) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Delete this board and all its posts?")) deleteBoard.mutate(board.id);
+                        }}
+                        className="ml-auto text-muted-foreground hover:text-destructive p-1"
+                        title="Delete board"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
                     )}
                   </div>
                 </button>

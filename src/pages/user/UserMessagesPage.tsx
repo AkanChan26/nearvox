@@ -664,7 +664,16 @@ export default function UserMessagesPage() {
                         {!isGroup && dmOtherId && isOnline(dmOtherId) && (
                           <span className="text-[9px] text-foreground/60 shrink-0">online</span>
                         )}
-                        {isGroup && <span className="text-[9px] text-muted-foreground ml-auto shrink-0">{getConvoMemberCount(convo.id)}</span>}
+                        {isGroup && (() => {
+                          const memberIds = allMembers?.filter((m) => m.conversation_id === convo.id).map((m) => m.user_id) || [];
+                          const onlineCount = memberIds.filter((uid) => isOnline(uid)).length;
+                          return (
+                            <span className="text-[9px] text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                              {onlineCount > 0 && <><span className="h-1.5 w-1.5 rounded-full bg-foreground inline-block" />{onlineCount}<span className="text-muted-foreground/60">/</span></>}
+                              {getConvoMemberCount(convo.id)}
+                            </span>
+                          );
+                        })()}
                       </div>
                       {lastMsg && (
                         <p className={`text-[10px] truncate mt-0.5 ml-5 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
@@ -707,9 +716,19 @@ export default function UserMessagesPage() {
                       {isOnline(otherUserId) ? "online" : "offline"}
                     </span>
                   )}
-                  {activeConversation.type === "group" && (
-                    <span className="text-[9px] text-muted-foreground">{activeMembers?.length || 0} members</span>
-                  )}
+                  {activeConversation.type === "group" && (() => {
+                    const onlineCount = activeMembers?.filter((uid: string) => isOnline(uid)).length || 0;
+                    return (
+                      <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                        {activeMembers?.length || 0} members
+                        {onlineCount > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            • <span className="h-1.5 w-1.5 rounded-full bg-foreground inline-block" /> {onlineCount} online
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })()}
                   <div className="ml-auto flex items-center gap-1 relative">
                     {activeConversation.type === "group" && activeConversation.created_by === user?.id && (
                       <button onClick={(e) => { e.stopPropagation(); setShowAddMember(!showAddMember); setAddMemberSearch(""); }}
