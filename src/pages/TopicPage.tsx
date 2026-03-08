@@ -398,9 +398,18 @@ export default function TopicPage() {
                         <Heart className={`h-3 w-3 ${liked ? "fill-red-500" : ""}`} />
                         {likeCount}
                       </button>
-                      <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
-                        <Flag className="h-3 w-3" /> REPORT
-                      </button>
+                      {(() => {
+                        const existingReport = getMyReport(reply.user_id, "reply");
+                        return existingReport ? (
+                          <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
+                            <Flag className="h-3 w-3 fill-warning" /> UNDO REPORT
+                          </button>
+                        ) : (
+                          <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
+                            <Flag className="h-3 w-3" /> REPORT
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
