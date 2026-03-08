@@ -173,7 +173,6 @@ const Index = () => {
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
   const adminQuickCards = [
-    { label: "ALL POSTS", icon: MessageSquare, hint: `${(postCount ?? 0) + (topicCount ?? 0)} total`, path: "/admin/all-posts" },
     { label: "USERS", icon: Users, hint: `${profileCount ?? 0} registered`, path: "/users" },
     { label: "REPORTS", icon: AlertTriangle, hint: `${pendingReports ?? 0} pending`, path: "/reports" },
     { label: "ANNOUNCEMENTS", icon: Megaphone, hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
