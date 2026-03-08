@@ -155,7 +155,7 @@ export default function JoinPage() {
                 <input
                   type="text"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
+                  onChange={(e) => setCode(normalizeInviteInput(e.target.value))}
                   placeholder="Enter your invite code"
                   className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground font-mono tracking-wider placeholder:text-muted-foreground"
                   required
