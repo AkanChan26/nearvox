@@ -669,6 +669,10 @@ export type Database = {
         Returns: boolean
       }
       increment_topic_views: { Args: { topic_id: string }; Returns: undefined }
+      is_conversation_member: {
+        Args: { _conversation_id: string; _user_id: string }
+        Returns: boolean
+      }
       validate_invite_code: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {

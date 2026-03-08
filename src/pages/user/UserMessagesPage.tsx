@@ -235,44 +235,42 @@ export default function UserMessagesPage() {
         return;
       }
     }
-    // Create new DM
-    const { data: convo, error: convoErr } = await supabase
+    // Create new DM - generate ID client-side to avoid SELECT-after-INSERT RLS issue
+    const convoId = crypto.randomUUID();
+    const { error: convoErr } = await supabase
       .from("conversations")
-      .insert({ type: "direct", created_by: user.id })
-      .select()
-      .single();
-    if (convoErr || !convo) { toast.error("Failed to start chat"); return; }
+      .insert({ id: convoId, type: "direct", created_by: user.id });
+    if (convoErr) { toast.error("Failed to start chat"); console.error("convo insert error:", convoErr); return; }
     // Add both members
     const { error: memErr } = await supabase.from("conversation_members").insert([
-      { conversation_id: convo.id, user_id: user.id },
-      { conversation_id: convo.id, user_id: targetUser.user_id },
+      { conversation_id: convoId, user_id: user.id },
+      { conversation_id: convoId, user_id: targetUser.user_id },
     ]);
-    if (memErr) { toast.error("Failed to add members"); return; }
+    if (memErr) { toast.error("Failed to add members"); console.error("member insert error:", memErr); return; }
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     await queryClient.invalidateQueries({ queryKey: ["convo-members"] });
     await queryClient.invalidateQueries({ queryKey: ["member-profiles"] });
-    setActiveConvo(convo.id);
+    setActiveConvo(convoId);
     setShowNewDm(false);
     setDmSearch("");
   };
 
   const createGroup = async () => {
     if (!user || !groupName.trim() || groupMembers.length === 0) return;
-    const { data: convo, error: convoErr } = await supabase
+    const convoId = crypto.randomUUID();
+    const { error: convoErr } = await supabase
       .from("conversations")
-      .insert({ type: "group", name: groupName.trim(), created_by: user.id })
-      .select()
-      .single();
-    if (convoErr || !convo) { toast.error("Failed to create group"); return; }
+      .insert({ id: convoId, type: "group", name: groupName.trim(), created_by: user.id });
+    if (convoErr) { toast.error("Failed to create group"); console.error("group create error:", convoErr); return; }
     const membersToAdd = [
-      { conversation_id: convo.id, user_id: user.id },
-      ...groupMembers.map((m) => ({ conversation_id: convo.id, user_id: m.user_id })),
+      { conversation_id: convoId, user_id: user.id },
+      ...groupMembers.map((m) => ({ conversation_id: convoId, user_id: m.user_id })),
     ];
     await supabase.from("conversation_members").insert(membersToAdd);
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     await queryClient.invalidateQueries({ queryKey: ["convo-members"] });
     await queryClient.invalidateQueries({ queryKey: ["member-profiles"] });
-    setActiveConvo(convo.id);
+    setActiveConvo(convoId);
     setShowNewGroup(false);
     setGroupName("");
     setGroupMembers([]);
