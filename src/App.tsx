@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
-import AdminDashboardPage from "./pages/AdminDashboardPage";
+
 import UsersPage from "./pages/UsersPage";
 import PostsPage from "./pages/PostsPage";
 import MarketplacePage from "./pages/MarketplacePage";
@@ -54,7 +54,7 @@ const App = () => (
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
-            <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+            {/* /admin/dashboard removed — consolidated into / */}
             <Route path="/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
             <Route path="/posts" element={<AdminRoute><PostsPage /></AdminRoute>} />
             <Route path="/marketplace" element={<AdminRoute><MarketplacePage /></AdminRoute>} />
