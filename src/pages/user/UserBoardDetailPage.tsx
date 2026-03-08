@@ -614,7 +614,7 @@ function PostCard({
       {/* Comments */}
       {showComments && (
         <div className="mt-2 border-t border-border pt-2 space-y-1.5">
-          {comments && comments.map((c: any) => (
+          {commentsToRender.map((c: any) => (
             <div key={c.id} className="flex gap-1.5">
               <ProfileAvatar avatarId={c.profile?.avatar} size={18} />
               <div className="flex-1 min-w-0">
@@ -631,6 +631,16 @@ function PostCard({
               )}
             </div>
           ))}
+
+          {hiddenCommentsCount > 0 && (
+            <button
+              onClick={() => setShowAllComments((prev) => !prev)}
+              className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider"
+            >
+              {showAllComments ? "SHOW LESS" : `EXPAND COMMENTS (+${hiddenCommentsCount})`}
+            </button>
+          )}
+
           <div className="flex gap-2">
             <input
               type="text"
