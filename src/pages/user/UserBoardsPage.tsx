@@ -76,6 +76,27 @@ export default function UserBoardsPage() {
     onError: () => toast.error("Failed to create board"),
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["my-profile", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("is_admin").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const deleteBoard = useMutation({
+    mutationFn: async (boardId: string) => {
+      const { error } = await supabase.from("boards").delete().eq("id", boardId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Board deleted");
+      queryClient.invalidateQueries({ queryKey: ["boards"] });
+    },
+    onError: () => toast.error("Failed to delete board"),
+  });
+
   const filtered = boards?.filter((b: any) =>
     b.name.toLowerCase().includes(search.toLowerCase())
   );
