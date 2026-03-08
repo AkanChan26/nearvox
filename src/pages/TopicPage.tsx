@@ -429,7 +429,7 @@ export default function TopicPage() {
                         {likeCount}
                       </button>
                       {(() => {
-                        const existingReport = getMyReport(reply.user_id, "reply");
+                        const existingReport = getMyReport(reply.id, "reply");
                         return existingReport ? (
                           <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
                             <Flag className="h-3 w-3 fill-warning" /> UNDO REPORT
