@@ -704,11 +704,11 @@ export default function UserMessagesPage() {
           </div>
 
           {/* ── RIGHT: Chat View ── */}
-          <div className={`flex-1 flex flex-col min-w-0 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
+          <div className={`flex-1 flex flex-col min-w-0 relative z-10 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="p-3 border-b border-border flex items-center gap-2.5">
+                <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-card/80">
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground p-1">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
