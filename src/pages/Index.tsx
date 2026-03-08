@@ -429,7 +429,22 @@ const Index = () => {
             </div>
           </div>
 
-          {/* ── SYSTEM STATUS ── */}
+          {/* ── MODULE CARDS ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {adminModules.map((module) => (
+              <button
+                key={module.label}
+                onClick={() => navigate(module.path)}
+                className="text-left border border-border bg-card p-3 hover:border-foreground/40 hover:bg-foreground/5 transition-none"
+              >
+                <p className="text-[9px] text-muted-foreground tracking-[0.3em]">[ OPEN MODULE ]</p>
+                <p className="text-xs text-foreground tracking-wider mt-1">{module.label}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{module.hint}</p>
+              </button>
+            ))}
+          </div>
+
+          {/* ── SYSTEM STATUS ── */
           <div className="border border-border bg-card p-3">
             <div className="flex items-center gap-2 mb-2">
               <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
