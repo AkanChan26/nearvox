@@ -720,7 +720,7 @@ export default function UserMessagesPage() {
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-card/80">
+                <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card/80">
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground p-1">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -730,12 +730,14 @@ export default function UserMessagesPage() {
                       {otherUserId && <OnlineIndicator isOnline={isOnline(otherUserId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                     </div>
                   }
-                  <span className="text-[11px] text-foreground truncate">{getConvoDisplayName(activeConversation)}</span>
-                  {activeConversation.type === "direct" && otherUserId && (
-                    <span className={`text-[9px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
-                      {isOnline(otherUserId) ? "online" : "offline"}
-                    </span>
-                  )}
+                  <div className="min-w-0">
+                    <span className="text-[11px] text-foreground truncate block">{getConvoDisplayName(activeConversation)}</span>
+                    {activeConversation.type === "direct" && otherUserId && (
+                      <span className={`text-[8px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
+                        {isOnline(otherUserId) ? "● ONLINE" : "○ OFFLINE"}
+                      </span>
+                    )}
+                  </div>
                   {activeConversation.type === "group" && (() => {
                     const onlineCount = activeMembers?.filter((uid: string) => isOnline(uid)).length || 0;
                     return (
