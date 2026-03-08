@@ -716,7 +716,7 @@ export default function UserPostsPage() {
                     <div className="mt-2 pt-2 border-t border-border">
                       {comments && comments.length > 0 ? (
                         <div className="space-y-1.5 mb-2">
-                          {comments.map((c: any) => (
+                          {visibleComments.map((c: any) => (
                             <div key={c.id} className="flex items-start gap-2 text-[11px]">
                               <span className="text-foreground shrink-0 font-bold">{getCommentUserName(c.user_id)}</span>
                               <span className="text-secondary-foreground flex-1">{c.content}</span>
@@ -730,6 +730,14 @@ export default function UserPostsPage() {
                               )}
                             </div>
                           ))}
+                          {hiddenCommentsCount > 0 && (
+                            <button
+                              onClick={() => setExpandedCommentThreads((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                              className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider"
+                            >
+                              {commentsExpanded ? "SHOW LESS" : `EXPAND COMMENTS (+${hiddenCommentsCount})`}
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <p className="text-[10px] text-muted-foreground mb-2">No comments yet</p>
