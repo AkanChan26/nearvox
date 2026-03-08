@@ -413,8 +413,11 @@ export default function UserBoardDetailPage() {
                 isLiked={myLikes?.has(post.id) || false}
                 isOwner={post.user_id === user?.id}
                 isAdmin={profile?.is_admin || false}
+                isMember={isMember}
                 onLike={() => toggleLike.mutate(post.id)}
                 onDelete={() => deletePost.mutate(post.id)}
+                onEdit={(title: string, content: string) => editPost.mutate({ postId: post.id, title, content })}
+                onRepost={() => repost.mutate(post.id)}
                 onReport={() => setReportPostId(post.id)}
                 showComments={showComments[post.id] || false}
                 onToggleComments={() => setShowComments((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
