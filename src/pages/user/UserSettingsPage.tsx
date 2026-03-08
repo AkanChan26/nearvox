@@ -6,6 +6,7 @@ import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
+import { USER_AVATARS, ProfileAvatar } from "@/components/Avatars";
 
 export default function UserSettingsPage() {
   const { user } = useAuth();
@@ -30,6 +31,7 @@ export default function UserSettingsPage() {
   const [anonymousName, setAnonymousName] = useState("");
   const [location, setLocation] = useState("");
   const [interests, setInterests] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("user-1");
 
   useEffect(() => {
     if (profile) {
@@ -37,6 +39,7 @@ export default function UserSettingsPage() {
       if (!anonymousName && profile.anonymous_name) setAnonymousName(profile.anonymous_name);
       if (!location && profile.location) setLocation(profile.location);
       if (!interests && profile.interests) setInterests(profile.interests.join(", "));
+      if ((profile as any).avatar) setSelectedAvatar((profile as any).avatar);
     }
   }, [profile]);
 
@@ -69,7 +72,8 @@ export default function UserSettingsPage() {
         anonymous_name: anonymousName.trim() || null,
         location: location.trim() || null,
         interests: interests.split(",").map((i) => i.trim()).filter(Boolean),
-      })
+        avatar: selectedAvatar,
+      } as any)
       .eq("user_id", user.id);
 
     if (error) {
@@ -100,11 +104,39 @@ export default function UserSettingsPage() {
     <UserLayout>
       <PageHeader title="SETTINGS" description="YOUR PROFILE & PREFERENCES" />
 
-      <div className="px-4 py-6 space-y-6">
+      <div className="px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {isLoading ? (
           <p className="text-xs text-muted-foreground cursor-blink">LOADING PROFILE</p>
         ) : profile ? (
           <>
+            {/* Avatar Selection */}
+            <div className="terminal-box">
+              <div className="terminal-header">CHOOSE AVATAR</div>
+              <div className="flex items-center gap-3 mb-3">
+                <ProfileAvatar avatarId={selectedAvatar} size={48} />
+                <div>
+                  <p className="text-xs text-foreground glow-text">{anonymousName || username || "YOU"}</p>
+                  <p className="text-[9px] text-muted-foreground">Current avatar</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                {USER_AVATARS.map((av) => (
+                  <button
+                    key={av.id}
+                    onClick={() => setSelectedAvatar(av.id)}
+                    className={`p-1.5 border transition-none flex flex-col items-center ${
+                      selectedAvatar === av.id
+                        ? "border-foreground bg-foreground/10"
+                        : "border-border hover:border-foreground/40"
+                    }`}
+                    title={av.label}
+                  >
+                    <av.Component size={32} />
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Read-only info */}
             <div className="terminal-box">
               <div className="terminal-header">IDENTITY INFO</div>
