@@ -176,7 +176,7 @@ export default function UserPostsPage() {
     queryKey: ["post-creators", creatorIds],
     queryFn: async () => {
       if (creatorIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username").in("user_id", creatorIds);
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
       return data || [];
     },
     enabled: creatorIds.length > 0,
