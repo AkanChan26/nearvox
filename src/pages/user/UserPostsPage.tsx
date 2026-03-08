@@ -51,6 +51,7 @@ export default function UserPostsPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
+  const [expandedCommentThreads, setExpandedCommentThreads] = useState<Record<string, boolean>>({});
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
   const [reportingPost, setReportingPost] = useState<string | null>(null);
