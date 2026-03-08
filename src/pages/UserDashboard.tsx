@@ -3,16 +3,26 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { MessageSquare, Eye, Clock, Plus, LogOut, Ticket, ChevronRight } from "lucide-react";
+import {
+  MessageSquare, LogOut, Ticket, ChevronRight,
+  FileText, ShoppingBag, Settings, Terminal, User,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { InviteTicketPanel } from "@/components/InviteTicketPanel";
+
+const userSections = [
+  { title: "TOPICS", desc: "Browse & join nearby discussions", url: "/user/topics", icon: MessageSquare, cmd: "01" },
+  { title: "POSTS", desc: "View community posts & updates", url: "/user/posts", icon: FileText, cmd: "02" },
+  { title: "MARKETPLACE", desc: "Browse local listings & deals", url: "/user/marketplace", icon: ShoppingBag, cmd: "03" },
+  { title: "INVITES", desc: "Manage your invite tickets", url: "/user/invites", icon: Ticket, cmd: "04" },
+  { title: "SETTINGS", desc: "Your profile & preferences", url: "/user/settings", icon: Settings, cmd: "05" },
+];
 
 export default function UserDashboard() {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
-  const [showInvite, setShowInvite] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -27,154 +37,194 @@ export default function UserDashboard() {
     enabled: !!user,
   });
 
-  const { data: topics, isLoading } = useQuery({
-    queryKey: ["user-topics"],
+  const { data: topicCount } = useQuery({
+    queryKey: ["user-topic-count"],
+    queryFn: async () => {
+      const { count } = await supabase.from("topics").select("*", { count: "exact", head: true });
+      return count || 0;
+    },
+  });
+
+  const { data: postCount } = useQuery({
+    queryKey: ["user-post-count"],
+    queryFn: async () => {
+      const { count } = await supabase.from("posts").select("*", { count: "exact", head: true });
+      return count || 0;
+    },
+  });
+
+  const { data: recentTopics } = useQuery({
+    queryKey: ["user-recent-topics"],
     queryFn: async () => {
       const { data } = await supabase
         .from("topics")
-        .select("*")
-        .order("is_pinned", { ascending: false })
-        .order("is_announcement", { ascending: false })
-        .order("last_activity_at", { ascending: false });
+        .select("id, title, created_at, is_announcement, replies_count")
+        .order("last_activity_at", { ascending: false })
+        .limit(5);
       return data || [];
     },
   });
-
-  // Fetch anonymous names for topic creators
-  const creatorIds = [...new Set(topics?.map((t) => t.user_id) || [])];
-  const { data: creators } = useQuery({
-    queryKey: ["topic-creators", creatorIds],
-    queryFn: async () => {
-      if (creatorIds.length === 0) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, anonymous_name, is_admin, username")
-        .in("user_id", creatorIds);
-      return data || [];
-    },
-    enabled: creatorIds.length > 0,
-  });
-
-  const getCreatorName = (userId: string) => {
-    const creator = creators?.find((c) => c.user_id === userId);
-    if (!creator) return "Unknown";
-    if (creator.is_admin) return creator.username || "ADMIN";
-    return creator.anonymous_name || "Anonymous";
-  };
-
-  const isCreatorAdmin = (userId: string) => {
-    return creators?.find((c) => c.user_id === userId)?.is_admin || false;
-  };
 
   const handleLogout = async () => {
     await signOut();
     navigate("/login");
   };
 
+  const handleSectionClick = (url: string) => {
+    if (url === "/user/invites") {
+      // We'll navigate to a dedicated page instead of panel
+    }
+    navigate(url);
+  };
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
+
   return (
-    <div className="min-h-screen bg-background relative">
+    <div className="min-h-screen bg-background relative terminal-grid terminal-flicker">
       <div className="fixed inset-0 scanline z-50 pointer-events-none" />
 
-      {/* Header */}
-      <header className="border-b border-border sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="max-w-3xl mx-auto px-4 py-6">
+        {/* Terminal Header */}
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <p className="text-foreground text-lg glow-text tracking-widest">NEARVOX</p>
-            <p className="text-[10px] text-muted-foreground tracking-[0.3em]">ANONYMOUS NETWORK</p>
+            <div className="flex items-center gap-2 mb-1">
+              <Terminal className="h-5 w-5 text-foreground" />
+              <p className="text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground tracking-[0.5em] ml-7">ANONYMOUS NETWORK</p>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowInvite(true)}
-              className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-1 transition-none"
-            >
-              <Ticket className="h-3 w-3" />
-              INVITES
-            </button>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
-            >
-              <Plus className="h-3 w-3" />
-              NEW TOPIC
-            </button>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <div className="flex items-center gap-1.5 justify-end">
+                <User className="h-3 w-3 text-foreground" />
+                <p className="text-sm text-foreground glow-text font-bold tracking-wider">
+                  {profile?.anonymous_name || "..."}
+                </p>
+              </div>
+              <p className="text-[10px] text-muted-foreground tracking-wider">
+                {profile?.location || "UNKNOWN"} SECTOR
+              </p>
+            </div>
             <button
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive transition-colors"
+              className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive"
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
-      </header>
 
-      {/* Identity bar */}
-      <div className="max-w-3xl mx-auto px-4 py-2 border-b border-border">
-        <p className="text-[10px] text-muted-foreground">
-          IDENTITY: <span className="text-foreground">{profile?.anonymous_name || "..."}</span>
-          {" // "}
-          SECTOR: <span className="text-foreground">{profile?.location || "UNKNOWN"}</span>
-        </p>
-      </div>
+        {/* Status Bar */}
+        <div className="border border-border bg-card p-3 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">NETWORK STATUS</span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1">
+            <div className="text-[10px]">
+              <span className="text-muted-foreground">STATUS: </span>
+              <span className="text-foreground glow-text">CONNECTED</span>
+            </div>
+            <div className="text-[10px]">
+              <span className="text-muted-foreground">IDENTITY: </span>
+              <span className="text-foreground">{profile?.anonymous_name || "..."}</span>
+            </div>
+            <div className="text-[10px]">
+              <span className="text-muted-foreground">TOPICS: </span>
+              <span className="text-foreground">{topicCount ?? "..."}</span>
+            </div>
+            <div className="text-[10px]">
+              <span className="text-muted-foreground">POSTS: </span>
+              <span className="text-foreground">{postCount ?? "..."}</span>
+            </div>
+          </div>
+        </div>
 
-      {/* Topic List */}
-      <div className="max-w-3xl mx-auto px-4 py-6">
-        <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          TOPICS NEAR YOU — {topics?.length ?? 0} ACTIVE THREADS
-        </p>
+        {/* Navigation Grid */}
+        <div className="mb-6">
+          <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
+            &gt; NAVIGATE — SELECT MODULE
+          </p>
 
-        {isLoading ? (
-          <p className="text-xs text-muted-foreground cursor-blink">SCANNING NETWORK</p>
-        ) : topics && topics.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {topics.map((topic, index) => {
-              const isAdmin = isCreatorAdmin(topic.user_id);
-              const isAnnouncement = topic.is_announcement;
-
+            {userSections.map((section) => {
+              const Icon = section.icon;
               return (
                 <button
-                  key={topic.id}
-                  onClick={() => navigate(`/topic/${topic.id}`)}
-                  className={`text-left p-3 border transition-none group flex flex-col gap-1.5 ${
-                    isAnnouncement
-                      ? "admin-box border-[hsl(var(--admin-border))] col-span-2 md:col-span-3"
-                      : "border-border hover:border-foreground/30 hover:bg-muted/30"
-                  }`}
+                  key={section.url}
+                  onClick={() => handleSectionClick(section.url)}
+                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                 >
-                  {isAnnouncement && (
-                    <p className="text-[9px] admin-text tracking-[0.3em]">◆ SYSTEM ANNOUNCEMENT</p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
-                    <span className={`text-sm ${isAnnouncement ? "admin-text font-bold" : "text-foreground"}`}>
-                      {topic.title}
-                    </span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] text-muted-foreground font-mono">[{section.cmd}]</span>
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
                   </div>
-                  <span className={`text-[10px] ${isAdmin ? "admin-text glow-admin" : "text-muted-foreground"}`}>
-                    {getCreatorName(topic.user_id)}
-                    {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
-                  </span>
-                  {topic.location && (
-                    <span className="text-[10px] text-muted-foreground">📍 {topic.location}</span>
-                  )}
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
-                    <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{topic.replies_count}</span>
-                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{topic.views_count}</span>
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDistanceToNow(new Date(topic.last_activity_at), { addSuffix: true })}</span>
-                  </div>
+                  <p className="text-xs text-foreground group-hover:glow-text tracking-wider leading-tight">
+                    {section.title}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed">{section.desc}</p>
                 </button>
               );
             })}
+
+            {/* New Topic - special action card */}
+            <button
+              onClick={() => setShowCreate(true)}
+              className="text-left p-3 border border-foreground/30 bg-foreground/5 hover:border-foreground hover:bg-foreground/10 transition-none group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] text-foreground font-mono">[+]</span>
+                <MessageSquare className="h-3.5 w-3.5 text-foreground" />
+              </div>
+              <p className="text-xs text-foreground glow-text tracking-wider leading-tight">NEW TOPIC</p>
+              <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed">Start a new discussion</p>
+            </button>
           </div>
-        ) : (
-          <div className="terminal-box text-center py-8">
-            <p className="text-xs text-muted-foreground mb-2">NO TOPICS FOUND</p>
-            <p className="text-[10px] text-muted-foreground">Be the first to start a discussion</p>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="border border-border bg-card p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
+            <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
           </div>
-        )}
+          {recentTopics && recentTopics.length > 0 ? (
+            <div className="space-y-0.5">
+              {recentTopics.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => navigate(`/topic/${topic.id}`)}
+                  className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-0.5 transition-none"
+                >
+                  <span className="text-muted-foreground shrink-0">
+                    [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
+                  </span>
+                  <span className={topic.is_announcement ? "admin-text" : "text-foreground/70"}>
+                    {topic.is_announcement ? "📢 " : ""}{topic.title}
+                  </span>
+                  <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                    <MessageSquare className="h-2.5 w-2.5" />
+                    {topic.replies_count}
+                  </span>
+                  <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
+          )}
+          <div className="mt-2 pt-2 border-t border-border">
+            <p className="text-[10px] text-muted-foreground cursor-blink">user@nearvox:~$</p>
+          </div>
+        </div>
+
+        <p className="text-[9px] text-muted-foreground mt-4 tracking-wider text-center">
+          // NEARVOX — ANONYMOUS COMMUNITY NETWORK
+        </p>
       </div>
 
       {showCreate && <CreateTopicDialog onClose={() => setShowCreate(false)} />}
-      {showInvite && <InviteTicketPanel onClose={() => setShowInvite(false)} />}
     </div>
   );
 }

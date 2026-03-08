@@ -8,9 +8,10 @@ import { formatDistanceToNow } from "date-fns";
 
 interface Props {
   onClose: () => void;
+  embedded?: boolean;
 }
 
-export function InviteTicketPanel({ onClose }: Props) {
+export function InviteTicketPanel({ onClose, embedded = false }: Props) {
   const { user, isAdmin } = useAuth();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
@@ -84,15 +85,16 @@ export function InviteTicketPanel({ onClose }: Props) {
       : inviterProfile.anonymous_name
     : null;
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80">
-      <div className="w-full max-w-md border border-border bg-card p-4">
+  const content = (
+    <>
+      {!embedded && (
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs text-muted-foreground tracking-[0.3em]">INVITE TICKETS</p>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
+      )}
 
         {inviterName && (
           <div className="border border-border p-2 mb-4">
@@ -155,6 +157,17 @@ export function InviteTicketPanel({ onClose }: Props) {
         <p className="text-[10px] text-muted-foreground mt-4">
           // Share your invite link to bring someone into the network
         </p>
+      </>
+  );
+
+  if (embedded) {
+    return <div className="border border-border bg-card p-4">{content}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80">
+      <div className="w-full max-w-md border border-border bg-card p-4">
+        {content}
       </div>
     </div>
   );
