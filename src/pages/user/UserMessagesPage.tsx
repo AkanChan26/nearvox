@@ -563,13 +563,13 @@ export default function UserMessagesPage() {
     <UserLayout>
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
-      <div className="px-4 sm:px-8 py-6">
-        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(82vh, 700px)", minHeight: "450px" }}>
+      <div className="px-3 sm:px-6 py-4">
+        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(85vh, 720px)", minHeight: "450px" }}>
           {/* Subtle scanline overlay */}
           <div className="absolute inset-0 scanline pointer-events-none z-0" />
 
-          {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-[320px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
+          {/* ── LEFT: Conversation List (30%) ── */}
+          <div className={`w-full md:w-[30%] md:max-w-[280px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
             {/* Section label */}
             <div className="px-4 pt-4 pb-2">
               <p className="text-[9px] tracking-[0.3em] text-muted-foreground uppercase">// conversations</p>
@@ -715,11 +715,12 @@ export default function UserMessagesPage() {
           </div>
 
           {/* ── RIGHT: Chat View ── */}
+          {/* ── RIGHT: Chat View (70%) ── */}
           <div className={`flex-1 flex flex-col min-w-0 relative z-10 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-card/80">
+                <div className="px-4 py-3 border-b border-border flex items-center gap-3 bg-card/80">
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground p-1">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -729,12 +730,14 @@ export default function UserMessagesPage() {
                       {otherUserId && <OnlineIndicator isOnline={isOnline(otherUserId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                     </div>
                   }
-                  <span className="text-[11px] text-foreground truncate">{getConvoDisplayName(activeConversation)}</span>
-                  {activeConversation.type === "direct" && otherUserId && (
-                    <span className={`text-[9px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
-                      {isOnline(otherUserId) ? "online" : "offline"}
-                    </span>
-                  )}
+                  <div className="min-w-0">
+                    <span className="text-[11px] text-foreground truncate block">{getConvoDisplayName(activeConversation)}</span>
+                    {activeConversation.type === "direct" && otherUserId && (
+                      <span className={`text-[8px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
+                        {isOnline(otherUserId) ? "● ONLINE" : "○ OFFLINE"}
+                      </span>
+                    )}
+                  </div>
                   {activeConversation.type === "group" && (() => {
                     const onlineCount = activeMembers?.filter((uid: string) => isOnline(uid)).length || 0;
                     return (
