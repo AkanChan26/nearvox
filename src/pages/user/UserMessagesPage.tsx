@@ -884,21 +884,21 @@ export default function UserMessagesPage() {
 
                             {/* Message bubble */}
                             <div
-                              className={`inline-block rounded-2xl ${
+                              className={`inline-block rounded-[18px] ${
                                 isMine
-                                  ? "bg-primary/15 border border-primary/20 rounded-br-sm"
-                                  : "bg-muted/30 border border-border/50 rounded-bl-sm"
+                                  ? "bg-primary/15 border border-primary/20 rounded-br-[4px]"
+                                  : "bg-muted/30 border border-border/50 rounded-bl-[4px]"
                               }`}
                             >
                               {/* Reply preview */}
                               {reply && (
-                                <div className="px-3 pt-2.5 pb-0">
-                                  <div className="border-l-2 border-primary/40 pl-2 py-1 rounded-sm bg-muted/20">
+                                <div className="px-2.5 pt-2 pb-0">
+                                  <div className="border-l-2 border-primary/40 pl-2 py-0.5 rounded-sm bg-muted/20">
                                     <p className="text-[10px] text-muted-foreground truncate">{reply.replyText}</p>
                                   </div>
                                 </div>
                               )}
-                              <div className="px-3.5 py-2">
+                              <div className="px-3 py-1.5">
                                 {editingMsg === msg.id ? (
                                   <div className="flex items-center gap-1.5">
                                     <input value={editText} onChange={(e) => setEditText(e.target.value)}
