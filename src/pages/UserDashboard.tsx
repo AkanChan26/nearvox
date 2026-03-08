@@ -257,6 +257,9 @@ export default function UserDashboard() {
           </button>
         </div>
 
+        {/* Network Node Map */}
+        <NetworkNodeMap />
+
         {/* Announcements Preview */}
         {announcements && announcements.length > 0 && (
           <div className="border border-admin-border bg-card p-3 mb-6">
