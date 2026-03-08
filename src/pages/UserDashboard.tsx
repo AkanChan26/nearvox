@@ -71,17 +71,35 @@ export default function UserDashboard() {
     },
   });
 
-  // Unread messages count
-  const { data: messageCount } = useQuery({
-    queryKey: ["user-message-count", user?.id],
+  // Unread chat messages count
+  const { data: unreadChatCount } = useQuery({
+    queryKey: ["unread-chat-count", user?.id],
     queryFn: async () => {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .or(`recipient_id.eq.${user!.id},recipient_id.is.null`);
-      return count || 0;
+      // Get my conversation memberships with last_read_at
+      const { data: memberships } = await supabase
+        .from("conversation_members")
+        .select("conversation_id, last_read_at")
+        .eq("user_id", user!.id);
+      if (!memberships || memberships.length === 0) return 0;
+
+      let unreadCount = 0;
+      for (const mem of memberships) {
+        const query = supabase
+          .from("chat_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("conversation_id", mem.conversation_id)
+          .neq("sender_id", user!.id)
+          .is("deleted_at", null);
+        if (mem.last_read_at) {
+          query.gt("created_at", mem.last_read_at);
+        }
+        const { count } = await query;
+        if (count && count > 0) unreadCount += count;
+      }
+      return unreadCount;
     },
     enabled: !!user,
+    refetchInterval: 30000,
   });
 
   const { data: unreadNotifs } = useQuery({
