@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { ProfileAvatar } from "@/components/Avatars";
 import {
   User, MapPin, Ticket, Clock, Shield,
   ArrowLeft, UserCheck, MessageSquare, Heart, Eye,
