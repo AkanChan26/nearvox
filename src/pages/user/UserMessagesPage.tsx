@@ -263,6 +263,63 @@ export default function UserMessagesPage() {
     return () => { supabase.removeChannel(channel); };
   }, [user, activeConvo]);
 
+  // ── TYPING PRESENCE ──
+  useEffect(() => {
+    if (!user || !activeConvo) {
+      setTypingUsers([]);
+      return;
+    }
+    const channel = supabase.channel(`typing:${activeConvo}`, {
+      config: { presence: { key: user.id } },
+    });
+    channel.on("presence", { event: "sync" }, () => {
+      const state = channel.presenceState();
+      const typers: string[] = [];
+      for (const [uid, entries] of Object.entries(state)) {
+        if (uid !== user.id && Array.isArray(entries) && entries.some((e: any) => e.is_typing)) {
+          typers.push(uid);
+        }
+      }
+      setTypingUsers(typers);
+    });
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await channel.track({ is_typing: false });
+      }
+    });
+    presenceChannelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      presenceChannelRef.current = null;
+    };
+  }, [user, activeConvo]);
+
+  const broadcastTyping = useCallback(() => {
+    const ch = presenceChannelRef.current;
+    if (!ch) return;
+    ch.track({ is_typing: true });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      ch.track({ is_typing: false });
+    }, 2000);
+  }, []);
+
+  // ── READ RECEIPT HELPERS ──
+  const getReadStatus = (msg: ChatMessage): "sent" | "delivered" | "read" => {
+    if (msg.sender_id !== user?.id) return "sent";
+    if (!allMembers || !activeConvo) return "sent";
+    const otherMembers = allMembers.filter(
+      (m) => m.conversation_id === activeConvo && m.user_id !== user?.id
+    );
+    if (otherMembers.length === 0) return "sent";
+    const allRead = otherMembers.every((m) => {
+      const readAt = m.last_read_at ? new Date(m.last_read_at).getTime() : 0;
+      return readAt >= new Date(msg.created_at).getTime();
+    });
+    if (allRead) return "read";
+    return "delivered";
+  };
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
   useEffect(() => { if (activeConvo && user) markAsRead(activeConvo); }, [activeConvo, user]);
 
