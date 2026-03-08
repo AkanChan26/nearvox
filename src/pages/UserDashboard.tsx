@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
   Terminal, User, TrendingUp, Hash, Plus,
+  Megaphone, Mail, Settings, Ticket,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
@@ -28,7 +29,7 @@ export default function UserDashboard() {
     enabled: !!user,
   });
 
-  // Trending topics (most replies in user's region or globally)
+  // Trending topics
   const { data: trendingTopics } = useQuery({
     queryKey: ["trending-topics", profile?.location],
     queryFn: async () => {
@@ -52,6 +53,33 @@ export default function UserDashboard() {
       return data;
     },
     enabled: !!profile,
+  });
+
+  // Announcements
+  const { data: announcements } = useQuery({
+    queryKey: ["user-announcements"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
+  // Unread messages count
+  const { data: messageCount } = useQuery({
+    queryKey: ["user-message-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("messages")
+        .select("*", { count: "exact", head: true })
+        .or(`recipient_id.eq.${user!.id},recipient_id.is.null`);
+      return count || 0;
+    },
+    enabled: !!user,
   });
 
   const { data: recentTopics } = useQuery({
@@ -110,7 +138,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Category Grid - 10 categories */}
-        <div className="mb-6">
+        <div className="mb-4">
           <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
             &gt; NAVIGATE — SELECT MODULE
           </p>
@@ -135,6 +163,74 @@ export default function UserDashboard() {
             })}
           </div>
         </div>
+
+        {/* Quick Access Row: Announcements, Messages, Settings, Invites */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-6">
+          <button
+            onClick={() => navigate("/user/announcements")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Megaphone className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">ANNOUNCEMENTS</p>
+            {announcements && announcements.length > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{announcements.length} active</p>
+            )}
+          </button>
+          <button
+            onClick={() => navigate("/user/messages")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Mail className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
+            {(messageCount ?? 0) > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{messageCount} messages</p>
+            )}
+          </button>
+          <button
+            onClick={() => navigate("/user/invites")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Ticket className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">INVITES</p>
+          </button>
+          <button
+            onClick={() => navigate("/user/settings")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Settings className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">SETTINGS</p>
+          </button>
+        </div>
+
+        {/* Announcements Preview */}
+        {announcements && announcements.length > 0 && (
+          <div className="border border-admin-border bg-card p-3 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Megaphone className="h-3 w-3 text-[hsl(var(--admin))]" />
+              <span className="text-[10px] admin-text tracking-[0.3em]">SYSTEM ANNOUNCEMENTS</span>
+              <button onClick={() => navigate("/user/announcements")} className="text-[9px] text-muted-foreground hover:text-foreground ml-auto">[VIEW ALL]</button>
+            </div>
+            <div className="space-y-1.5">
+              {announcements.slice(0, 3).map((ann: any) => (
+                <div key={ann.id} className="admin-box px-2 py-1.5">
+                  <p className="text-[11px] admin-text font-bold">{ann.title}</p>
+                  <p className="text-[10px] text-secondary-foreground truncate">{ann.content}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">
+                    {new Date(ann.created_at).toLocaleDateString()} · TARGET: {ann.target_location}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Trending Section */}
         <div className="border border-border bg-card p-3 mb-6">
