@@ -295,11 +295,12 @@ export default function UserPostsPage() {
   const handleReport = async (itemId: string, itemType: "post" | "topic" = "post") => {
     if (!user || !reportReason.trim()) return;
     const item = unified.find((u) => u.id === itemId);
+    const dbReportType = itemType === "post" ? "post" : "message";
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_post_id: itemType === "post" ? itemId : null,
       reported_user_id: item?.user_id || null,
-      report_type: itemType,
+      report_type: dbReportType,
       reason: reportReason.trim(),
     });
     if (error) { toast.error("Failed to report"); console.error(error); }

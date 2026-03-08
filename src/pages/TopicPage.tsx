@@ -238,10 +238,11 @@ export default function TopicPage() {
   // --- Report ---
   const handleReport = async () => {
     if (!reportReason.trim() || !user || !reportingId) return;
+    const dbReportType = reportType === "topic" ? "message" : "comment";
     const payload: any = {
       reporter_id: user.id,
       reason: reportReason.trim(),
-      report_type: reportType,
+      report_type: dbReportType,
       severity: "medium" as const,
     };
     if (reportType === "topic") {
