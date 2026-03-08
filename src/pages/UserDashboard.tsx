@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
   Terminal, TrendingUp, Hash, Plus,
-  Megaphone, Mail, Settings, Ticket, FileText, Bell,
+  Megaphone, Mail, Settings, Ticket, FileText, Bell, LayoutGrid,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
@@ -31,7 +31,6 @@ export default function UserDashboard() {
     enabled: !!user,
   });
 
-  // Trending topics
   const { data: trendingTopics } = useQuery({
     queryKey: ["trending-topics", profile?.location],
     queryFn: async () => {
@@ -57,7 +56,6 @@ export default function UserDashboard() {
     enabled: !!profile,
   });
 
-  // Announcements
   const { data: announcements } = useQuery({
     queryKey: ["user-announcements"],
     queryFn: async () => {
@@ -71,17 +69,14 @@ export default function UserDashboard() {
     },
   });
 
-  // Unread chat messages count
   const { data: unreadChatCount } = useQuery({
     queryKey: ["unread-chat-count", user?.id],
     queryFn: async () => {
-      // Get my conversation memberships with last_read_at
       const { data: memberships } = await supabase
         .from("conversation_members")
         .select("conversation_id, last_read_at")
         .eq("user_id", user!.id);
       if (!memberships || memberships.length === 0) return 0;
-
       let unreadCount = 0;
       for (const mem of memberships) {
         const query = supabase
@@ -139,54 +134,54 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-background relative terminal-grid terminal-flicker">
       <div className="fixed inset-0 scanline z-[1] pointer-events-none" />
 
-      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
         {/* Terminal Header */}
-        <div className="flex items-start justify-between mb-4 sm:mb-6">
+        <div className="flex items-start justify-between mb-6 sm:mb-8">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-              <p className="text-xl sm:text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <Terminal className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+              <p className="text-2xl sm:text-3xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
             </div>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-6 sm:ml-7">ANONYMOUS NETWORK</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.5em] ml-7 sm:ml-9">ANONYMOUS NETWORK</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
-            <ProfileAvatar avatarId={(profile as any)?.avatar} size={36} />
+          <div className="flex items-center gap-3 sm:gap-4">
+            <ProfileAvatar avatarId={(profile as any)?.avatar} size={40} />
             <div className="text-right">
-              <p className="text-xs sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[100px] sm:max-w-none">
+              <p className="text-sm sm:text-base text-foreground glow-text font-bold tracking-wider truncate max-w-[120px] sm:max-w-none">
                 {profile?.anonymous_name || profile?.username || "..."}
               </p>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wider truncate max-w-[120px] sm:max-w-none">
+              <p className="text-[10px] sm:text-xs text-muted-foreground tracking-wider truncate max-w-[140px] sm:max-w-none">
                 {profile?.location || "SET REGION"}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
+              className="text-muted-foreground hover:text-destructive transition-colors p-2 border border-border hover:border-destructive min-h-[40px] min-w-[40px] flex items-center justify-center"
             >
-              <LogOut className="h-3.5 w-3.5" />
+              <LogOut className="h-4 w-4" />
             </button>
           </div>
         </div>
 
-        {/* Category Grid - 10 categories */}
-        <div className="mb-3 sm:mb-4">
-          <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-2 sm:mb-3">
+        {/* Category Grid */}
+        <div className="mb-4 sm:mb-6">
+          <p className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4">
             &gt; NAVIGATE — SELECT MODULE
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 sm:gap-1.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
             {TOPIC_CATEGORIES.filter((cat) => cat.value !== "random").map((cat) => {
               const Icon = cat.icon;
               return (
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/user/topics?category=${cat.value}`)}
-                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                  className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                 >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
-                    <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">[{cat.cmd}]</span>
+                    <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
                   </div>
-                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                  <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-tight">
                     {cat.label.toUpperCase()}
                   </p>
                 </button>
@@ -194,13 +189,13 @@ export default function UserDashboard() {
             })}
             <button
               onClick={() => navigate("/user/posts")}
-              className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+              className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
             >
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="text-[9px] text-muted-foreground font-mono">[10]</span>
-                <MessageSquare className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">[10]</span>
+                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               </div>
-              <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+              <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-tight">
                 ALL POSTS
               </p>
             </button>
@@ -208,168 +203,185 @@ export default function UserDashboard() {
         </div>
 
         {/* Quick Access Row */}
-        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-1 sm:gap-1.5 mb-4 sm:mb-6">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-2.5 mb-6 sm:mb-8">
           <button
             onClick={() => navigate("/user/notifications")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Bell className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               {(unreadNotifs ?? 0) > 0 && (
-                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
               )}
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">NOTIFICATIONS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">NOTIFICATIONS</p>
             {(unreadNotifs ?? 0) > 0 && (
-              <p className="text-[9px] text-foreground mt-0.5">{unreadNotifs} unread</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{unreadNotifs} unread</p>
             )}
           </button>
           <button
             onClick={() => navigate("/user/posts?mine=true")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <FileText className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">YOUR POSTS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">YOUR POSTS</p>
           </button>
           <button
             onClick={() => navigate("/user/announcements")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Megaphone className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">ANNOUNCEMENTS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">ANNOUNCEMENTS</p>
             {announcements && announcements.length > 0 && (
-              <p className="text-[9px] text-foreground mt-0.5">{announcements.length} active</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{announcements.length} active</p>
             )}
           </button>
           <button
             onClick={() => navigate("/user/messages")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Mail className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               {(unreadChatCount ?? 0) > 0 && (
-                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+                <span className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
               )}
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
             {(unreadChatCount ?? 0) > 0 && (
-              <p className="text-[9px] text-foreground mt-0.5">{unreadChatCount} unread</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{unreadChatCount} unread</p>
             )}
           </button>
           <button
-            onClick={() => navigate("/user/invites")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            onClick={() => navigate("/user/boards")}
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Ticket className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">INVITES</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">BOARDS</p>
+          </button>
+          <button
+            onClick={() => navigate("/user/invites")}
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">INVITES</p>
           </button>
           <button
             onClick={() => navigate("/user/settings")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <Settings className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            <div className="flex items-center gap-2 mb-1.5">
+              <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">SETTINGS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">SETTINGS</p>
           </button>
         </div>
 
-
-        {/* Announcements Preview */}
-        {announcements && announcements.length > 0 && (
-          <div className="border border-admin-border bg-card p-3 mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <Megaphone className="h-3 w-3 text-[hsl(var(--admin))]" />
-              <span className="text-[10px] admin-text tracking-[0.3em]">SYSTEM ANNOUNCEMENTS</span>
-              <button onClick={() => navigate("/user/announcements")} className="text-[9px] text-muted-foreground hover:text-foreground ml-auto">[VIEW ALL]</button>
-            </div>
-            <div className="space-y-1.5">
-              {announcements.slice(0, 3).map((ann: any) => (
-                <div key={ann.id} className="admin-box px-2 py-1.5">
-                  <p className="text-[11px] admin-text font-bold">{ann.title}</p>
-                  <p className="text-[10px] text-secondary-foreground truncate">{ann.content}</p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5">
-                    {new Date(ann.created_at).toLocaleDateString()} · TARGET: {ann.target_location}
-                  </p>
+        {/* Two-column layout on desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Left Column */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Announcements Preview */}
+            {announcements && announcements.length > 0 && (
+              <div className="border border-admin-border bg-card p-4 sm:p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[hsl(var(--admin))]" />
+                  <span className="text-xs sm:text-sm admin-text tracking-[0.3em]">SYSTEM ANNOUNCEMENTS</span>
+                  <button onClick={() => navigate("/user/announcements")} className="text-[10px] sm:text-xs text-muted-foreground hover:text-foreground ml-auto">[VIEW ALL]</button>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+                <div className="space-y-2">
+                  {announcements.slice(0, 3).map((ann: any) => (
+                    <div key={ann.id} className="admin-box px-3 py-2">
+                      <p className="text-xs sm:text-sm admin-text font-bold">{ann.title}</p>
+                      <p className="text-xs text-secondary-foreground truncate">{ann.content}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                        {new Date(ann.created_at).toLocaleDateString()} · TARGET: {ann.target_location}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-        {/* Trending Section */}
-        <div className="border border-border bg-card p-3 mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="h-3 w-3 text-foreground" />
-            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">
-              TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
-            </span>
-          </div>
-          {trendingTopics && trendingTopics.length > 0 ? (
-            <div className="space-y-0.5">
-              {trendingTopics.map((topic: any) => (
-                <button
-                  key={topic.id}
-                  onClick={() => navigate(`/topic/${topic.id}`)}
-                  className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
-                >
-                  <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
-                  <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
-                  <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
-                    <MessageSquare className="h-2.5 w-2.5" />
-                    {topic.replies_count}
-                  </span>
-                </button>
-              ))}
+            {/* Trending Section */}
+            <div className="border border-border bg-card p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-foreground" />
+                <span className="text-xs sm:text-sm text-muted-foreground tracking-[0.3em]">
+                  TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
+                </span>
+              </div>
+              {trendingTopics && trendingTopics.length > 0 ? (
+                <div className="space-y-1">
+                  {trendingTopics.map((topic: any) => (
+                    <button
+                      key={topic.id}
+                      onClick={() => navigate(`/topic/${topic.id}`)}
+                      className="w-full text-left text-xs sm:text-sm flex items-center gap-2.5 hover:bg-foreground/5 px-2 py-1.5 transition-none group"
+                    >
+                      <Hash className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-foreground shrink-0" />
+                      <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
+                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        {topic.replies_count}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm text-muted-foreground">NO TRENDING TOPICS YET</p>
+              )}
             </div>
-          ) : (
-            <p className="text-[11px] text-muted-foreground">NO TRENDING TOPICS YET</p>
-          )}
+          </div>
+
+          {/* Right Column */}
+          <div>
+            {/* Recent Activity */}
+            <div className="border border-border bg-card p-4 sm:p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs sm:text-sm text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground ml-auto">{timeStr}</span>
+              </div>
+              {recentTopics && recentTopics.length > 0 ? (
+                <div className="space-y-1">
+                  {recentTopics.map((topic) => (
+                    <button
+                      key={topic.id}
+                      onClick={() => navigate(`/topic/${topic.id}`)}
+                      className="w-full text-left text-xs sm:text-sm flex items-center gap-2.5 hover:bg-foreground/5 px-2 py-1.5 transition-none"
+                    >
+                      <span className="text-muted-foreground shrink-0 text-[10px] sm:text-xs">
+                        [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
+                      </span>
+                      <span className={`truncate ${topic.is_announcement ? "admin-text" : "text-foreground/70"}`}>
+                        {topic.is_announcement ? "📢 " : ""}{topic.title}
+                      </span>
+                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                        <MessageSquare className="h-3 w-3" />
+                        {topic.replies_count}
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
+              )}
+              <div className="mt-3 pt-3 border-t border-border">
+                <p className="text-xs text-muted-foreground cursor-blink">user@nearvox:~$</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Recent Activity */}
-        <div className="border border-border bg-card p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
-            <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
-          </div>
-          {recentTopics && recentTopics.length > 0 ? (
-            <div className="space-y-0.5">
-              {recentTopics.map((topic) => (
-                <button
-                  key={topic.id}
-                  onClick={() => navigate(`/topic/${topic.id}`)}
-                  className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-0.5 transition-none"
-                >
-                  <span className="text-muted-foreground shrink-0">
-                    [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
-                  </span>
-                  <span className={topic.is_announcement ? "admin-text" : "text-foreground/70"}>
-                    {topic.is_announcement ? "📢 " : ""}{topic.title}
-                  </span>
-                  <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
-                    <MessageSquare className="h-2.5 w-2.5" />
-                    {topic.replies_count}
-                  </span>
-                  <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[11px] text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
-          )}
-          <div className="mt-2 pt-2 border-t border-border">
-            <p className="text-[10px] text-muted-foreground cursor-blink">user@nearvox:~$</p>
-          </div>
-        </div>
-
-        <p className="text-[9px] text-muted-foreground mt-4 tracking-wider text-center">
+        <p className="text-[10px] sm:text-xs text-muted-foreground mt-6 tracking-wider text-center">
           // NEARVOX — ANONYMOUS COMMUNITY NETWORK
         </p>
       </div>
@@ -377,9 +389,9 @@ export default function UserDashboard() {
       {/* Floating + Button */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 h-12 w-12 flex items-center justify-center border border-foreground bg-background hover:bg-foreground hover:text-background transition-none glow-text"
+        className="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-40 h-14 w-14 flex items-center justify-center border border-foreground bg-background hover:bg-foreground hover:text-background transition-none glow-text"
       >
-        <Plus className="h-5 w-5" />
+        <Plus className="h-6 w-6" />
       </button>
 
       {showCreate && <CreateTopicDialog onClose={() => setShowCreate(false)} />}
