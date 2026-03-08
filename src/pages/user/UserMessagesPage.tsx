@@ -646,7 +646,7 @@ export default function UserMessagesPage() {
             {/* Conversation list */}
             <div className="flex-1 overflow-y-auto">
               {convosLoading ? (
-                <p className="text-[10px] text-muted-foreground p-3">LOADING CHATS...</p>
+                <p className="text-[10px] text-muted-foreground p-5 tracking-wider cursor-blink">LOADING CHATS</p>
               ) : conversations && conversations.length > 0 ? (
                 conversations.map((convo) => {
                   const isActive = activeConvo === convo.id;
@@ -656,16 +656,16 @@ export default function UserMessagesPage() {
                   const unread = hasUnread(convo.id);
                   return (
                     <button key={convo.id} onClick={() => setActiveConvo(convo.id)}
-                      className={`w-full text-left p-3 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
-                      <div className="flex items-center gap-2.5">
-                        {unread && <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0" />}
+                      className={`w-full text-left px-4 py-4 border-b border-border transition-none ${isActive ? "bg-foreground/10 border-l-2 border-l-foreground" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
+                      <div className="flex items-center gap-3">
+                        {unread && <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />}
                         {!unread && (isGroup ? <Hash className="h-4 w-4 text-muted-foreground shrink-0" /> : 
                           <div className="relative shrink-0">
                             <User className="h-4 w-4 text-muted-foreground" />
                             {dmOtherId && <OnlineIndicator isOnline={isOnline(dmOtherId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                           </div>
                         )}
-                        <span className={`text-[11px] truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
+                        <span className={`text-[11px] truncate leading-relaxed ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
                         {!isGroup && dmOtherId && isOnline(dmOtherId) && (
@@ -683,21 +683,21 @@ export default function UserMessagesPage() {
                         })()}
                       </div>
                       {lastMsg && (
-                        <p className={`text-[10px] truncate mt-1 ml-6 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
+                        <p className={`text-[10px] truncate mt-1.5 ml-7 leading-relaxed ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
                           {getDisplayName(lastMsg.sender_id)}: {lastMsg.content.slice(0, 40)}
                         </p>
                       )}
-                      <p className="text-[9px] text-muted-foreground/60 ml-6 mt-0.5">
+                      <p className="text-[9px] text-muted-foreground/60 ml-7 mt-1">
                         {formatDistanceToNow(new Date(convo.updated_at), { addSuffix: true })}
                       </p>
                     </button>
                   );
                 })
               ) : (
-                <div className="p-6 text-center">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-                  <p className="text-[10px] text-muted-foreground">NO CONVERSATIONS YET</p>
-                  <p className="text-[9px] text-muted-foreground/50 mt-1">Start a DM or create a group above</p>
+                <div className="p-8 text-center">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" />
+                  <p className="text-[10px] text-muted-foreground tracking-wider mb-2">NO CONVERSATIONS YET</p>
+                  <p className="text-[9px] text-muted-foreground/50 leading-relaxed">Start a DM or create a group above</p>
                 </div>
               )}
             </div>
