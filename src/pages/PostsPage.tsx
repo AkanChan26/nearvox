@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Image, FileText, Eye, Heart, Pencil, Check, X } from "lucide-react";
+import { Image, FileText, Eye, Heart, Pencil, Check, X, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
 export default function PostsPage() {
@@ -13,6 +13,8 @@ export default function PostsPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<string | null>(null);
+  const [expandedCommentThreads, setExpandedCommentThreads] = useState<Record<string, boolean>>({});
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["admin-posts"],
@@ -49,12 +51,46 @@ export default function PostsPage() {
     enabled: !!user,
   });
 
+  const { data: expandedComments } = useQuery({
+    queryKey: ["admin-post-comments", expandedCommentsPostId],
+    queryFn: async () => {
+      if (!expandedCommentsPostId) return [];
+      const { data } = await supabase
+        .from("post_comments")
+        .select("*")
+        .eq("post_id", expandedCommentsPostId)
+        .order("created_at", { ascending: true });
+      return data || [];
+    },
+    enabled: !!expandedCommentsPostId,
+  });
+
+  const commentUserIds = [...new Set((expandedComments || []).map((c: any) => c.user_id))];
+  const { data: commentUsers } = useQuery({
+    queryKey: ["admin-comment-users", commentUserIds],
+    queryFn: async () => {
+      if (commentUserIds.length === 0) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, username, anonymous_name, is_admin")
+        .in("user_id", commentUserIds);
+      return data || [];
+    },
+    enabled: commentUserIds.length > 0,
+  });
+
   const getCreatorInfo = (userId: string) => {
     const creator = creators?.find((c) => c.user_id === userId);
     return {
       name: creator?.is_admin ? creator.username : creator?.anonymous_name || creator?.username || "Unknown",
       isAdmin: creator?.is_admin || false,
     };
+  };
+
+  const getCommentUserName = (userId: string) => {
+    const profile = commentUsers?.find((c) => c.user_id === userId);
+    if (!profile) return "Unknown";
+    return profile.is_admin ? profile.username || "ADMIN" : profile.anonymous_name || profile.username || "User";
   };
 
   const handleLike = async (postId: string) => {
@@ -133,6 +169,11 @@ export default function PostsPage() {
               const attachments = post.attachments as string[] || [];
               const isLiked = myLikes?.has(post.id);
               const isEditing = editingId === post.id;
+              const isCommentsOpen = expandedCommentsPostId === post.id;
+              const commentsForPost = isCommentsOpen ? (expandedComments || []) : [];
+              const commentsExpanded = !!expandedCommentThreads[post.id];
+              const visibleComments = commentsExpanded ? commentsForPost : commentsForPost.slice(0, 3);
+              const hiddenCommentsCount = Math.max(commentsForPost.length - 3, 0);
 
               return (
                 <div
@@ -181,7 +222,6 @@ export default function PostsPage() {
                     }`}>{post.content}</p>
                   )}
 
-                  {/* Attachments */}
                   {attachments.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-1.5 ml-2">
                       {attachments.map((path: string, i: number) => {
@@ -214,7 +254,14 @@ export default function PostsPage() {
                       <Heart className={`h-3 w-3 ${isLiked ? "fill-current" : ""}`} />
                       {post.likes_count}
                     </button>
-                    <span className="text-muted-foreground">COMMENTS:{post.comments_count}</span>
+                    <button
+                      onClick={() => setExpandedCommentsPostId(isCommentsOpen ? null : post.id)}
+                      className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <MessageSquare className="h-3 w-3" />
+                      {post.comments_count}
+                      {isCommentsOpen ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
+                    </button>
                     {attachments.length > 0 && <span className="text-muted-foreground">FILES:{attachments.length}</span>}
                     <span className="ml-auto space-x-2">
                       <button onClick={() => { setEditingId(post.id); setEditContent(post.content); }} className={`hover:underline ${isAdmin ? "admin-text" : "text-foreground"}`}>
@@ -226,6 +273,32 @@ export default function PostsPage() {
                       <button onClick={() => handleDelete(post.id, attachments)} className="text-destructive hover:underline">[DELETE]</button>
                     </span>
                   </div>
+
+                  {isCommentsOpen && (
+                    <div className="mt-2 border-t border-border pt-2 space-y-1.5">
+                      {commentsForPost.length > 0 ? (
+                        <>
+                          {visibleComments.map((comment: any) => (
+                            <div key={comment.id} className="text-[10px] text-muted-foreground flex gap-2">
+                              <span className="text-foreground font-bold shrink-0">{getCommentUserName(comment.user_id)}</span>
+                              <span className="flex-1 text-secondary-foreground">{comment.content}</span>
+                              <span className="text-[9px] text-muted-foreground shrink-0">{timeSince(comment.created_at)}</span>
+                            </div>
+                          ))}
+                          {hiddenCommentsCount > 0 && (
+                            <button
+                              onClick={() => setExpandedCommentThreads((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                              className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider"
+                            >
+                              {commentsExpanded ? "SHOW LESS" : `EXPAND COMMENTS (+${hiddenCommentsCount})`}
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground">NO COMMENTS YET</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })
@@ -235,7 +308,6 @@ export default function PostsPage() {
         </div>
       </div>
 
-      {/* Image Preview Modal */}
       {previewUrl && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/90" onClick={() => setPreviewUrl(null)}>
           <div className="relative max-w-2xl max-h-[80vh] p-2">
@@ -246,3 +318,4 @@ export default function PostsPage() {
     </AdminLayout>
   );
 }
+
