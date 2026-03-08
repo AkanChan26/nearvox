@@ -29,6 +29,7 @@ import UserAnnouncementsPage from "./pages/user/UserAnnouncementsPage";
 import UserMessagesPage from "./pages/user/UserMessagesPage";
 import UserNotificationsPage from "./pages/user/UserNotificationsPage";
 import NotFound from "./pages/NotFound";
+import InstallPage from "./pages/InstallPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/join" element={<JoinPage />} />
+            <Route path="/install" element={<InstallPage />} />
 
             {/* User routes */}
             <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
