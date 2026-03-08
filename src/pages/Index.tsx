@@ -212,10 +212,10 @@ const Index = () => {
 
           {/* ── CATEGORY CARDS ── */}
           <div>
-            <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-2 sm:mb-3">
               &gt; NAVIGATE — SELECT MODULE
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 sm:gap-1.5">
               {TOPIC_CATEGORIES.filter((cat) => cat.value !== "random").map((cat) => {
                 const Icon = cat.icon;
                 const count = categoryBreakdown?.[cat.value] || 0;
