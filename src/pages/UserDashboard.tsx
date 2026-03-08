@@ -175,7 +175,7 @@ export default function UserDashboard() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Terminal className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
-              <h1 className="text-2xl sm:text-4xl text-foreground glow-text tracking-[0.35em] font-bold">NEARVOX</h1>
+              <h1 className="text-lg sm:text-2xl text-foreground glow-text tracking-[0.35em] font-bold">NEARVOX</h1>
             </div>
             <p className="text-[9px] sm:text-[11px] text-muted-foreground tracking-[0.6em] ml-8 sm:ml-10">ANONYMOUS NETWORK</p>
             {/* Status line */}
