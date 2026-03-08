@@ -120,31 +120,31 @@ export default function UserDashboard() {
     <div className="min-h-screen bg-background relative terminal-grid terminal-flicker">
       <div className="fixed inset-0 scanline z-[1] pointer-events-none" />
 
-      <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Terminal Header */}
-        <div className="flex items-start justify-between mb-6">
+        <div className="flex items-start justify-between mb-4 sm:mb-6">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Terminal className="h-5 w-5 text-foreground" />
-              <p className="text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
+              <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+              <p className="text-xl sm:text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
             </div>
-            <p className="text-[10px] text-muted-foreground tracking-[0.5em] ml-7">ANONYMOUS NETWORK</p>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-6 sm:ml-7">ANONYMOUS NETWORK</p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <div className="text-right">
               <div className="flex items-center gap-1.5 justify-end">
                 <User className="h-3 w-3 text-foreground" />
-                <p className="text-sm text-foreground glow-text font-bold tracking-wider">
+                <p className="text-xs sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[100px] sm:max-w-none">
                   {profile?.username || "..."}
                 </p>
               </div>
-              <p className="text-[10px] text-muted-foreground tracking-wider">
-                {profile?.location || "SET REGION IN SETTINGS"}
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wider truncate max-w-[120px] sm:max-w-none">
+                {profile?.location || "SET REGION"}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive"
+              className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center"
             >
               <LogOut className="h-3.5 w-3.5" />
             </button>
