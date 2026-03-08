@@ -162,22 +162,18 @@ export default function UserBoardDetailPage() {
     onError: () => toast.error("Failed to submit report"),
   });
 
-  // Comments
-  const loadComments = (postId: string) => useQuery({
-    queryKey: ["board-post-comments", postId],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("board_post_comments")
-        .select("*")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: true });
-      const userIds = [...new Set((data || []).map((c: any) => c.user_id))];
-      const { data: profiles } = await supabase.from("profiles").select("user_id, anonymous_name, username, avatar").in("user_id", userIds.length ? userIds : ["none"]);
-      const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
-      return (data || []).map((c: any) => ({ ...c, profile: profileMap[c.user_id] }));
-    },
-    enabled: showComments[postId],
-  });
+  // Comments query factory - passed to PostCard
+  const commentsQueryFn = async (postId: string) => {
+    const { data } = await supabase
+      .from("board_post_comments")
+      .select("*")
+      .eq("post_id", postId)
+      .order("created_at", { ascending: true });
+    const userIds = [...new Set((data || []).map((c: any) => c.user_id))];
+    const { data: profiles } = await supabase.from("profiles").select("user_id, anonymous_name, username, avatar").in("user_id", userIds.length ? userIds : ["none"]);
+    const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
+    return (data || []).map((c: any) => ({ ...c, profile: profileMap[c.user_id] }));
+  };
 
   const addComment = useMutation({
     mutationFn: async (postId: string) => {
