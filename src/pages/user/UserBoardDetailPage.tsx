@@ -405,13 +405,13 @@ export default function UserBoardDetailPage() {
 
         {!isMember && (
           <div className="border border-border bg-card p-4 text-center">
-            <p className="text-sm text-muted-foreground">Join this board to post</p>
+            <p className="text-[10px] text-muted-foreground">Join this board to post</p>
           </div>
         )}
 
         {/* Posts Feed */}
         {posts && posts.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {posts.map((post: any) => (
               <PostCard
                 key={post.id}
@@ -439,25 +439,25 @@ export default function UserBoardDetailPage() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">No posts yet. Be the first to post!</p>
+          <p className="text-[10px] text-muted-foreground text-center py-8 tracking-wider">NO POSTS YET — BE THE FIRST</p>
         )}
       </div>
 
       {/* Report Dialog */}
       {reportPostId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <div className="border border-border bg-card p-5 w-full max-w-md">
-            <h2 className="text-base text-foreground glow-text tracking-wider mb-3">REPORT POST</h2>
+          <div className="border border-border bg-card p-4 w-full max-w-md">
+            <h2 className="text-xs text-foreground glow-text tracking-[0.3em] mb-3">REPORT POST</h2>
             <textarea
               value={reportReason}
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Why are you reporting this?"
               rows={3}
-              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none mb-3"
+              className="w-full bg-background border border-border px-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none mb-3"
             />
             <div className="flex gap-2">
-              <button onClick={() => { setReportPostId(null); setReportReason(""); }} className="flex-1 text-xs text-muted-foreground border border-border py-2 tracking-wider">CANCEL</button>
-              <button onClick={() => submitReport.mutate()} disabled={!reportReason.trim()} className="flex-1 text-xs text-background bg-destructive py-2 tracking-wider disabled:opacity-50">REPORT</button>
+              <button onClick={() => { setReportPostId(null); setReportReason(""); }} className="flex-1 text-[10px] text-muted-foreground border border-border py-1.5 tracking-wider">CANCEL</button>
+              <button onClick={() => submitReport.mutate()} disabled={!reportReason.trim()} className="flex-1 text-[10px] text-background bg-destructive py-1.5 tracking-wider disabled:opacity-50">REPORT</button>
             </div>
           </div>
         </div>
