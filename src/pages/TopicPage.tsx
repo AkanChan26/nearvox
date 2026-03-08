@@ -149,7 +149,9 @@ export default function TopicPage() {
           <h1 className={`text-lg mb-2 ${topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>
             {topic.title}
           </h1>
-          <p className="text-sm text-foreground/80 leading-relaxed mb-3 whitespace-pre-wrap">{topic.content}</p>
+          <div className="text-sm text-foreground/80 leading-relaxed mb-3 whitespace-pre-wrap">
+            <RichContent content={topic.content} />
+          </div>
           <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
             <span className={topicIsAdmin ? "admin-text glow-admin" : ""}>
               {getName(topic.user_id)}
