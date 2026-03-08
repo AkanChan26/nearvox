@@ -175,7 +175,7 @@ export default function UserPostsPage() {
   const { data: myReports } = useQuery({
     queryKey: ["my-reports-posts", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("reports").select("id, reported_post_id, reported_user_id, report_type").eq("reporter_id", user!.id).eq("status", "pending");
+      const { data } = await supabase.from("reports").select("id, reported_post_id, reported_user_id, report_type, reason").eq("reporter_id", user!.id).eq("status", "pending");
       return data || [];
     },
     enabled: !!user,
@@ -297,12 +297,15 @@ export default function UserPostsPage() {
     if (!user || !reportReason.trim()) return;
     const item = unified.find((u) => u.id === itemId);
     const dbReportType = itemType === "post" ? "post" : "message";
+    const reasonWithRef = itemType === "topic"
+      ? `${reportReason.trim()} [topic:${itemId}]`
+      : reportReason.trim();
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_post_id: itemType === "post" ? itemId : null,
       reported_user_id: item?.user_id || null,
       report_type: dbReportType,
-      reason: reportReason.trim(),
+      reason: reasonWithRef,
     });
     if (error) { toast.error("Failed to report"); console.error(error); }
     else {
@@ -650,7 +653,7 @@ export default function UserPostsPage() {
                     {!isOwner && (() => {
                       const existingReport = myReports?.find((r) => {
                         if (item.type === "post") return r.reported_post_id === item.id;
-                        return r.report_type === "message" && r.reported_user_id === item.user_id;
+                        return r.report_type === "message" && r.reason?.includes(`[topic:${item.id}]`);
                       });
                       return existingReport ? (
                         <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">

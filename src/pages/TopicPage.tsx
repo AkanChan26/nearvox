@@ -243,9 +243,12 @@ export default function TopicPage() {
   const handleReport = async () => {
     if (!reportReason.trim() || !user || !reportingId) return;
     const dbReportType = reportType === "topic" ? "message" : "comment";
+    const reasonWithRef = reportType === "topic"
+      ? `${reportReason.trim()} [topic:${reportingId}]`
+      : `${reportReason.trim()} [reply:${reportingId}]`;
     const payload: any = {
       reporter_id: user.id,
-      reason: reportReason.trim(),
+      reason: reasonWithRef,
       report_type: dbReportType,
       severity: "medium" as const,
     };
@@ -269,10 +272,11 @@ export default function TopicPage() {
     invalidateAll();
   };
 
-  // Check if user already reported something
-  const getMyReport = (targetUserId: string, type: string) => {
+  // Check if user already reported something - match by specific content ID embedded in reason
+  const getMyReport = (targetId: string, type: string) => {
     const dbType = type === "topic" ? "message" : "comment";
-    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === dbType);
+    const refTag = type === "topic" ? `[topic:${targetId}]` : `[reply:${targetId}]`;
+    return myReports?.find((r) => r.report_type === dbType && r.reason?.includes(refTag));
   };
 
   if (!topic) {
@@ -332,7 +336,7 @@ export default function TopicPage() {
               {topic.likes_count || 0}
             </button>
             {(() => {
-              const existing = topic ? getMyReport(topic.user_id, "topic") : null;
+              const existing = topic ? getMyReport(id!, "topic") : null;
               return existing ? (
                 <button onClick={() => handleUndoReport(existing.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
                   <Flag className="h-3.5 w-3.5 fill-warning" /> UNDO REPORT
@@ -425,7 +429,7 @@ export default function TopicPage() {
                         {likeCount}
                       </button>
                       {(() => {
-                        const existingReport = getMyReport(reply.user_id, "reply");
+                        const existingReport = getMyReport(reply.id, "reply");
                         return existingReport ? (
                           <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
                             <Flag className="h-3 w-3 fill-warning" /> UNDO REPORT
