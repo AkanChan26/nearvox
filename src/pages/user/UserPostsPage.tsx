@@ -479,6 +479,9 @@ export default function UserPostsPage() {
               const isOwner = item.user_id === user?.id;
               const isLiked = item.type === "post" ? myLikes?.has(item.id) : false;
               const isCommentsOpen = expandedComments === item.id;
+              const commentsExpanded = !!expandedCommentThreads[item.id];
+              const visibleComments = commentsExpanded ? (comments || []) : (comments || []).slice(0, 3);
+              const hiddenCommentsCount = Math.max((comments?.length || 0) - 3, 0);
               const catInfo = getCategoryLabel(item.category);
 
               return (
