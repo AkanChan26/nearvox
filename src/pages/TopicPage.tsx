@@ -131,6 +131,7 @@ export default function TopicPage() {
   const isAdmin = (userId: string) => {
     return profiles?.find((p) => p.user_id === userId)?.is_admin || false;
   };
+  const getAvatar = (userId: string) => (profiles?.find((p) => p.user_id === userId) as any)?.avatar || "user-1";
 
   // Realtime replies
   useEffect(() => {
