@@ -9,6 +9,7 @@ import {
   Megaphone, Mail, Settings, Ticket, FileText, Bell,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
+import { NetworkNodeMap } from "@/components/NetworkNodeMap";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 
 export default function UserDashboard() {
