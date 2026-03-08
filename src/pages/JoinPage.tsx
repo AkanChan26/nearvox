@@ -28,7 +28,7 @@ export default function JoinPage() {
     }
     const timeout = setTimeout(async () => {
       setValidating(true);
-      const { data } = await supabase.rpc("validate_invite_code", { code });
+      const { data } = await supabase.rpc("validate_invite_code", { _code: code });
       setCodeValid(!!data);
       setValidating(false);
     }, 500);
@@ -72,7 +72,7 @@ export default function JoinPage() {
     // Consume the invite code
     if (signUpData.user) {
       await supabase.rpc("consume_invite_code", {
-        code,
+        _code: code,
         new_user_id: signUpData.user.id,
       });
     }
