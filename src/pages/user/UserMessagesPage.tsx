@@ -652,10 +652,18 @@ export default function UserMessagesPage() {
                       className={`w-full text-left p-2.5 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
                       <div className="flex items-center gap-2">
                         {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
-                        {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />)}
+                        {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : 
+                          <div className="relative shrink-0">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {dmOtherId && <OnlineIndicator isOnline={isOnline(dmOtherId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
+                          </div>
+                        )}
                         <span className={`text-[11px] font-mono truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
+                        {!isGroup && dmOtherId && isOnline(dmOtherId) && (
+                          <span className="text-[9px] text-foreground/60 shrink-0">online</span>
+                        )}
                         {isGroup && <span className="text-[9px] text-muted-foreground ml-auto shrink-0">{getConvoMemberCount(convo.id)}</span>}
                       </div>
                       {lastMsg && (
