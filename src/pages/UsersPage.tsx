@@ -29,33 +29,6 @@ export default function UsersPage() {
     },
   });
 
-  // Fetch invite ticket info for all users
-  const { data: allTickets } = useQuery({
-    queryKey: ["admin-all-tickets"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("invite_tickets")
-        .select("*")
-        .order("created_at", { ascending: false });
-      return data || [];
-    },
-  });
-
-  // Fetch inviter profiles for users who were invited
-  const inviterIds = [...new Set(users?.map((u) => u.invited_by).filter(Boolean) || [])];
-  const { data: inviters } = useQuery({
-    queryKey: ["inviter-profiles", inviterIds],
-    queryFn: async () => {
-      if (inviterIds.length === 0) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, username, anonymous_name, is_admin")
-        .in("user_id", inviterIds as string[]);
-      return data || [];
-    },
-    enabled: inviterIds.length > 0,
-  });
-
   // Admin's tickets
   const { data: tickets, refetch: refetchTickets } = useQuery({
     queryKey: ["admin-tickets", user?.id],
@@ -83,18 +56,6 @@ export default function UsersPage() {
       return data || [];
     },
   });
-
-  const getInviterName = (invitedBy: string | null) => {
-    if (!invitedBy) return "DIRECT / UNKNOWN";
-    const inviter = inviters?.find((i) => i.user_id === invitedBy);
-    if (!inviter) return invitedBy.slice(0, 8);
-    return inviter.is_admin ? `${inviter.username} (ADMIN)` : inviter.anonymous_name || inviter.username;
-  };
-
-  const getTicketUsedBy = (userId: string) => {
-    const ticket = allTickets?.find((t) => t.used_by === userId);
-    return ticket ? ticket.invite_code : null;
-  };
 
   const handleStatusChange = async (userId: string, newStatus: "active" | "suspended" | "banned") => {
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("user_id", userId);
