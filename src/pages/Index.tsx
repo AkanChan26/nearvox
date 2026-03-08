@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   LogOut, ChevronDown, ChevronUp, Shield, Terminal,
   Ticket, Copy, Check, X, Eye, Image, FileText,
-  Paperclip,
+  Paperclip, Users, AlertTriangle, Megaphone, BarChart3,
+  Settings, TrendingUp, Hash, MessageSquare,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
@@ -376,14 +377,13 @@ const Index = () => {
   const now = new Date();
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
-  const adminModules = [
-    { label: "USERS", hint: `${profileCount ?? 0} total`, path: "/users" },
-    { label: "POSTS", hint: `${postCount ?? 0} total`, path: "/posts" },
-    { label: "MARKETPLACE", hint: `${listingCount ?? 0} listings`, path: "/marketplace" },
-    { label: "REPORTS", hint: `${pendingReports ?? 0} pending`, path: "/reports" },
-    { label: "ANNOUNCEMENTS", hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
-    { label: "ANALYTICS", hint: "metrics", path: "/analytics" },
-    { label: "SETTINGS", hint: "admin config", path: "/settings" },
+  const adminQuickCards = [
+    { label: "USERS", icon: Users, hint: `${profileCount ?? 0} registered`, path: "/users" },
+    { label: "REPORTS", icon: AlertTriangle, hint: `${pendingReports ?? 0} pending`, path: "/reports" },
+    { label: "ANNOUNCEMENTS", icon: Megaphone, hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
+    { label: "ANALYTICS", icon: BarChart3, hint: "metrics", path: "/analytics" },
+    { label: "SETTINGS", icon: Settings, hint: "admin config", path: "/settings" },
+    { label: "INVITES", icon: Ticket, hint: `${adminTickets?.length ?? 0} available`, path: "#invites" },
   ];
 
   // Section header component
@@ -397,22 +397,21 @@ const Index = () => {
     </button>
   );
 
+  const [showInvites, setShowInvites] = useState(false);
+
   return (
     <AdminLayout showBack={false}>
       <div className="min-h-screen terminal-grid terminal-flicker">
-        <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
+        <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
 
           {/* ── HEADER ── */}
-          <div className="flex items-start justify-between">
+          <div className="flex items-start justify-between mb-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <Terminal className="h-5 w-5 text-foreground" />
                 <p className="text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
               </div>
-              <p className="text-[10px] text-muted-foreground tracking-[0.5em] ml-7">ADMIN TERMINAL v1.0</p>
-              <p className="text-[10px] text-muted-foreground tracking-wider ml-7 mt-1">
-                SECURE COMMAND CONSOLE — {now.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" }).toUpperCase()}
-              </p>
+              <p className="text-[10px] text-muted-foreground tracking-[0.5em] ml-7">ADMIN TERMINAL</p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-right">
@@ -429,20 +428,89 @@ const Index = () => {
             </div>
           </div>
 
-          {/* ── MODULE CARDS ── */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {adminModules.map((module) => (
-              <button
-                key={module.label}
-                onClick={() => navigate(module.path)}
-                className="text-left border border-border bg-card p-3 hover:border-foreground/40 hover:bg-foreground/5 transition-none"
-              >
-                <p className="text-[9px] text-muted-foreground tracking-[0.3em]">[ OPEN MODULE ]</p>
-                <p className="text-xs text-foreground tracking-wider mt-1">{module.label}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">{module.hint}</p>
-              </button>
-            ))}
+          {/* ── CATEGORY CARDS (same as user panel) ── */}
+          <div>
+            <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
+              &gt; NAVIGATE — SELECT MODULE
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5">
+              {TOPIC_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                const count = categoryBreakdown?.[cat.value] || 0;
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+                    className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
+                      <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                    </div>
+                    <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                      {cat.label.toUpperCase()}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">{count} topics</p>
+                  </button>
+                );
+              })}
+            </div>
           </div>
+
+          {/* ── ADMIN QUICK ACCESS CARDS ── */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+            {adminQuickCards.map((card) => {
+              const Icon = card.icon;
+              return (
+                <button
+                  key={card.label}
+                  onClick={() => {
+                    if (card.path === "#invites") {
+                      setShowInvites(!showInvites);
+                    } else {
+                      navigate(card.path);
+                    }
+                  }}
+                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                  </div>
+                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">{card.label}</p>
+                  <p className="text-[9px] text-muted-foreground mt-0.5">{card.hint}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* ── INVITE TICKETS (inline, toggled) ── */}
+          {showInvites && (
+            <div className="border border-border bg-card p-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] text-muted-foreground tracking-[0.3em]">INVITE TICKETS — {adminTickets?.length ?? 0} AVAILABLE</span>
+                <button onClick={generateTicket} disabled={generating} className="flex items-center gap-1 text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50">
+                  <Ticket className="h-3 w-3" />{generating ? "..." : "[+ NEW]"}
+                </button>
+              </div>
+              {adminTickets && adminTickets.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+                  {adminTickets.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between border border-border px-2 py-1">
+                      <span className="text-[10px] text-foreground font-mono">{t.invite_code}</span>
+                      <div className="flex items-center gap-1">
+                        <button onClick={() => copyTicketLink(t.invite_code)} className="text-muted-foreground hover:text-foreground">
+                          {copiedCode === t.invite_code ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                        </button>
+                        <button onClick={async () => { await supabase.from("invite_tickets").delete().eq("id", t.id); refetchTickets(); }} className="text-muted-foreground hover:text-destructive">
+                          <X className="h-2.5 w-2.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── SYSTEM STATUS ── */}
           <div className="border border-border bg-card p-3">
@@ -460,291 +528,38 @@ const Index = () => {
             </div>
           </div>
 
-          {/* ── CATEGORY BREAKDOWN ── */}
+          {/* ── TRENDING ── */}
           <div className="border border-border bg-card p-3">
-            <div className="text-[10px] text-muted-foreground tracking-[0.3em] mb-2">TOPIC CATEGORIES</div>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-1">
-              {TOPIC_CATEGORIES.map((cat) => {
-                const count = categoryBreakdown?.[cat.value] || 0;
-                const CatIcon = cat.icon;
-                return (
-                  <div key={cat.value} className="flex items-center gap-1.5 text-[10px] py-0.5">
-                    <CatIcon className="h-2.5 w-2.5 text-muted-foreground" />
-                    <span className="text-muted-foreground truncate">{cat.label.split(" & ")[0]}</span>
-                    <span className="text-foreground ml-auto">{count}</span>
-                  </div>
-                );
-              })}
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-3 w-3 text-foreground" />
+              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">TRENDING IN GLOBAL</span>
             </div>
-          </div>
-
-          {/* ── INVITE TICKETS ── */}
-          <div className="border border-border bg-card p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">INVITE TICKETS — {adminTickets?.length ?? 0} AVAILABLE</span>
-              <button onClick={generateTicket} disabled={generating} className="flex items-center gap-1 text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50">
-                <Ticket className="h-3 w-3" />{generating ? "..." : "[+ NEW]"}
-              </button>
-            </div>
-            {adminTickets && adminTickets.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
-                {adminTickets.map((t) => (
-                  <div key={t.id} className="flex items-center justify-between border border-border px-2 py-1">
-                    <span className="text-[10px] text-foreground font-mono">{t.invite_code}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => copyTicketLink(t.invite_code)} className="text-muted-foreground hover:text-foreground">
-                        {copiedCode === t.invite_code ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
-                      </button>
-                      <button onClick={async () => { await supabase.from("invite_tickets").delete().eq("id", t.id); refetchTickets(); }} className="text-muted-foreground hover:text-destructive">
-                        <X className="h-2.5 w-2.5" />
-                      </button>
-                    </div>
-                  </div>
+            {recentTopics && recentTopics.length > 0 ? (
+              <div className="space-y-0.5">
+                {recentTopics.map((topic: any) => (
+                  <button
+                    key={topic.id}
+                    onClick={() => navigate(`/topic/${topic.id}`)}
+                    className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
+                  >
+                    <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
+                    <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
+                    <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                      <MessageSquare className="h-2.5 w-2.5" />
+                      {topic.is_announcement ? "ANN" : "0"}
+                    </span>
+                  </button>
                 ))}
               </div>
-            )}
-          </div>
-
-          {/* ── USER REGISTRY ── */}
-          <div className="terminal-box">
-            <SectionHeader title="USER REGISTRY" count={users?.length ?? 0} sectionKey="users" />
-            {sections.users && (
-              <div className="mt-2">
-                <input placeholder="> SEARCH USER..." value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
-                  className="w-full md:w-56 bg-input border border-border text-foreground placeholder:text-muted-foreground text-[10px] px-2 py-1.5 focus:outline-none focus:border-foreground mb-2" />
-                {users && users.length > 0 ? (
-                  <div className="space-y-0.5">
-                    {users.map((u) => {
-                      const isExpanded = expandedUser === u.user_id;
-                      const ticketCode = getTicketUsedBy(u.user_id);
-                      return (
-                        <div key={u.id} className="border border-border">
-                          <div className="flex items-center text-[10px] py-1.5 px-2 hover:bg-muted/50 transition-none gap-2">
-                            <span className="text-muted-foreground w-14 shrink-0">{u.id.slice(0, 8)}</span>
-                            <span className={`flex-1 truncate ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
-                              {u.username}{u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
-                            </span>
-                            <span className="text-muted-foreground w-16 shrink-0 truncate">{u.location || "—"}</span>
-                            <span className={`w-14 shrink-0 ${u.status === "active" ? "text-foreground" : u.status === "suspended" ? "text-warning" : "text-destructive"}`}>{u.status?.toUpperCase()}</span>
-                            <div className="flex items-center gap-0.5 shrink-0">
-                              <button onClick={() => setExpandedUser(isExpanded ? null : u.user_id)} className="text-muted-foreground hover:text-foreground p-0.5">
-                                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                              </button>
-                              {!u.is_admin && (
-                                <>
-                                  <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-warning hover:underline">[SUS]</button>
-                                  <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-destructive hover:underline">[BAN]</button>
-                                  {u.status !== "active" && <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-foreground hover:underline">[ACT]</button>}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          {isExpanded && (
-                            <div className="border-t border-border bg-muted/20 px-3 py-2">
-                              <div className="grid grid-cols-2 gap-1.5 text-[10px]">
-                                <div><span className="text-muted-foreground">NAME: </span><span className="text-foreground">{u.name || "—"}</span></div>
-                                <div><span className="text-muted-foreground">ANON: </span><span className="text-foreground">{u.anonymous_name || "—"}</span></div>
-                                <div><span className="text-muted-foreground">REGION: </span><span className="text-foreground">{u.location || "—"}</span></div>
-                                <div><span className="text-muted-foreground">JOINED: </span><span className="text-foreground">{formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}</span></div>
-                                <div><span className="text-muted-foreground">INVITED BY: </span><span className="text-foreground">{getInviterName(u.invited_by)}</span></div>
-                                <div><span className="text-muted-foreground">TICKET: </span><span className="text-foreground font-mono">{ticketCode || "—"}</span></div>
-                                <div><span className="text-muted-foreground">INTERESTS: </span><span className="text-foreground">{u.interests?.join(", ") || "—"}</span></div>
-                                <div><span className="text-muted-foreground">ID: </span><span className="text-foreground font-mono text-[9px]">{u.user_id}</span></div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : <p className="text-[10px] text-muted-foreground">NO USERS FOUND</p>}
-              </div>
-            )}
-          </div>
-
-          {/* ── POSTS ── */}
-          <div className="terminal-box">
-            <SectionHeader title="POST MONITOR" count={posts?.length ?? 0} sectionKey="posts" />
-            {sections.posts && (
-              <div className="mt-2">
-                {posts && posts.length > 0 ? posts.map((post) => {
-                  const { name, isAdmin: isPostAdmin } = getCreatorInfo(post.user_id);
-                  const attachments = (post.attachments as string[]) || [];
-                  return (
-                    <div key={post.id} className={`py-2 border-b last:border-0 ${isPostAdmin ? "admin-box my-1 px-2 py-3 border-b-0" : "border-border"}`}>
-                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1">
-                        <span>{post.id.slice(0, 8)}</span>
-                        <span className={isPostAdmin ? "admin-text glow-admin font-bold" : "text-foreground"}>{name}</span>
-                        {isPostAdmin && <span className="admin-badge">ADMIN</span>}
-                        {post.is_pinned && <span className="text-foreground">[📌]</span>}
-                        <span className="ml-auto">{timeSince(post.created_at)}</span>
-                      </div>
-                      <p className={`text-[11px] mb-1 pl-2 border-l ${isPostAdmin ? "border-admin-border admin-text/80" : "border-border text-secondary-foreground"}`}>
-                        {post.content.length > 120 ? post.content.slice(0, 120) + "..." : post.content}
-                      </p>
-                      {attachments.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mb-1 ml-2">
-                          {attachments.map((path, i) => {
-                            const url = getPublicUrl(path);
-                            return isImage(path) ? (
-                              <button key={i} onClick={() => setPreviewUrl(url)} className="border border-border w-10 h-10 overflow-hidden">
-                                <img src={url} alt="" className="w-full h-full object-cover" />
-                              </button>
-                            ) : (
-                              <span key={i} className="flex items-center gap-1 text-[9px] text-muted-foreground border border-border px-1 py-0.5">
-                                <FileText className="h-2 w-2" />{path.split("/").pop()?.slice(0, 15)}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-3 text-[10px]">
-                        <span className="text-muted-foreground">♥{post.likes_count}</span>
-                        {attachments.length > 0 && <span className="text-muted-foreground">📎{attachments.length}</span>}
-                        <span className="ml-auto space-x-2">
-                          <button onClick={() => handlePinPost(post.id, post.is_pinned)} className="text-foreground hover:underline">[{post.is_pinned ? "UNPIN" : "PIN"}]</button>
-                          <button onClick={() => handleDeletePost(post.id, attachments)} className="text-destructive hover:underline">[DEL]</button>
-                        </span>
-                      </div>
-                    </div>
-                  );
-                }) : <p className="text-[10px] text-muted-foreground">NO POSTS</p>}
-              </div>
-            )}
-          </div>
-
-          {/* ── MARKETPLACE ── */}
-          <div className="terminal-box">
-            <SectionHeader title="MARKETPLACE" count={listings?.length ?? 0} sectionKey="marketplace" />
-            {sections.marketplace && (
-              <div className="mt-2">
-                {listings && listings.length > 0 ? listings.map((l) => (
-                  <div key={l.id} className={`flex items-center text-[10px] py-1.5 border-b border-border last:border-0 gap-2 ${l.status === "flagged" ? "bg-warning/5" : ""}`}>
-                    <span className="text-muted-foreground w-14">{l.id.slice(0, 8)}</span>
-                    <span className="flex-1 text-foreground truncate">{l.title}</span>
-                    <span className="text-muted-foreground w-20 truncate">{getSellerName(l.user_id)}</span>
-                    <span className="text-foreground w-16">{l.price}</span>
-                    <span className={`w-16 ${l.status === "active" ? "text-foreground" : l.status === "pending" ? "text-warning" : "text-destructive"}`}>{l.status?.toUpperCase()}</span>
-                    <span className="space-x-1 shrink-0">
-                      <button onClick={() => handleListingStatus(l.id, "active")} className="text-foreground hover:underline">[OK]</button>
-                      <button onClick={() => handleListingStatus(l.id, "removed")} className="text-destructive hover:underline">[DEL]</button>
-                    </span>
-                  </div>
-                )) : <p className="text-[10px] text-muted-foreground">NO LISTINGS</p>}
-              </div>
-            )}
-          </div>
-
-          {/* ── REPORTS ── */}
-          <div className="terminal-box">
-            <SectionHeader title={`REPORTS — ${(pendingReports ?? 0)} PENDING`} sectionKey="reports" />
-            {sections.reports && (
-              <div className="mt-2">
-                {reports && reports.length > 0 ? reports.map((r) => (
-                  <div key={r.id} className={`py-2 border-b border-border last:border-0 ${r.severity === "critical" ? "bg-destructive/5" : ""}`}>
-                    <div className="flex items-center gap-2 text-[10px] mb-1">
-                      <span className="text-muted-foreground">{r.id.slice(0, 8)}</span>
-                      <span className="text-foreground">[{r.report_type?.toUpperCase()}]</span>
-                      <span className={r.severity === "critical" ? "text-destructive" : r.severity === "high" ? "text-warning" : "text-muted-foreground"}>
-                        SEV:{r.severity?.toUpperCase()}
-                      </span>
-                      <span className={`ml-auto ${r.status === "pending" ? "text-warning" : r.status === "reviewing" ? "text-foreground" : "text-muted-foreground"}`}>{r.status?.toUpperCase()}</span>
-                    </div>
-                    <p className="text-[11px] text-secondary-foreground pl-2 border-l border-border mb-1">{r.reason}</p>
-                    {r.status !== "resolved" && r.status !== "dismissed" && (
-                      <div className="flex gap-2 text-[10px]">
-                        <button onClick={() => handleReportStatus(r.id, "reviewing")} className="text-foreground hover:underline">[REVIEW]</button>
-                        <button onClick={() => handleReportStatus(r.id, "dismissed")} className="text-foreground hover:underline">[DISMISS]</button>
-                        <button onClick={() => handleReportStatus(r.id, "resolved")} className="text-foreground hover:underline">[RESOLVE]</button>
-                      </div>
-                    )}
-                  </div>
-                )) : <p className="text-[10px] text-muted-foreground">NO REPORTS</p>}
-              </div>
-            )}
-          </div>
-
-          {/* ── ANNOUNCEMENTS ── */}
-          <div className="terminal-box">
-            <div className="flex items-center justify-between">
-              <SectionHeader title="BROADCASTS" count={announcements?.length ?? 0} sectionKey="announcements" />
-            </div>
-            {sections.announcements && (
-              <div className="mt-2">
-                <button onClick={() => setShowAnnForm(!showAnnForm)} className="text-[10px] admin-text border border-admin-border px-2 py-1 hover:bg-[hsl(var(--admin))] hover:text-background transition-none mb-2">
-                  [+ NEW BROADCAST]
-                </button>
-                {showAnnForm && (
-                  <div className="admin-box p-3 mb-2">
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-[10px] admin-text mb-0.5">&gt; TITLE:</p>
-                        <Input value={annTitle} onChange={(e) => setAnnTitle(e.target.value)} className="bg-input border-admin-border text-foreground text-[11px] h-7" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] admin-text mb-0.5">&gt; MESSAGE:</p>
-                        <Textarea value={annContent} onChange={(e) => setAnnContent(e.target.value)} className="bg-input border-admin-border text-foreground text-[11px] min-h-16 resize-none" />
-                      </div>
-                      <div className="flex items-end justify-between gap-2">
-                        <div>
-                          <p className="text-[10px] admin-text mb-0.5">&gt; TARGET:</p>
-                          <Input value={annTarget} onChange={(e) => setAnnTarget(e.target.value)} className="bg-input border-admin-border text-foreground text-[11px] h-7 w-32" />
-                        </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => setShowAnnForm(false)} className="text-[10px] text-muted-foreground hover:text-foreground">[CANCEL]</button>
-                          <button onClick={handleAnnSubmit} className="text-[10px] admin-text border border-admin-border px-2 py-0.5 hover:bg-[hsl(var(--admin))] hover:text-background">[TRANSMIT]</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {announcements && announcements.length > 0 ? announcements.map((ann: any) => (
-                  <div key={ann.id} className={`admin-box p-3 my-1 ${!ann.is_active ? "opacity-50" : ""}`}>
-                    <div className="flex items-center gap-2 text-[10px] mb-1">
-                      <span className="text-muted-foreground">{ann.id.slice(0, 8)}</span>
-                      <span className={ann.is_active ? "admin-text" : "text-muted-foreground"}>{ann.is_active ? "ACTIVE" : "REVOKED"}</span>
-                      <span className="text-muted-foreground">TARGET:{ann.target_location}</span>
-                      <span className="ml-auto text-muted-foreground">{new Date(ann.created_at).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-[11px] admin-text font-bold">{ann.title}</p>
-                    <p className="text-[11px] text-secondary-foreground pl-2 border-l border-admin-border mt-0.5">{ann.content}</p>
-                    {ann.is_active && (
-                      <div className="text-right mt-1">
-                        <button onClick={() => handleRevokeAnn(ann.id)} className="text-[10px] text-destructive hover:underline">[REVOKE]</button>
-                      </div>
-                    )}
-                  </div>
-                )) : <p className="text-[10px] text-muted-foreground">NO BROADCASTS</p>}
-              </div>
-            )}
-          </div>
-
-          {/* ── SETTINGS ── */}
-          <div className="terminal-box">
-            <SectionHeader title="CONFIGURATION" sectionKey="settings" />
-            {sections.settings && (
-              <div className="mt-2 space-y-2">
-                <div className="flex items-center gap-2 text-[10px]">
-                  <span className="text-muted-foreground w-28">ADMIN HANDLE:</span>
-                  <input value={adminHandle} onChange={(e) => setAdminHandle(e.target.value)}
-                    className="flex-1 bg-input border border-border text-foreground text-[11px] px-2 py-1 focus:outline-none focus:border-foreground" />
-                </div>
-                <div className="flex items-center gap-2 text-[10px]">
-                  <span className="text-muted-foreground w-28">ADMIN EMAIL:</span>
-                  <span className="text-foreground text-[11px]">{user?.email || "—"}</span>
-                </div>
-                <button onClick={handleSaveSettings} disabled={savingSettings}
-                  className="text-[10px] text-foreground border border-foreground px-3 py-1 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50">
-                  {savingSettings ? "[SAVING...]" : "[SAVE]"}
-                </button>
-              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">NO TOPICS YET</p>
             )}
           </div>
 
           {/* ── SYSTEM LOG ── */}
           <div className="border border-border bg-card p-3">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">SYSTEM LOG</span>
+              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
               <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
             </div>
             {activityLog.length > 0 ? (
