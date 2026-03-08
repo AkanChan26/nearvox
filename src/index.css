@@ -72,8 +72,8 @@
   }
 
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: hsl(0 0% 0%); }
-  ::-webkit-scrollbar-thumb { background: hsl(120 100% 20%); }
+  ::-webkit-scrollbar-track { background: hsl(0 0% 2%); }
+  ::-webkit-scrollbar-thumb { background: hsl(120 40% 15%); }
 }
 
 @layer utilities {
