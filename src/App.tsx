@@ -19,6 +19,11 @@ import LoginPage from "./pages/LoginPage";
 import JoinPage from "./pages/JoinPage";
 import UserDashboard from "./pages/UserDashboard";
 import TopicPage from "./pages/TopicPage";
+import UserTopicsPage from "./pages/user/UserTopicsPage";
+import UserPostsPage from "./pages/user/UserPostsPage";
+import UserMarketplacePage from "./pages/user/UserMarketplacePage";
+import UserSettingsPage from "./pages/user/UserSettingsPage";
+import UserInvitesPage from "./pages/user/UserInvitesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +42,11 @@ const App = () => (
             {/* User routes */}
             <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
             <Route path="/topic/:id" element={<ProtectedRoute><TopicPage /></ProtectedRoute>} />
+            <Route path="/user/topics" element={<ProtectedRoute><UserTopicsPage /></ProtectedRoute>} />
+            <Route path="/user/posts" element={<ProtectedRoute><UserPostsPage /></ProtectedRoute>} />
+            <Route path="/user/marketplace" element={<ProtectedRoute><UserMarketplacePage /></ProtectedRoute>} />
+            <Route path="/user/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
+            <Route path="/user/invites" element={<ProtectedRoute><UserInvitesPage /></ProtectedRoute>} />
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />

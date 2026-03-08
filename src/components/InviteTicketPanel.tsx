@@ -8,9 +8,10 @@ import { formatDistanceToNow } from "date-fns";
 
 interface Props {
   onClose: () => void;
+  embedded?: boolean;
 }
 
-export function InviteTicketPanel({ onClose }: Props) {
+export function InviteTicketPanel({ onClose, embedded = false }: Props) {
   const { user, isAdmin } = useAuth();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
