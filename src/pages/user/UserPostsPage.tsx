@@ -131,7 +131,7 @@ export default function UserPostsPage() {
       location: t.location,
       is_pinned: t.is_pinned,
       is_announcement: t.is_announcement,
-      likes_count: 0,
+      likes_count: (t as any).likes_count ?? 0,
       comments_count: 0,
       replies_count: t.replies_count,
       views_count: t.views_count,
