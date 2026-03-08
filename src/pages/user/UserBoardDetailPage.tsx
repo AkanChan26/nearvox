@@ -486,6 +486,7 @@ function PostCard({
   });
   const [showMenu, setShowMenu] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [editTitle, setEditTitle] = useState(post.title || "");
   const [editContent, setEditContent] = useState(post.content);
   const attachments: string[] = post.attachments || [];
@@ -496,13 +497,16 @@ function PostCard({
     setEditing(false);
   };
 
+  const commentsToRender = showAllComments ? (comments || []) : (comments || []).slice(0, 3);
+  const hiddenCommentsCount = Math.max((comments?.length || 0) - 3, 0);
+
   return (
     <div className="border border-border p-3">
       {/* Author */}
       <div className="flex items-center gap-2 mb-2">
         <ProfileAvatar avatarId={post.profile?.avatar} size={22} />
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-foreground font-bold tracking-wider truncate">
+          <p className="text-[10px] text-foreground font-bold tracking-wider truncate">
             {post.profile?.anonymous_name || post.profile?.username || "Unknown"}
           </p>
           <p className="text-[9px] text-muted-foreground">
@@ -564,9 +568,9 @@ function PostCard({
       ) : (
         <>
           {post.title && (
-            <h3 className="text-[11px] text-foreground font-bold tracking-wider mb-1 glow-text">{post.title.toUpperCase()}</h3>
+            <h3 className="text-[10px] text-foreground font-bold tracking-wider mb-1 glow-text">{post.title.toUpperCase()}</h3>
           )}
-          <p className="text-[11px] text-foreground/90 whitespace-pre-wrap mb-2">{post.content}</p>
+          <p className="text-[10px] text-foreground/90 whitespace-pre-wrap mb-2">{post.content}</p>
         </>
       )}
 
