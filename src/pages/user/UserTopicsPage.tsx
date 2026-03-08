@@ -124,8 +124,8 @@ export default function UserTopicsPage() {
                   key={topic.id}
                   onClick={() => navigate(`${topicPathPrefix}/${topic.id}`)}
                   className={`text-left p-3 border transition-none group flex flex-col gap-1.5 ${
-                    isAnnouncement
-                      ? "admin-box border-[hsl(var(--admin-border))] col-span-1 md:col-span-2"
+                    isAnnouncement || isAdmin
+                      ? "admin-box border-[hsl(var(--admin-border))]" + (isAnnouncement ? " col-span-1 md:col-span-2" : "")
                       : "border-border hover:border-foreground/30 hover:bg-muted/30"
                   }`}
                 >
@@ -135,7 +135,7 @@ export default function UserTopicsPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
                     <CatIcon className="h-3 w-3 text-muted-foreground" />
-                    <span className={`text-sm ${isAnnouncement ? "admin-text font-bold" : "text-foreground"}`}>
+                    <span className={`text-sm ${isAnnouncement || isAdmin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
                       {topic.title}
                     </span>
                   </div>

@@ -460,7 +460,7 @@ export default function UserPostsPage() {
                 <div
                   key={`${item.type}-${item.id}`}
                   className={`p-3 border transition-none ${
-                    item.is_announcement
+                    item.is_announcement || isCreatorAdmin(item.user_id)
                       ? "admin-box border-[hsl(var(--admin-border))]"
                       : item.is_pinned
                       ? "border-foreground/20 bg-foreground/5"
@@ -496,7 +496,7 @@ export default function UserPostsPage() {
                   {item.title && (
                     <button
                       onClick={() => navigate(`${topicPrefix}/${item.id}`)}
-                      className="text-sm text-foreground font-bold mb-1 hover:underline text-left block"
+                      className={`text-sm font-bold mb-1 hover:underline text-left block ${isCreatorAdmin(item.user_id) ? "admin-text glow-admin" : "text-foreground"}`}
                     >
                       {item.title}
                     </button>
