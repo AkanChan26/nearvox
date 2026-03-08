@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
-import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical, Paperclip, Image, FileText, X, Eye, ThumbsDown } from "lucide-react";
+import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical, Paperclip, Image, FileText, X, Eye, ThumbsDown, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { ProfileAvatar } from "@/components/Avatars";
 import { formatDistanceToNow } from "date-fns";
@@ -191,6 +191,39 @@ export default function UserBoardDetailPage() {
     },
   });
 
+  const editPost = useMutation({
+    mutationFn: async ({ postId, title, content }: { postId: string; title: string; content: string }) => {
+      const { error } = await supabase.from("board_posts").update({ title: title.trim() || null, content: content.trim() }).eq("id", postId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Post updated");
+      queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
+    },
+    onError: () => toast.error("Failed to update post"),
+  });
+
+  const repost = useMutation({
+    mutationFn: async (postId: string) => {
+      const original = posts?.find((p: any) => p.id === postId);
+      if (!original) return;
+      const { error } = await supabase.from("board_posts").insert({
+        board_id: id!,
+        user_id: user!.id,
+        title: original.title ? `RE: ${original.title}` : null,
+        content: original.content,
+        attachments: original.attachments || [],
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Reposted!");
+      queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
+      queryClient.invalidateQueries({ queryKey: ["board", id] });
+    },
+    onError: () => toast.error("Failed to repost"),
+  });
+
   const submitReport = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("reports").insert({
@@ -261,9 +294,9 @@ export default function UserBoardDetailPage() {
     <UserLayout>
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-5">
-        <h1 className="text-lg sm:text-xl text-foreground glow-text tracking-wider font-bold">{board.name}</h1>
+        <h1 className="text-base sm:text-lg text-foreground glow-text tracking-wider font-bold">{board.name}</h1>
         {board.description && (
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{board.description}</p>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">{board.description}</p>
         )}
         <div className="flex items-center gap-4 mt-3">
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -380,8 +413,11 @@ export default function UserBoardDetailPage() {
                 isLiked={myLikes?.has(post.id) || false}
                 isOwner={post.user_id === user?.id}
                 isAdmin={profile?.is_admin || false}
+                isMember={isMember}
                 onLike={() => toggleLike.mutate(post.id)}
                 onDelete={() => deletePost.mutate(post.id)}
+                onEdit={(title: string, content: string) => editPost.mutate({ postId: post.id, title, content })}
+                onRepost={() => repost.mutate(post.id)}
                 onReport={() => setReportPostId(post.id)}
                 showComments={showComments[post.id] || false}
                 onToggleComments={() => setShowComments((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
@@ -437,7 +473,7 @@ export default function UserBoardDetailPage() {
 }
 
 function PostCard({
-  post, isLiked, isOwner, isAdmin, onLike, onDelete, onReport,
+  post, isLiked, isOwner, isAdmin, isMember, onLike, onDelete, onEdit, onRepost, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
   commentsQueryFn, onDeleteComment, currentUserId, getFileUrl, onPreview,
 }: any) {
@@ -447,7 +483,16 @@ function PostCard({
     enabled: showComments,
   });
   const [showMenu, setShowMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title || "");
+  const [editContent, setEditContent] = useState(post.content);
   const attachments: string[] = post.attachments || [];
+
+  const handleSaveEdit = () => {
+    if (!editContent.trim()) return;
+    onEdit(editTitle, editContent);
+    setEditing(false);
+  };
 
   return (
     <div className="border border-border bg-card p-4">
@@ -467,7 +512,19 @@ function PostCard({
             <MoreVertical className="h-4 w-4" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[120px]">
+            <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[130px]">
+              {isOwner && (
+                <button onClick={() => { setEditing(true); setEditTitle(post.title || ""); setEditContent(post.content); setShowMenu(false); }}
+                  className="w-full text-left text-xs text-foreground px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
+                  <Pencil className="h-3 w-3" /> Edit
+                </button>
+              )}
+              {isMember && (
+                <button onClick={() => { onRepost(); setShowMenu(false); }}
+                  className="w-full text-left text-xs text-foreground px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
+                  <Copy className="h-3 w-3" /> Repost
+                </button>
+              )}
               {(isOwner || isAdmin) && (
                 <button onClick={() => { onDelete(); setShowMenu(false); }} className="w-full text-left text-xs text-destructive px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
                   <Trash2 className="h-3 w-3" /> Delete
@@ -483,13 +540,35 @@ function PostCard({
         </div>
       </div>
 
-      {/* Title */}
-      {post.title && (
-        <h3 className="text-sm sm:text-base text-foreground font-bold tracking-wider mb-2 glow-text">{post.title}</h3>
+      {editing ? (
+        <div className="space-y-2 mb-3">
+          <input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Title (optional)"
+            className="w-full bg-background border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+          />
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+            className="w-full bg-background border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none"
+          />
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => setEditing(false)} className="text-[10px] text-muted-foreground border border-border px-3 py-1.5 tracking-wider">CANCEL</button>
+            <button onClick={handleSaveEdit} disabled={!editContent.trim()} className="text-[10px] text-background bg-foreground px-3 py-1.5 tracking-wider disabled:opacity-50">SAVE</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Title */}
+          {post.title && (
+            <h3 className="text-xs sm:text-sm text-foreground font-bold tracking-wider mb-2 glow-text">{post.title}</h3>
+          )}
+          {/* Content */}
+          <p className="text-xs text-foreground/90 whitespace-pre-wrap mb-3">{post.content}</p>
+        </>
       )}
-
-      {/* Content */}
-      <p className="text-sm text-foreground/90 whitespace-pre-wrap mb-3">{post.content}</p>
 
       {/* Attachments */}
       {attachments.length > 0 && (
