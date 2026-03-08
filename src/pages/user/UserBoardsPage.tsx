@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { Plus, Users, FileText, Search } from "lucide-react";
+import { Plus, Users, FileText, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function UserBoardsPage() {
