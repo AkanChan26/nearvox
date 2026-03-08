@@ -117,7 +117,7 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-background relative terminal-grid terminal-flicker">
-      <div className="fixed inset-0 scanline z-50 pointer-events-none" />
+      <div className="fixed inset-0 scanline z-[1] pointer-events-none" />
 
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Terminal Header */}

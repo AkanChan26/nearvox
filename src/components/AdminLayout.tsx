@@ -11,7 +11,7 @@ export function AdminLayout({ children, showBack = true }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background relative">
-      <div className="fixed inset-0 scanline z-50 pointer-events-none" />
+      <div className="fixed inset-0 scanline z-[1] pointer-events-none" />
 
       {showBack && (
         <header className="border-b border-border sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
