@@ -257,21 +257,20 @@ export default function UserMessagesPage() {
 
   const createGroup = async () => {
     if (!user || !groupName.trim() || groupMembers.length === 0) return;
-    const { data: convo, error: convoErr } = await supabase
+    const convoId = crypto.randomUUID();
+    const { error: convoErr } = await supabase
       .from("conversations")
-      .insert({ type: "group", name: groupName.trim(), created_by: user.id })
-      .select()
-      .single();
-    if (convoErr || !convo) { toast.error("Failed to create group"); return; }
+      .insert({ id: convoId, type: "group", name: groupName.trim(), created_by: user.id });
+    if (convoErr) { toast.error("Failed to create group"); console.error("group create error:", convoErr); return; }
     const membersToAdd = [
-      { conversation_id: convo.id, user_id: user.id },
-      ...groupMembers.map((m) => ({ conversation_id: convo.id, user_id: m.user_id })),
+      { conversation_id: convoId, user_id: user.id },
+      ...groupMembers.map((m) => ({ conversation_id: convoId, user_id: m.user_id })),
     ];
     await supabase.from("conversation_members").insert(membersToAdd);
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     await queryClient.invalidateQueries({ queryKey: ["convo-members"] });
     await queryClient.invalidateQueries({ queryKey: ["member-profiles"] });
-    setActiveConvo(convo.id);
+    setActiveConvo(convoId);
     setShowNewGroup(false);
     setGroupName("");
     setGroupMembers([]);
