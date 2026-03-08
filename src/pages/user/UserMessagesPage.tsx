@@ -552,17 +552,24 @@ export default function UserMessagesPage() {
     <UserLayout>
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
-      <div className="px-4 sm:px-6 py-4">
-        <div className="border border-border flex flex-col md:flex-row" style={{ height: "min(78vh, 620px)", minHeight: "400px" }}>
+      <div className="px-4 sm:px-8 py-6">
+        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(82vh, 700px)", minHeight: "450px" }}>
+          {/* Subtle scanline overlay */}
+          <div className="absolute inset-0 scanline pointer-events-none z-0" />
+
           {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-80 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
-            <div className="p-3 border-b border-border flex gap-2">
+          <div className={`w-full md:w-[320px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
+            {/* Section label */}
+            <div className="px-4 pt-4 pb-2">
+              <p className="text-[9px] tracking-[0.3em] text-muted-foreground uppercase">// conversations</p>
+            </div>
+            <div className="px-4 pb-4 border-b border-border flex gap-3">
               <button onClick={() => { setShowNewDm(true); setShowNewGroup(false); }}
-                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                className="flex items-center gap-2 text-[10px] text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center tracking-wider">
                 <User className="h-3.5 w-3.5" /> NEW DM
               </button>
               <button onClick={() => { setShowNewGroup(true); setShowNewDm(false); }}
-                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                className="flex items-center gap-2 text-[10px] text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center tracking-wider">
                 <Users className="h-3.5 w-3.5" /> NEW GROUP
               </button>
             </div>
