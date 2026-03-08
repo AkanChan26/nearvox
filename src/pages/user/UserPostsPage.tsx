@@ -496,7 +496,7 @@ export default function UserPostsPage() {
                   {item.title && (
                     <button
                       onClick={() => navigate(`${topicPrefix}/${item.id}`)}
-                      className="text-sm text-foreground font-bold mb-1 hover:underline text-left block"
+                      className={`text-sm font-bold mb-1 hover:underline text-left block ${isCreatorAdmin(item.user_id) ? "admin-text glow-admin" : "text-foreground"}`}
                     >
                       {item.title}
                     </button>
