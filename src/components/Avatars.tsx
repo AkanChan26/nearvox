@@ -126,12 +126,12 @@ export const UserAvatar10 = ({ size, className }: AvatarIconProps) => (
 // Admin Avatar - Blue outline stick figure, generic, no gender
 export const AdminAvatar = ({ size, className }: AvatarIconProps) => (
   <Svg size={size} className={className}>
-    <circle cx="20" cy="20" r="19" stroke="hsl(199, 90%, 57%)" strokeWidth="1.5" fill="none" />
-    <circle cx="20" cy="14" r="5.5" stroke="hsl(199, 90%, 57%)" strokeWidth="1.5" fill="none" />
-    <path d="M10 35c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="hsl(199, 90%, 57%)" strokeWidth="1.5" fill="none" />
-    <line x1="17" y1="13" x2="18.5" y2="13" stroke="hsl(199, 90%, 57%)" strokeWidth="1.2" />
-    <line x1="21.5" y1="13" x2="23" y2="13" stroke="hsl(199, 90%, 57%)" strokeWidth="1.2" />
-    <line x1="18" y1="17" x2="22" y2="17" stroke="hsl(199, 90%, 57%)" strokeWidth="1" />
+    <circle cx="20" cy="20" r="19" stroke="hsl(265, 85%, 65%)" strokeWidth="1.5" fill="none" />
+    <circle cx="20" cy="14" r="5.5" stroke="hsl(265, 85%, 65%)" strokeWidth="1.5" fill="none" />
+    <path d="M10 35c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="hsl(265, 85%, 65%)" strokeWidth="1.5" fill="none" />
+    <line x1="17" y1="13" x2="18.5" y2="13" stroke="hsl(265, 85%, 65%)" strokeWidth="1.2" />
+    <line x1="21.5" y1="13" x2="23" y2="13" stroke="hsl(265, 85%, 65%)" strokeWidth="1.2" />
+    <line x1="18" y1="17" x2="22" y2="17" stroke="hsl(265, 85%, 65%)" strokeWidth="1" />
   </Svg>
 );
 
