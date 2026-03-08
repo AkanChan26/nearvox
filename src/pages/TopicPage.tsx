@@ -101,6 +101,16 @@ export default function TopicPage() {
     enabled: !!id && !!user,
   });
 
+  // My reports on this topic/replies (to show undo)
+  const { data: myReports } = useQuery({
+    queryKey: ["my-reports-topic", id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("reports").select("id, report_type, reported_user_id, reported_post_id, reason").eq("reporter_id", user!.id).eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   // Reply likes
   const replyIds = replies?.map((r) => r.id) || [];
   const { data: myReplyLikes } = useQuery({
