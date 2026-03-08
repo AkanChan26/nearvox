@@ -898,7 +898,7 @@ export default function UserMessagesPage() {
                                   </div>
                                 </div>
                               )}
-                              <div className="px-3 py-1.5">
+                              <div className="px-2.5 py-1.5">
                                 {editingMsg === msg.id ? (
                                   <div className="flex items-center gap-1.5">
                                     <input value={editText} onChange={(e) => setEditText(e.target.value)}
@@ -908,24 +908,24 @@ export default function UserMessagesPage() {
                                     <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
                                   </div>
                                 ) : (
-                                  <p className="text-[12px] text-foreground break-words leading-snug whitespace-pre-wrap inline">{displayContent}</p>
+                                  <div className="flex flex-wrap items-end gap-x-2">
+                                    <span className="text-[12px] text-foreground break-words leading-snug whitespace-pre-wrap">{displayContent}</span>
+                                    <span className="flex items-center gap-1 ml-auto shrink-0">
+                                      {msg.is_edited && <span className="text-[8px] text-muted-foreground/40 italic">edited</span>}
+                                      <span className="text-[8px] text-muted-foreground/50">{format(msgDate, "hh:mm a")}</span>
+                                      {msg.sender_id === user?.id && (() => {
+                                        const status = getReadStatus(msg);
+                                        return status === "read" ? (
+                                          <CheckCheck className="h-2.5 w-2.5 text-primary" />
+                                        ) : status === "delivered" ? (
+                                          <CheckCheck className="h-2.5 w-2.5 text-muted-foreground/50" />
+                                        ) : (
+                                          <Check className="h-2.5 w-2.5 text-muted-foreground/50" />
+                                        );
+                                      })()}
+                                    </span>
+                                  </div>
                                 )}
-                                <div className="flex items-center justify-end gap-1.5 mt-1">
-                                  {msg.is_edited && <span className="text-[9px] text-muted-foreground/40 italic">edited</span>}
-                                  <p className="text-[9px] text-muted-foreground/50">
-                                    {format(msgDate, "hh:mm a")}
-                                  </p>
-                                  {msg.sender_id === user?.id && (() => {
-                                    const status = getReadStatus(msg);
-                                    return status === "read" ? (
-                                      <CheckCheck className="h-3 w-3 text-primary" />
-                                    ) : status === "delivered" ? (
-                                      <CheckCheck className="h-3 w-3 text-muted-foreground/50" />
-                                    ) : (
-                                      <Check className="h-3 w-3 text-muted-foreground/50" />
-                                    );
-                                  })()}
-                                </div>
                               </div>
                             </div>
 
