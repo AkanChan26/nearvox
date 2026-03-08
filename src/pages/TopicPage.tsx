@@ -267,7 +267,8 @@ export default function TopicPage() {
 
   // Check if user already reported something
   const getMyReport = (targetUserId: string, type: string) => {
-    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === type);
+    const dbType = type === "topic" ? "message" : "comment";
+    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === dbType);
   };
 
   if (!topic) {

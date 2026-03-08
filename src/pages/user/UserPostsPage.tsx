@@ -646,7 +646,7 @@ export default function UserPostsPage() {
                     {!isOwner && (() => {
                       const existingReport = myReports?.find((r) => {
                         if (item.type === "post") return r.reported_post_id === item.id;
-                        return r.report_type === "topic" && r.reported_user_id === item.user_id;
+                        return r.report_type === "message" && r.reported_user_id === item.user_id;
                       });
                       return existingReport ? (
                         <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">
