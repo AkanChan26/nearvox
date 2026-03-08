@@ -293,16 +293,10 @@ export default function UserBoardDetailPage() {
   if (!board) return <UserLayout><div className="p-6 text-muted-foreground text-sm">Loading...</div></UserLayout>;
 
   return (
-    <UserLayout>
+    <UserLayout secondaryBackPath="/user/boards" secondaryBackLabel="BOARDS">
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-3">
-        <button
-          onClick={() => navigate("/user/boards")}
-          className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider mb-2 flex items-center gap-1"
-        >
-          ← BOARDS
-        </button>
-        <h1 className="text-xs text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
+        <h1 className="text-[11px] text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
         {board.description && (
           <p className="text-[10px] text-muted-foreground mt-1 tracking-wider">{board.description.toUpperCase()}</p>
         )}
