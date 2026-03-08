@@ -261,9 +261,9 @@ export default function UserBoardDetailPage() {
     <UserLayout>
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-5">
-        <h1 className="text-lg sm:text-xl text-foreground glow-text tracking-wider font-bold">{board.name}</h1>
+        <h1 className="text-base sm:text-lg text-foreground glow-text tracking-wider font-bold">{board.name}</h1>
         {board.description && (
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">{board.description}</p>
+          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">{board.description}</p>
         )}
         <div className="flex items-center gap-4 mt-3">
           <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
