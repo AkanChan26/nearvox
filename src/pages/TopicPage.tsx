@@ -1,11 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, MessageSquare, Eye, Clock, Send } from "lucide-react";
+import { ArrowLeft, MessageSquare, Eye, Clock, Send, FileIcon, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+
+function RichContent({ content }: { content: string }) {
+  const parts = useMemo(() => {
+    // Split content from attachments section
+    const attachmentSeparator = "\n\n---\nAttachments: ";
+    const sepIndex = content.indexOf(attachmentSeparator);
+    
+    const mainContent = sepIndex >= 0 ? content.slice(0, sepIndex) : content;
+    const attachmentsPart = sepIndex >= 0 ? content.slice(sepIndex + attachmentSeparator.length) : "";
+    
+    // Parse markdown links: [File N](url)
+    const linkRegex = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
+    const attachments: { label: string; url: string; isImage: boolean }[] = [];
+    let match;
+    while ((match = linkRegex.exec(attachmentsPart)) !== null) {
+      const url = match[2];
+      const isImage = /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url);
+      attachments.push({ label: match[1], url, isImage });
+    }
+
+    return { mainContent, attachments };
+  }, [content]);
+
+  return (
+    <>
+      <span>{parts.mainContent}</span>
+      {parts.attachments.length > 0 && (
+        <div className="mt-3 pt-3 border-t border-border space-y-2">
+          <p className="text-[10px] text-muted-foreground tracking-[0.2em]">ATTACHMENTS</p>
+          {parts.attachments.map((att, i) => (
+            att.isImage ? (
+              <a key={i} href={att.url} target="_blank" rel="noopener noreferrer" className="block">
+                <img src={att.url} alt={att.label} className="max-w-full max-h-80 border border-border rounded cursor-pointer hover:opacity-80 transition-opacity" />
+              </a>
+            ) : (
+              <a
+                key={i}
+                href={att.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-foreground hover:text-primary border border-border px-3 py-2 w-fit"
+              >
+                <FileIcon className="h-3.5 w-3.5 shrink-0" />
+                {att.label}
+                <ExternalLink className="h-3 w-3 text-muted-foreground" />
+              </a>
+            )
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
 
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>();
