@@ -6,57 +6,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 2%;
-    --foreground: 120 60% 42%;
+    --background: 0 0% 0%;
+    --foreground: 145 80% 56%;
 
-    --card: 0 0% 4%;
-    --card-foreground: 120 60% 42%;
+    --card: 0 0% 3%;
+    --card-foreground: 145 80% 56%;
 
-    --popover: 0 0% 4%;
-    --popover-foreground: 120 60% 42%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 145 80% 56%;
 
-    --primary: 120 60% 42%;
+    --primary: 145 80% 56%;
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 7%;
-    --secondary-foreground: 120 40% 35%;
+    --secondary: 0 0% 5%;
+    --secondary-foreground: 145 50% 40%;
 
-    --muted: 0 0% 6%;
-    --muted-foreground: 120 20% 28%;
+    --muted: 0 0% 4%;
+    --muted-foreground: 145 25% 30%;
 
-    --accent: 120 60% 42%;
+    --accent: 145 80% 56%;
     --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 80% 45%;
+    --destructive: 0 85% 50%;
     --destructive-foreground: 0 0% 0%;
 
-    --border: 120 40% 10%;
-    --input: 0 0% 6%;
-    --ring: 120 60% 42%;
+    --border: 145 50% 8%;
+    --input: 0 0% 4%;
+    --ring: 145 80% 56%;
 
     --radius: 0px;
 
-    --sidebar-background: 0 0% 2%;
-    --sidebar-foreground: 120 20% 28%;
-    --sidebar-primary: 120 60% 42%;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 145 25% 30%;
+    --sidebar-primary: 145 80% 56%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 5%;
-    --sidebar-accent-foreground: 120 60% 42%;
-    --sidebar-border: 120 40% 8%;
-    --sidebar-ring: 120 60% 42%;
+    --sidebar-accent: 0 0% 4%;
+    --sidebar-accent-foreground: 145 80% 56%;
+    --sidebar-border: 145 50% 6%;
+    --sidebar-ring: 145 80% 56%;
 
-    --warning: 45 80% 45%;
+    --warning: 45 90% 50%;
     --warning-foreground: 0 0% 0%;
-    --success: 120 60% 42%;
+    --success: 145 80% 56%;
     --success-foreground: 0 0% 0%;
-    --info: 120 40% 35%;
+    --info: 145 50% 40%;
     --info-foreground: 0 0% 0%;
 
     /* Admin identity color - cyber blue */
     --admin: 199 91% 56%;
     --admin-foreground: 0 0% 0%;
-    --admin-bg: 199 80% 6%;
-    --admin-border: 199 91% 25%;
+    --admin-bg: 199 80% 4%;
+    --admin-border: 199 91% 20%;
 
     --font-terminal: 'VT323', monospace;
     --font-mono: 'Share Tech Mono', monospace;
@@ -72,8 +72,8 @@
   }
 
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: hsl(0 0% 2%); }
-  ::-webkit-scrollbar-thumb { background: hsl(120 40% 15%); }
+  ::-webkit-scrollbar-track { background: hsl(0 0% 0%); }
+  ::-webkit-scrollbar-thumb { background: hsl(145 50% 12%); }
 }
 
 @layer utilities {
@@ -97,17 +97,23 @@
     @apply flex-1 mx-2 border-b border-dotted border-border;
   }
   .glow-text {
-    text-shadow: 0 0 6px hsl(120 60% 42% / 0.4), 0 0 15px hsl(120 60% 42% / 0.15);
+    text-shadow: 0 0 8px hsl(145 80% 56% / 0.5), 0 0 20px hsl(145 80% 56% / 0.2), 0 0 40px hsl(145 80% 56% / 0.1);
   }
   .glow-admin {
-    text-shadow: 0 0 6px hsl(199 91% 56% / 0.4), 0 0 15px hsl(199 91% 56% / 0.15);
+    text-shadow: 0 0 8px hsl(199 91% 56% / 0.5), 0 0 20px hsl(199 91% 56% / 0.2);
   }
   .scanline {
     background: repeating-linear-gradient(
       0deg, transparent, transparent 2px,
-      hsl(120 60% 42% / 0.015) 2px, hsl(120 60% 42% / 0.015) 4px
+      hsl(145 80% 56% / 0.02) 2px, hsl(145 80% 56% / 0.02) 4px
     );
     pointer-events: none;
+  }
+  .terminal-grid {
+    background-image:
+      linear-gradient(hsl(145 50% 8% / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(145 50% 8% / 0.3) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
   .cursor-blink::after {
     content: "█";
@@ -115,6 +121,17 @@
   }
   @keyframes blink {
     50% { opacity: 0; }
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    92% { opacity: 1; }
+    93% { opacity: 0.8; }
+    94% { opacity: 1; }
+    96% { opacity: 0.9; }
+    97% { opacity: 1; }
+  }
+  .terminal-flicker {
+    animation: flicker 8s infinite;
   }
   /* Admin content styling */
   .admin-box {
