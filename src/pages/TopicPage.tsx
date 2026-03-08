@@ -180,13 +180,13 @@ export default function TopicPage() {
 
       {/* Header */}
       <header className="border-b border-border sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-3 flex items-center gap-2 sm:gap-3">
           <button
-            onClick={() => navigate("/dashboard")}
-            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-none"
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-[10px] text-muted-foreground hover:text-foreground transition-none p-1 -ml-1 min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 sm:p-0 sm:ml-0"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            BACK
+            <ArrowLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+            <span className="hidden sm:inline">BACK</span>
           </button>
           <div className="h-3 w-px bg-border" />
           <p className="text-foreground text-sm glow-text tracking-widest">NEARVOX</p>

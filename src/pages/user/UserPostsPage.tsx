@@ -131,7 +131,7 @@ export default function UserPostsPage() {
       location: t.location,
       is_pinned: t.is_pinned,
       is_announcement: t.is_announcement,
-      likes_count: 0,
+      likes_count: (t as any).likes_count ?? 0,
       comments_count: 0,
       replies_count: t.replies_count,
       views_count: t.views_count,
@@ -149,12 +149,22 @@ export default function UserPostsPage() {
     );
   }, [posts, topics, isMine, regionFilter, userLocation]);
 
-  // Likes (posts only)
+  // Likes (posts)
   const { data: myLikes } = useQuery({
     queryKey: ["my-likes", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("post_likes").select("post_id").eq("user_id", user!.id);
       return new Set(data?.map((l: any) => l.post_id) || []);
+    },
+    enabled: !!user,
+  });
+
+  // Likes (topics)
+  const { data: myTopicLikes } = useQuery({
+    queryKey: ["my-topic-likes", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("topic_likes").select("topic_id").eq("user_id", user!.id);
+      return new Set(data?.map((l: any) => l.topic_id) || []);
     },
     enabled: !!user,
   });
@@ -228,6 +238,18 @@ export default function UserPostsPage() {
     queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
   };
 
+  const handleTopicLike = async (topicId: string) => {
+    if (!user) return;
+    const isLiked = myTopicLikes?.has(topicId);
+    if (isLiked) {
+      await supabase.from("topic_likes").delete().eq("topic_id", topicId).eq("user_id", user.id);
+    } else {
+      await supabase.from("topic_likes").insert({ topic_id: topicId, user_id: user.id });
+    }
+    queryClient.invalidateQueries({ queryKey: ["my-topic-likes"] });
+    queryClient.invalidateQueries({ queryKey: ["user-topics-feed"] });
+  };
+
   const handleDelete = async (item: UnifiedItem) => {
     if (item.type === "post") {
       if (item.attachments.length > 0) {
@@ -258,12 +280,12 @@ export default function UserPostsPage() {
     setEditContent("");
   };
 
-  const handleReport = async (postId: string) => {
+  const handleReport = async (itemId: string, itemType: "post" | "topic" = "post") => {
     if (!user || !reportReason.trim()) return;
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
-      reported_post_id: postId,
-      report_type: "post",
+      reported_post_id: itemType === "post" ? itemId : null,
+      report_type: itemType,
       reason: reportReason.trim(),
     });
     if (error) toast.error("Failed to report");
@@ -542,14 +564,22 @@ export default function UserPostsPage() {
                   </div>
 
                   {/* Action bar */}
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border">
-                    {/* Like (posts only) */}
-                    {item.type === "post" && (
+                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border flex-wrap">
+                    {/* Like */}
+                    {item.type === "post" ? (
                       <button
                         onClick={() => handleLike(item.id)}
                         className={`flex items-center gap-0.5 transition-none ${isLiked ? "text-destructive" : "hover:text-foreground"}`}
                       >
                         <Heart className={`h-2.5 w-2.5 ${isLiked ? "fill-current" : ""}`} />
+                        {item.likes_count}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleTopicLike(item.id)}
+                        className={`flex items-center gap-0.5 transition-none ${myTopicLikes?.has(item.id) ? "text-destructive" : "hover:text-foreground"}`}
+                      >
+                        <Heart className={`h-2.5 w-2.5 ${myTopicLikes?.has(item.id) ? "fill-current" : ""}`} />
                         {item.likes_count}
                       </button>
                     )}
@@ -585,8 +615,8 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
-                    {/* Report (not own) */}
-                    {!isOwner && item.type === "post" && (
+                    {/* Report (not own — both posts and topics) */}
+                    {!isOwner && (
                       <button
                         onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
                         className="flex items-center gap-0.5 hover:text-warning"
@@ -619,8 +649,8 @@ export default function UserPostsPage() {
                     )}
                   </div>
 
-                  {/* Report form (posts only) */}
-                  {reportingPost === item.id && item.type === "post" && (
+                  {/* Report form */}
+                  {reportingPost === item.id && (
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] text-muted-foreground mb-1">&gt; REPORT REASON:</p>
                       <div className="flex gap-2">
@@ -631,7 +661,7 @@ export default function UserPostsPage() {
                           className="flex-1 bg-input border border-border text-foreground text-[11px] px-2 py-1 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
                         />
                         <button
-                          onClick={() => handleReport(item.id)}
+                          onClick={() => handleReport(item.id, item.type)}
                           disabled={!reportReason.trim()}
                           className="text-[10px] text-warning border border-warning px-2 py-0.5 hover:bg-warning hover:text-background disabled:opacity-30"
                         >
