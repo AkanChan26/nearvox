@@ -60,6 +60,8 @@ const App = () => (
             <Route path="/user/announcements" element={<ProtectedRoute><UserAnnouncementsPage /></ProtectedRoute>} />
             <Route path="/user/messages" element={<ProtectedRoute><UserMessagesPage /></ProtectedRoute>} />
             <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
+            <Route path="/user/boards" element={<ProtectedRoute><UserBoardsPage /></ProtectedRoute>} />
+            <Route path="/user/boards/:id" element={<ProtectedRoute><UserBoardDetailPage /></ProtectedRoute>} />
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
