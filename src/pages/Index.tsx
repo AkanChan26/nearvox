@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   LogOut, ChevronDown, ChevronUp, Shield, Terminal,
   Ticket, Copy, Check, X, Eye, Image, FileText,
-  Paperclip,
+  Paperclip, Users, AlertTriangle, Megaphone, BarChart3,
+  Settings, TrendingUp, Hash, MessageSquare,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
