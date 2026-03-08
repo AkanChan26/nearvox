@@ -923,6 +923,13 @@ export default function UserMessagesPage() {
                     onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => {
                       const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
+                      if (msg) { setReplyTo(msg); }
+                      setContextMenu(null);
+                    }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
+                      <Reply className="h-3 w-3" /> REPLY
+                    </button>
+                    <button onClick={() => {
+                      const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
                       if (msg) { setEditingMsg(msg.id); setEditText(msg.content); }
                       setContextMenu(null);
                     }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
@@ -944,17 +951,31 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
+                {/* Reply preview bar */}
+                {replyTo && (
+                  <div className="px-4 py-2 border-t border-border bg-muted/20 flex items-center gap-3">
+                    <CornerDownRight className="h-3 w-3 text-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] text-muted-foreground tracking-wider">{getDisplayName(replyTo.sender_id)}</p>
+                      <p className="text-[10px] text-foreground/60 truncate">{replyTo.content.slice(0, 60)}</p>
+                    </div>
+                    <button onClick={() => setReplyTo(null)} className="text-muted-foreground hover:text-foreground shrink-0">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
                 {/* Input */}
-                <div className="px-4 py-3.5 border-t border-border flex gap-3 bg-card/80">
+                <div className="px-4 py-3 border-t border-border flex gap-3 bg-card/80">
                   {otherIsBlocked ? (
                     <p className="flex-1 text-[10px] text-muted-foreground text-center py-3 tracking-wider">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
                       <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
-                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-3 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground rounded-sm" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
-                        className="text-foreground border border-foreground px-5 py-3 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                        className="text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40 rounded-sm">
                         <Send className="h-4 w-4" />
                       </button>
                     </>
