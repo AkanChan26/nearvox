@@ -313,7 +313,7 @@ export default function TopicPage() {
             <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{topic.views_count}</span>
             <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDistanceToNow(new Date(topic.created_at), { addSuffix: true })}</span>
           </div>
-          {/* Topic actions: like & report */}
+          {/* Topic actions: like, report, delete */}
           <div className="flex items-center gap-3 pt-2 border-t border-border">
             <button onClick={handleTopicLike} className={`flex items-center gap-1 text-[10px] transition-none ${myTopicLike ? "text-red-500" : "text-muted-foreground hover:text-foreground"}`}>
               <Heart className={`h-3.5 w-3.5 ${myTopicLike ? "fill-red-500" : ""}`} />
@@ -331,6 +331,11 @@ export default function TopicPage() {
                 </button>
               );
             })()}
+            {(currentUserIsAdmin || topic.user_id === user?.id) && (
+              <button onClick={handleDeleteTopic} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none ml-auto">
+                <Trash2 className="h-3.5 w-3.5" /> DELETE
+              </button>
+            )}
           </div>
         </div>
 
