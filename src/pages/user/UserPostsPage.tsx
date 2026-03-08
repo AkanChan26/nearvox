@@ -33,11 +33,12 @@ type UnifiedItem = {
 };
 
 export default function UserPostsPage() {
-  const { user } = useAuth();
+  const { user, isAdmin: userIsAdmin } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const isMine = searchParams.get("mine") === "true";
+  const regionFilter = searchParams.get("region") !== "off"; // default ON
   const [showCreate, setShowCreate] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -53,6 +54,18 @@ export default function UserPostsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+
+  // Fetch user profile for region filtering
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile-region", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("location").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const userLocation = myProfile?.location || "";
 
   // Fetch posts
   const { data: posts, isLoading: postsLoading } = useQuery({
