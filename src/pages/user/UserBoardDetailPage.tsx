@@ -226,11 +226,13 @@ export default function UserBoardDetailPage() {
 
   const submitReport = useMutation({
     mutationFn: async () => {
+      const targetPost = posts?.find((p: any) => p.id === reportPostId);
       const { error } = await supabase.from("reports").insert({
         reporter_id: user!.id,
-        report_type: "board_post",
-        reason: reportReason.trim(),
-        reported_post_id: reportPostId,
+        report_type: "comment",
+        reason: `${reportReason.trim()} [board_post:${reportPostId}]`,
+        reported_post_id: null,
+        reported_user_id: targetPost?.user_id || null,
       });
       if (error) throw error;
     },
