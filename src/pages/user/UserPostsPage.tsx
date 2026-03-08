@@ -56,24 +56,26 @@ export default function UserPostsPage() {
 
   // Fetch posts
   const { data: posts, isLoading: postsLoading } = useQuery({
-    queryKey: ["user-posts-feed", isMine],
+    queryKey: ["user-posts-feed", isMine, user?.id],
     queryFn: async () => {
       let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
       if (isMine && user) query = query.eq("user_id", user.id);
       const { data } = await query;
       return data || [];
     },
+    enabled: !!user,
   });
 
   // Fetch topics
   const { data: topics, isLoading: topicsLoading } = useQuery({
-    queryKey: ["user-topics-feed", isMine],
+    queryKey: ["user-topics-feed", isMine, user?.id],
     queryFn: async () => {
       let query = supabase.from("topics").select("*").order("created_at", { ascending: false });
       if (isMine && user) query = query.eq("user_id", user.id);
       const { data } = await query;
       return data || [];
     },
+    enabled: !!user,
   });
 
   const isLoading = postsLoading || topicsLoading;
