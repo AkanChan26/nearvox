@@ -170,6 +170,16 @@ export default function UserPostsPage() {
     enabled: !!user,
   });
 
+  // My pending reports
+  const { data: myReports } = useQuery({
+    queryKey: ["my-reports-posts", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("reports").select("id, reported_post_id, report_type").eq("reporter_id", user!.id).eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   // Creators
   const creatorIds = [...new Set(unified.map((p) => p.user_id))];
   const { data: creators } = useQuery({
@@ -284,14 +294,27 @@ export default function UserPostsPage() {
 
   const handleReport = async (itemId: string, itemType: "post" | "topic" = "post") => {
     if (!user || !reportReason.trim()) return;
+    const item = unified.find((u) => u.id === itemId);
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
       reported_post_id: itemType === "post" ? itemId : null,
+      reported_user_id: item?.user_id || null,
       report_type: itemType,
       reason: reportReason.trim(),
     });
-    if (error) toast.error("Failed to report");
-    else { toast.success("Report submitted"); setReportingPost(null); setReportReason(""); }
+    if (error) { toast.error("Failed to report"); console.error(error); }
+    else {
+      toast.success("Report submitted — admin notified");
+      setReportingPost(null);
+      setReportReason("");
+      queryClient.invalidateQueries({ queryKey: ["my-reports-posts"] });
+    }
+  };
+
+  const handleUndoReport = async (reportId: string) => {
+    const { error } = await supabase.from("reports").delete().eq("id", reportId);
+    if (error) { toast.error("Failed to undo report"); }
+    else { toast.success("Report withdrawn"); queryClient.invalidateQueries({ queryKey: ["my-reports-posts"] }); }
   };
 
   const handleComment = async (postId: string) => {
@@ -619,15 +642,21 @@ export default function UserPostsPage() {
                     )}
 
                     {/* Report (not own — both posts and topics) */}
-                    {!isOwner && (
-                      <button
-                        onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
-                        className="flex items-center gap-0.5 hover:text-warning"
-                      >
-                        <Flag className="h-2.5 w-2.5" />
-                        REPORT
-                      </button>
-                    )}
+                    {!isOwner && (() => {
+                      const existingReport = myReports?.find((r) => r.reported_post_id === item.id || (r.report_type === item.type && r.reported_post_id === item.id));
+                      return existingReport ? (
+                        <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">
+                          <Flag className="h-2.5 w-2.5 fill-current" /> UNDO REPORT
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
+                          className="flex items-center gap-0.5 hover:text-warning"
+                        >
+                          <Flag className="h-2.5 w-2.5" /> REPORT
+                        </button>
+                      );
+                    })()}
 
                     {/* Edit (own) */}
                     {(isOwner || userIsAdmin) && (

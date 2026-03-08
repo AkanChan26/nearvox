@@ -101,6 +101,16 @@ export default function TopicPage() {
     enabled: !!id && !!user,
   });
 
+  // My reports on this topic/replies (to show undo)
+  const { data: myReports } = useQuery({
+    queryKey: ["my-reports-topic", id, user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("reports").select("id, report_type, reported_user_id, reported_post_id, reason").eq("reporter_id", user!.id).eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   // Reply likes
   const replyIds = replies?.map((r) => r.id) || [];
   const { data: myReplyLikes } = useQuery({
@@ -166,6 +176,7 @@ export default function TopicPage() {
     queryClient.invalidateQueries({ queryKey: ["my-topic-like", id] });
     queryClient.invalidateQueries({ queryKey: ["my-reply-likes"] });
     queryClient.invalidateQueries({ queryKey: ["reply-like-counts"] });
+    queryClient.invalidateQueries({ queryKey: ["my-reports-topic"] });
   };
 
   // --- Topic Like ---
@@ -225,16 +236,28 @@ export default function TopicPage() {
       severity: "medium" as const,
     };
     if (reportType === "topic") {
-      // Report the topic as a post-like entity — use reported_post_id or reported_user_id
       payload.reported_user_id = topic?.user_id;
     } else {
       const reply = replies?.find((r) => r.id === reportingId);
       if (reply) payload.reported_user_id = reply.user_id;
     }
     const { error } = await supabase.from("reports").insert(payload);
-    if (error) { toast.error("Failed to submit report"); } else { toast.success("Report submitted"); }
+    if (error) { toast.error("Failed to submit report"); console.error(error); } else { toast.success("Report submitted — admin notified"); }
     setReportingId(null);
     setReportReason("");
+    invalidateAll();
+  };
+
+  // --- Undo Report ---
+  const handleUndoReport = async (reportId: string) => {
+    const { error } = await supabase.from("reports").delete().eq("id", reportId);
+    if (error) { toast.error("Failed to undo report"); } else { toast.success("Report withdrawn"); }
+    invalidateAll();
+  };
+
+  // Check if user already reported something
+  const getMyReport = (targetUserId: string, type: string) => {
+    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === type);
   };
 
   if (!topic) {
@@ -287,9 +310,18 @@ export default function TopicPage() {
               <Heart className={`h-3.5 w-3.5 ${myTopicLike ? "fill-red-500" : ""}`} />
               {topic.likes_count || 0}
             </button>
-            <button onClick={() => { setReportingId(id!); setReportType("topic"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
-              <Flag className="h-3.5 w-3.5" /> REPORT
-            </button>
+            {(() => {
+              const existing = topic ? getMyReport(topic.user_id, "topic") : null;
+              return existing ? (
+                <button onClick={() => handleUndoReport(existing.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
+                  <Flag className="h-3.5 w-3.5 fill-warning" /> UNDO REPORT
+                </button>
+              ) : (
+                <button onClick={() => { setReportingId(id!); setReportType("topic"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
+                  <Flag className="h-3.5 w-3.5" /> REPORT
+                </button>
+              );
+            })()}
           </div>
         </div>
 
@@ -366,9 +398,18 @@ export default function TopicPage() {
                         <Heart className={`h-3 w-3 ${liked ? "fill-red-500" : ""}`} />
                         {likeCount}
                       </button>
-                      <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
-                        <Flag className="h-3 w-3" /> REPORT
-                      </button>
+                      {(() => {
+                        const existingReport = getMyReport(reply.user_id, "reply");
+                        return existingReport ? (
+                          <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
+                            <Flag className="h-3 w-3 fill-warning" /> UNDO REPORT
+                          </button>
+                        ) : (
+                          <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
+                            <Flag className="h-3 w-3" /> REPORT
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
