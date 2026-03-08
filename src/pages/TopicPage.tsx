@@ -236,16 +236,28 @@ export default function TopicPage() {
       severity: "medium" as const,
     };
     if (reportType === "topic") {
-      // Report the topic as a post-like entity — use reported_post_id or reported_user_id
       payload.reported_user_id = topic?.user_id;
     } else {
       const reply = replies?.find((r) => r.id === reportingId);
       if (reply) payload.reported_user_id = reply.user_id;
     }
     const { error } = await supabase.from("reports").insert(payload);
-    if (error) { toast.error("Failed to submit report"); } else { toast.success("Report submitted"); }
+    if (error) { toast.error("Failed to submit report"); console.error(error); } else { toast.success("Report submitted — admin notified"); }
     setReportingId(null);
     setReportReason("");
+    invalidateAll();
+  };
+
+  // --- Undo Report ---
+  const handleUndoReport = async (reportId: string) => {
+    const { error } = await supabase.from("reports").delete().eq("id", reportId);
+    if (error) { toast.error("Failed to undo report"); } else { toast.success("Report withdrawn"); }
+    invalidateAll();
+  };
+
+  // Check if user already reported something
+  const getMyReport = (targetUserId: string, type: string) => {
+    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === type);
   };
 
   if (!topic) {
