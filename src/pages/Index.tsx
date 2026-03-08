@@ -222,7 +222,7 @@ const Index = () => {
                 return (
                   <button
                     key={cat.value}
-                    onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+                    onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
                     className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                   >
                     <div className="flex items-center gap-1.5 mb-1">
