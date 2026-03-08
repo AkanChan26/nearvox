@@ -184,27 +184,27 @@ const Index = () => {
   return (
     <AdminLayout showBack={false}>
       <div className="min-h-screen terminal-grid terminal-flicker">
-        <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
 
           {/* ── HEADER ── */}
           <div className="flex items-start justify-between mb-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <Terminal className="h-5 w-5 text-foreground" />
-                <p className="text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
+                <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
+                <p className="text-xl sm:text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
               </div>
-              <p className="text-[10px] text-muted-foreground tracking-[0.5em] ml-7">ADMIN TERMINAL</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-6 sm:ml-7">ADMIN TERMINAL</p>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <div className="text-right">
                 <div className="flex items-center gap-1.5 justify-end">
                   <Shield className="h-3 w-3 text-[hsl(var(--admin))]" />
-                  <p className="text-sm admin-text glow-admin font-bold tracking-wider">{adminUsername || "USER"}</p>
-                  {isAdmin && <span className="admin-badge">ADMIN</span>}
+                  <p className="text-xs sm:text-sm admin-text glow-admin font-bold tracking-wider truncate max-w-[80px] sm:max-w-none">{adminUsername || "USER"}</p>
+                  {isAdmin && <span className="admin-badge hidden sm:inline">ADMIN</span>}
                 </div>
-                <p className="text-[10px] text-muted-foreground tracking-wider">ROOT ACCESS GRANTED</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wider hidden sm:block">ROOT ACCESS GRANTED</p>
               </div>
-              <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive">
+              <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center">
                 <LogOut className="h-3.5 w-3.5" />
               </button>
             </div>
