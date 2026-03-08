@@ -649,7 +649,7 @@ export default function UserMessagesPage() {
                   const unread = hasUnread(convo.id);
                   return (
                     <button key={convo.id} onClick={() => setActiveConvo(convo.id)}
-                      className={`w-full text-left p-2.5 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
+                      className={`w-full text-left p-3 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
                       <div className="flex items-center gap-2">
                         {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
                         {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : 
