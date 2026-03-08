@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
-import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
 import {
   Send, Users, User, X, Search, ArrowLeft,
@@ -11,7 +11,7 @@ import {
   Pencil, Trash2, Ban, SmilePlus, Check, Shield,
   CheckCheck, Reply, CornerDownRight,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format, isToday, isYesterday, isSameDay } from "date-fns";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import { OnlineIndicator } from "@/components/OnlineIndicator";
 
@@ -59,6 +59,7 @@ const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", 
 
 export default function UserMessagesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeConvo, setActiveConvo] = useState<string | null>(null);
   const [showNewDm, setShowNewDm] = useState(false);
@@ -457,6 +458,12 @@ export default function UserMessagesPage() {
     return null;
   };
 
+  const formatDateSeparator = (date: Date) => {
+    if (isToday(date)) return "TODAY";
+    if (isYesterday(date)) return "YESTERDAY";
+    return format(date, "MMM dd, yyyy").toUpperCase();
+  };
+
   const editMessage = async (msgId: string) => {
     if (!editText.trim()) return;
     const { error } = await supabase
@@ -560,12 +567,19 @@ export default function UserMessagesPage() {
   };
 
   return (
-    <UserLayout>
-      <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
+    <UserLayout showBack={false}>
+      <div className="fixed inset-0 top-0 z-30 bg-background flex flex-col">
+        {/* Top bar */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/90 backdrop-blur-sm shrink-0">
+          <button onClick={() => navigate("/dashboard")} className="text-muted-foreground hover:text-foreground p-1">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="h-3 w-px bg-border" />
+          <p className="text-[10px] text-foreground glow-text tracking-[0.2em]">NEARVOX</p>
+          <span className="text-[9px] text-muted-foreground tracking-wider">MESSAGES{totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}</span>
+        </div>
 
-      <div className="px-3 sm:px-6 py-4">
-        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(85vh, 720px)", minHeight: "450px" }}>
-          {/* Subtle scanline overlay */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
           <div className="absolute inset-0 scanline pointer-events-none z-0" />
 
           {/* ── LEFT: Conversation List (30%) ── */}
@@ -801,24 +815,36 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-[12px]">
+                <div className="flex-1 overflow-y-auto px-3 sm:px-5 py-4 space-y-[6px]">
                   {otherIsBlocked && (
                     <div className="text-center py-2">
                       <p className="text-[9px] text-destructive/70 border border-destructive/20 inline-block px-3 py-1">⚠ YOU HAVE BLOCKED THIS USER</p>
                     </div>
                   )}
                   {chatMessages && chatMessages.length > 0 ? (
-                    chatMessages.map((msg) => {
+                    chatMessages.map((msg, idx) => {
                       const isMine = msg.sender_id === user?.id;
                       const msgReactions = getReactionsForMsg(msg.id);
                       const isGroup = activeConversation?.type === "group";
                       const reply = parseReply(msg.content);
                       const displayContent = reply ? reply.mainText : msg.content;
+                      const msgDate = new Date(msg.created_at);
+                      const prevMsg = idx > 0 ? chatMessages[idx - 1] : null;
+                      const showDateSep = !prevMsg || !isSameDay(msgDate, new Date(prevMsg.created_at));
                       return (
-                        <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group relative`}>
-                          <div className="relative inline-block" style={{ maxWidth: "65%" }}>
+                        <div key={msg.id}>
+                          {/* Date separator */}
+                          {showDateSep && (
+                            <div className="flex items-center gap-3 my-4">
+                              <div className="flex-1 border-t border-border/30" />
+                              <span className="text-[8px] text-muted-foreground/50 tracking-[0.3em]">{formatDateSeparator(msgDate)}</span>
+                              <div className="flex-1 border-t border-border/30" />
+                            </div>
+                          )}
+                          <div className={`flex ${isMine ? "justify-end" : "justify-start"} group/msg relative`}>
+                          <div className="relative inline-block" style={{ maxWidth: "70%" }}>
                             {/* Hover actions */}
-                            <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover/msg:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
                               <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
                                 className="text-muted-foreground hover:text-foreground p-1">
                                 <Reply className="h-3 w-3" />
@@ -910,6 +936,7 @@ export default function UserMessagesPage() {
                                 ))}
                               </div>
                             )}
+                          </div>
                           </div>
                         </div>
                       );
