@@ -49,6 +49,8 @@ const App = () => (
             <Route path="/user/marketplace" element={<ProtectedRoute><UserMarketplacePage /></ProtectedRoute>} />
             <Route path="/user/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />
             <Route path="/user/invites" element={<ProtectedRoute><UserInvitesPage /></ProtectedRoute>} />
+            <Route path="/user/announcements" element={<ProtectedRoute><UserAnnouncementsPage /></ProtectedRoute>} />
+            <Route path="/user/messages" element={<ProtectedRoute><UserMessagesPage /></ProtectedRoute>} />
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
