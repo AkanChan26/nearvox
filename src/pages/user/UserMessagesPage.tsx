@@ -798,7 +798,7 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
-                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 terminal-grid">
+                <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-[12px]">
                   {otherIsBlocked && (
                     <div className="text-center py-2">
                       <p className="text-[9px] text-destructive/70 border border-destructive/20 inline-block px-3 py-1">⚠ YOU HAVE BLOCKED THIS USER</p>
@@ -813,9 +813,9 @@ export default function UserMessagesPage() {
                       const displayContent = reply ? reply.mainText : msg.content;
                       return (
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group relative`}>
-                          <div className="relative max-w-[65%]">
+                          <div className="relative inline-block" style={{ maxWidth: "65%" }}>
                             {/* Hover actions */}
-                            <div className={`absolute -top-1 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
+                            <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
                               <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
                                 className="text-muted-foreground hover:text-foreground p-1">
                                 <Reply className="h-3 w-3" />
@@ -832,36 +832,42 @@ export default function UserMessagesPage() {
                               )}
                             </div>
 
-                            {/* Reaction picker - expanded grid */}
+                            {/* Reaction picker */}
                             {showReactions === msg.id && (
-                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card grid grid-cols-8 gap-0.5 p-1.5 z-50 shadow-[0_0_15px_hsl(0_0%_0%/0.4)]`}
+                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card grid grid-cols-8 gap-0.5 p-1.5 z-50 shadow-[0_0_15px_hsl(0_0%_0%/0.4)] rounded`}
                                 onClick={(e) => e.stopPropagation()}>
                                 {QUICK_EMOJIS.map((emoji) => (
                                   <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
-                                    className="hover:bg-foreground/10 p-1 text-sm leading-none">
+                                    className="hover:bg-foreground/10 p-1 text-sm leading-none rounded">
                                     {emoji}
                                   </button>
                                 ))}
                               </div>
                             )}
 
-                            {/* Message bubble - compact, rounded */}
-                            <div className={`${isMine ? "bg-foreground/8 border-foreground/15" : "bg-muted/30 border-border/60"} border rounded-sm`}>
+                            {/* Message bubble — inline-block for dynamic width */}
+                            <div
+                              className={`inline-block rounded-lg ${
+                                isMine
+                                  ? "bg-foreground/10 border border-foreground/15 shadow-[0_0_8px_hsl(145_80%_56%/0.06)]"
+                                  : "bg-[hsl(0_0%_6%)] border border-border/50 shadow-[0_1px_4px_hsl(0_0%_0%/0.3)]"
+                              }`}
+                            >
                               {/* Reply preview */}
                               {reply && (
-                                <div className="px-2.5 pt-2 pb-0">
-                                  <div className="border-l-2 border-foreground/30 pl-2 py-0.5">
-                                    <p className="text-[9px] text-muted-foreground truncate leading-normal">{reply.replyText}</p>
+                                <div className="px-3 pt-2 pb-0">
+                                  <div className="border-l-2 border-foreground/30 pl-2 py-0.5 rounded-sm bg-foreground/5">
+                                    <p className="text-[9px] text-muted-foreground truncate leading-normal px-1">{reply.replyText}</p>
                                   </div>
                                 </div>
                               )}
-                              {/* Only show sender name in group chats for other users */}
+                              {/* Sender name in group chats only */}
                               {isGroup && !isMine && (
-                                <p className="text-[8px] text-muted-foreground/70 px-2.5 pt-1.5 pb-0 tracking-wider">{getDisplayName(msg.sender_id)}</p>
+                                <p className="text-[8px] text-foreground/50 px-3 pt-2 pb-0 tracking-wider">{getDisplayName(msg.sender_id)}</p>
                               )}
-                              <div className="px-2.5 py-1.5">
+                              <div className="px-3 py-2">
                                 {editingMsg === msg.id ? (
-                                  <div className="flex items-center gap-1">
+                                  <div className="flex items-center gap-1.5">
                                     <input value={editText} onChange={(e) => setEditText(e.target.value)}
                                       onKeyDown={(e) => { if (e.key === "Enter") editMessage(msg.id); if (e.key === "Escape") { setEditingMsg(null); setEditText(""); } }}
                                       className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none border-b border-foreground/30" autoFocus />
@@ -869,11 +875,11 @@ export default function UserMessagesPage() {
                                     <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3 w-3" /></button>
                                   </div>
                                 ) : (
-                                  <p className="text-[11px] text-foreground break-words leading-relaxed">{displayContent}</p>
+                                  <p className="text-[12px] text-foreground break-words leading-[1.7] whitespace-pre-wrap">{displayContent}</p>
                                 )}
-                                <div className="flex items-center justify-end gap-1 mt-0.5">
-                                  {msg.is_edited && <span className="text-[7px] text-muted-foreground/40 italic">edited</span>}
-                                  <p className="text-[8px] text-muted-foreground/50">
+                                <div className="flex items-center justify-end gap-1.5 mt-1">
+                                  {msg.is_edited && <span className="text-[7px] text-muted-foreground/35 italic">edited</span>}
+                                  <p className="text-[8px] text-muted-foreground/40">
                                     {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
                                   </p>
                                   {msg.sender_id === user?.id && (() => {
@@ -881,9 +887,9 @@ export default function UserMessagesPage() {
                                     return status === "read" ? (
                                       <CheckCheck className="h-2.5 w-2.5 text-primary" />
                                     ) : status === "delivered" ? (
-                                      <CheckCheck className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                      <CheckCheck className="h-2.5 w-2.5 text-muted-foreground/50" />
                                     ) : (
-                                      <Check className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                      <Check className="h-2.5 w-2.5 text-muted-foreground/50" />
                                     );
                                   })()}
                                 </div>
@@ -892,11 +898,11 @@ export default function UserMessagesPage() {
 
                             {/* Reactions display */}
                             {msgReactions.length > 0 && (
-                              <div className={`flex flex-wrap gap-0.5 mt-0.5 ${isMine ? "justify-end" : "justify-start"}`}>
+                              <div className={`flex flex-wrap gap-1 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
                                 {msgReactions.map((r) => (
                                   <button key={r.emoji} onClick={() => toggleReaction(msg.id, r.emoji)}
-                                    className={`text-[10px] px-1 py-0 border rounded-sm ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border bg-muted/20"} hover:bg-foreground/10`}>
-                                    {r.emoji} {r.count > 1 && <span className="text-[8px]">{r.count}</span>}
+                                    className={`text-[10px] px-1.5 py-0.5 border rounded-full ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border/40 bg-muted/20"} hover:bg-foreground/10`}>
+                                    {r.emoji}{r.count > 1 && <span className="text-[8px] ml-0.5">{r.count}</span>}
                                   </button>
                                 ))}
                               </div>
