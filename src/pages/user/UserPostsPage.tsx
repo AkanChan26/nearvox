@@ -517,7 +517,7 @@ export default function UserPostsPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{item.content}</p>
+                    <p className={`text-sm mb-2 whitespace-pre-wrap ${isCreatorAdmin(item.user_id) ? "admin-text-accent" : "text-foreground"}`}>{item.content}</p>
                   )}
 
                   {/* Attachments (posts only) */}
