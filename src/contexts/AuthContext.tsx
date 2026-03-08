@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextType {
   session: Session | null;
@@ -21,6 +21,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminUsername, setAdminUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const checkAdminRole = async (userId: string) => {
     const { data } = await supabase.rpc("has_role", {
@@ -37,6 +39,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .single();
       setAdminUsername(profile?.username || "ADMIN");
     }
+
+    return !!data;
   };
 
   useEffect(() => {
@@ -67,8 +71,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { error: error as Error };
+
+    // Check admin status and redirect
+    if (data.user) {
+      const admin = await checkAdminRole(data.user.id);
+      if (admin) {
+        navigate("/");
+      } else {
+        navigate("/dashboard");
+      }
+    }
+
+    return { error: null };
   };
 
   const signOut = async () => {
