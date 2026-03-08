@@ -265,10 +265,10 @@ export default function TopicPage() {
 
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Topic */}
-        <div className={`p-4 border mb-6 ${topic.is_announcement ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}>
+        <div className={`p-4 border mb-6 ${topicIsAdmin || topic.is_announcement ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}>
           {topic.is_announcement && <p className="text-[9px] admin-text tracking-[0.3em] mb-2">◆ SYSTEM ANNOUNCEMENT</p>}
-          <h1 className={`text-lg mb-2 ${topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
-          <div className="text-sm text-foreground/80 leading-relaxed mb-3 whitespace-pre-wrap">
+          <h1 className={`text-lg mb-2 ${topicIsAdmin || topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
+          <div className={`text-sm leading-relaxed mb-3 whitespace-pre-wrap ${topicIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>
             <RichContent content={topic.content} />
           </div>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
@@ -357,7 +357,7 @@ export default function TopicPage() {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
                     )}
 
                     {/* Reply actions */}
