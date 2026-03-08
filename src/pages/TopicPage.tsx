@@ -226,6 +226,15 @@ export default function TopicPage() {
     if (error) { toast.error("Failed to delete reply"); } else { toast.success("Reply deleted"); invalidateAll(); }
   };
 
+  // --- Delete Topic ---
+  const handleDeleteTopic = async () => {
+    if (!id) return;
+    const confirmed = window.confirm("Are you sure you want to delete this topic? This cannot be undone.");
+    if (!confirmed) return;
+    const { error } = await supabase.from("topics").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete topic"); } else { toast.success("Topic deleted"); navigate(-1); }
+  };
+
   // --- Report ---
   const handleReport = async () => {
     if (!reportReason.trim() || !user || !reportingId) return;
