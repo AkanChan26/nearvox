@@ -125,7 +125,7 @@ export default function UserDashboard() {
         {isLoading ? (
           <p className="text-xs text-muted-foreground cursor-blink">SCANNING NETWORK</p>
         ) : topics && topics.length > 0 ? (
-          <div className="space-y-1">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {topics.map((topic, index) => {
               const isAdmin = isCreatorAdmin(topic.user_id);
               const isAnnouncement = topic.is_announcement;
@@ -134,54 +134,32 @@ export default function UserDashboard() {
                 <button
                   key={topic.id}
                   onClick={() => navigate(`/topic/${topic.id}`)}
-                  className={`w-full text-left p-3 border transition-none group ${
+                  className={`text-left p-3 border transition-none group flex flex-col gap-1.5 ${
                     isAnnouncement
-                      ? "admin-box border-[hsl(var(--admin-border))]"
+                      ? "admin-box border-[hsl(var(--admin-border))] col-span-2 md:col-span-3"
                       : "border-border hover:border-foreground/30 hover:bg-muted/30"
                   }`}
                 >
                   {isAnnouncement && (
-                    <p className="text-[9px] admin-text tracking-[0.3em] mb-1">
-                      ◆ SYSTEM ANNOUNCEMENT
-                    </p>
+                    <p className="text-[9px] admin-text tracking-[0.3em]">◆ SYSTEM ANNOUNCEMENT</p>
                   )}
-
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
-                        <span className={`text-sm ${isAnnouncement ? "admin-text font-bold" : "text-foreground"}`}>
-                          {topic.title}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <span className={`text-[10px] ${isAdmin ? "admin-text glow-admin" : "text-muted-foreground"}`}>
-                          {getCreatorName(topic.user_id)}
-                          {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
-                        </span>
-                        {topic.location && (
-                          <span className="text-[10px] text-muted-foreground">
-                            📍 {topic.location}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground shrink-0">
-                      <span className="flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
-                        {topic.replies_count}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Eye className="h-3 w-3" />
-                        {topic.views_count}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDistanceToNow(new Date(topic.last_activity_at), { addSuffix: true })}
-                      </span>
-                      <ChevronRight className="h-3 w-3 opacity-0 group-hover:opacity-100" />
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
+                    <span className={`text-sm ${isAnnouncement ? "admin-text font-bold" : "text-foreground"}`}>
+                      {topic.title}
+                    </span>
+                  </div>
+                  <span className={`text-[10px] ${isAdmin ? "admin-text glow-admin" : "text-muted-foreground"}`}>
+                    {getCreatorName(topic.user_id)}
+                    {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
+                  </span>
+                  {topic.location && (
+                    <span className="text-[10px] text-muted-foreground">📍 {topic.location}</span>
+                  )}
+                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-1">
+                    <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{topic.replies_count}</span>
+                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{topic.views_count}</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{formatDistanceToNow(new Date(topic.last_activity_at), { addSuffix: true })}</span>
                   </div>
                 </button>
               );
