@@ -552,41 +552,48 @@ export default function UserMessagesPage() {
     <UserLayout>
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
-      <div className="px-4 sm:px-6 py-4">
-        <div className="border border-border flex flex-col md:flex-row" style={{ height: "min(78vh, 620px)", minHeight: "400px" }}>
+      <div className="px-4 sm:px-8 py-6">
+        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(82vh, 700px)", minHeight: "450px" }}>
+          {/* Subtle scanline overlay */}
+          <div className="absolute inset-0 scanline pointer-events-none z-0" />
+
           {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-80 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
-            <div className="p-3 border-b border-border flex gap-2">
+          <div className={`w-full md:w-[320px] border-r border-border flex flex-col shrink-0 relative z-10 bg-card ${activeConvo ? "hidden md:flex" : "flex"}`}>
+            {/* Section label */}
+            <div className="px-4 pt-4 pb-2">
+              <p className="text-[9px] tracking-[0.3em] text-muted-foreground uppercase">// conversations</p>
+            </div>
+            <div className="px-4 pb-4 border-b border-border flex gap-3">
               <button onClick={() => { setShowNewDm(true); setShowNewGroup(false); }}
-                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                className="flex items-center gap-2 text-[10px] text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center tracking-wider">
                 <User className="h-3.5 w-3.5" /> NEW DM
               </button>
               <button onClick={() => { setShowNewGroup(true); setShowNewDm(false); }}
-                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                className="flex items-center gap-2 text-[10px] text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center tracking-wider">
                 <Users className="h-3.5 w-3.5" /> NEW GROUP
               </button>
             </div>
 
             {/* New DM Search */}
             {showNewDm && (
-              <div className="p-3 border-b border-border bg-muted/20">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] text-muted-foreground">&gt; FIND USER:</p>
+              <div className="px-4 py-4 border-b border-border bg-muted/30">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] text-muted-foreground tracking-wider">&gt; FIND USER:</p>
                   <button onClick={() => { setShowNewDm(false); setDmSearch(""); }} className="text-muted-foreground hover:text-foreground p-1"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input value={dmSearch} onChange={(e) => setDmSearch(e.target.value)} placeholder="Type anonymous name..."
-                    className="w-full bg-input border border-border text-foreground text-[11px] pl-8 pr-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" autoFocus />
+                    className="w-full bg-input border border-border text-foreground text-[11px] pl-9 pr-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" autoFocus />
                 </div>
                 {searchResults && searchResults.length > 0 && (
-                  <div className="mt-1 border border-border bg-card max-h-32 overflow-y-auto">
+                  <div className="mt-2 border border-border bg-card max-h-36 overflow-y-auto">
                     {searchResults.map((r) => (
                       <button key={r.user_id} onClick={() => startDm(r)}
-                        className="w-full text-left text-[11px] px-3 py-2 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-2">
+                        className="w-full text-left text-[11px] px-4 py-3 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-3 border-b border-border last:border-0">
                         <User className="h-3.5 w-3.5 text-muted-foreground" />
                         {r.anonymous_name || r.username}
-                        {isBlocked(r.user_id) && <span className="text-[8px] text-destructive ml-auto">BLOCKED</span>}
+                        {isBlocked(r.user_id) && <span className="text-[8px] text-destructive ml-auto tracking-wider">BLOCKED</span>}
                       </button>
                     ))}
                   </div>
@@ -596,33 +603,33 @@ export default function UserMessagesPage() {
 
             {/* New Group */}
             {showNewGroup && (
-              <div className="p-2 border-b border-border bg-muted/20 space-y-2">
+              <div className="px-4 py-4 border-b border-border bg-muted/30 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-muted-foreground">&gt; CREATE GROUP:</p>
-                  <button onClick={() => { setShowNewGroup(false); setGroupMembers([]); setGroupName(""); }} className="text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                  <p className="text-[10px] text-muted-foreground tracking-wider">&gt; CREATE GROUP:</p>
+                  <button onClick={() => { setShowNewGroup(false); setGroupMembers([]); setGroupName(""); }} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Group name..."
-                  className="w-full bg-input border border-border text-foreground text-[11px] px-2 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                  className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input value={groupMemberSearch} onChange={(e) => setGroupMemberSearch(e.target.value)} placeholder="Add members..."
-                    className="w-full bg-input border border-border text-foreground text-[11px] pl-7 pr-2 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                    className="w-full bg-input border border-border text-foreground text-[11px] pl-9 pr-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                 </div>
                 {searchResults && searchResults.length > 0 && groupMemberSearch.length >= 2 && (
-                  <div className="border border-border bg-card max-h-24 overflow-y-auto">
+                  <div className="border border-border bg-card max-h-28 overflow-y-auto">
                     {searchResults.filter((r) => !groupMembers.some((gm) => gm.user_id === r.user_id)).map((r) => (
                       <button key={r.user_id} onClick={() => { setGroupMembers((prev) => [...prev, r]); setGroupMemberSearch(""); }}
-                        className="w-full text-left text-[11px] px-2 py-1.5 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-2">
-                        <UserPlus className="h-3 w-3 text-muted-foreground" />
+                        className="w-full text-left text-[11px] px-4 py-2.5 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-3 border-b border-border last:border-0">
+                        <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
                         {r.anonymous_name || r.username}
                       </button>
                     ))}
                   </div>
                 )}
                 {groupMembers.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-2">
                     {groupMembers.map((m) => (
-                      <span key={m.user_id} className="text-[10px] border border-foreground/30 px-1.5 py-0.5 flex items-center gap-1 text-foreground">
+                      <span key={m.user_id} className="text-[10px] border border-foreground/30 px-2.5 py-1 flex items-center gap-1.5 text-foreground">
                         {m.anonymous_name || m.username}
                         <button onClick={() => setGroupMembers((prev) => prev.filter((p) => p.user_id !== m.user_id))} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button>
                       </span>
@@ -630,7 +637,7 @@ export default function UserMessagesPage() {
                   </div>
                 )}
                 <button onClick={createGroup} disabled={!groupName.trim() || groupMembers.length === 0}
-                  className="w-full text-[10px] text-foreground border border-foreground px-2 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                  className="w-full text-[10px] text-foreground border border-foreground px-3 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40 tracking-wider">
                   [CREATE GROUP — {groupMembers.length + 1} MEMBERS]
                 </button>
               </div>
@@ -639,7 +646,7 @@ export default function UserMessagesPage() {
             {/* Conversation list */}
             <div className="flex-1 overflow-y-auto">
               {convosLoading ? (
-                <p className="text-[10px] text-muted-foreground p-3">LOADING CHATS...</p>
+                <p className="text-[10px] text-muted-foreground p-5 tracking-wider cursor-blink">LOADING CHATS</p>
               ) : conversations && conversations.length > 0 ? (
                 conversations.map((convo) => {
                   const isActive = activeConvo === convo.id;
@@ -649,16 +656,16 @@ export default function UserMessagesPage() {
                   const unread = hasUnread(convo.id);
                   return (
                     <button key={convo.id} onClick={() => setActiveConvo(convo.id)}
-                      className={`w-full text-left p-3 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
-                      <div className="flex items-center gap-2.5">
-                        {unread && <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0" />}
+                      className={`w-full text-left px-4 py-4 border-b border-border transition-none ${isActive ? "bg-foreground/10 border-l-2 border-l-foreground" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
+                      <div className="flex items-center gap-3">
+                        {unread && <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0 shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />}
                         {!unread && (isGroup ? <Hash className="h-4 w-4 text-muted-foreground shrink-0" /> : 
                           <div className="relative shrink-0">
                             <User className="h-4 w-4 text-muted-foreground" />
                             {dmOtherId && <OnlineIndicator isOnline={isOnline(dmOtherId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                           </div>
                         )}
-                        <span className={`text-[11px] truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
+                        <span className={`text-[11px] truncate leading-relaxed ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
                         {!isGroup && dmOtherId && isOnline(dmOtherId) && (
@@ -676,32 +683,32 @@ export default function UserMessagesPage() {
                         })()}
                       </div>
                       {lastMsg && (
-                        <p className={`text-[10px] truncate mt-1 ml-6 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
+                        <p className={`text-[10px] truncate mt-1.5 ml-7 leading-relaxed ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
                           {getDisplayName(lastMsg.sender_id)}: {lastMsg.content.slice(0, 40)}
                         </p>
                       )}
-                      <p className="text-[9px] text-muted-foreground/60 ml-6 mt-0.5">
+                      <p className="text-[9px] text-muted-foreground/60 ml-7 mt-1">
                         {formatDistanceToNow(new Date(convo.updated_at), { addSuffix: true })}
                       </p>
                     </button>
                   );
                 })
               ) : (
-                <div className="p-6 text-center">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-40" />
-                  <p className="text-[10px] text-muted-foreground">NO CONVERSATIONS YET</p>
-                  <p className="text-[9px] text-muted-foreground/50 mt-1">Start a DM or create a group above</p>
+                <div className="p-8 text-center">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto mb-4 opacity-20" />
+                  <p className="text-[10px] text-muted-foreground tracking-wider mb-2">NO CONVERSATIONS YET</p>
+                  <p className="text-[9px] text-muted-foreground/50 leading-relaxed">Start a DM or create a group above</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* ── RIGHT: Chat View ── */}
-          <div className={`flex-1 flex flex-col min-w-0 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
+          <div className={`flex-1 flex flex-col min-w-0 relative z-10 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="p-3 border-b border-border flex items-center gap-2.5">
+                <div className="px-4 py-3.5 border-b border-border flex items-center gap-3 bg-card/80">
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground p-1">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
@@ -780,8 +787,7 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3 terminal-grid">
                   {otherIsBlocked && (
                     <div className="text-center py-2">
                       <p className="text-[9px] text-destructive/70 border border-destructive/20 inline-block px-3 py-1">⚠ YOU HAVE BLOCKED THIS USER</p>
@@ -822,9 +828,9 @@ export default function UserMessagesPage() {
                             )}
 
                             {/* Message bubble */}
-                            <div className={`${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/30 border-border"} border px-3 py-2`}>
+                            <div className={`${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/40 border-border"} border px-4 py-3`}>
                               {!isMine && (
-                                <p className="text-[9px] text-muted-foreground mb-0.5 font-mono">{getDisplayName(msg.sender_id)}</p>
+                                <p className="text-[9px] text-muted-foreground mb-1.5 font-mono tracking-wider">{getDisplayName(msg.sender_id)}</p>
                               )}
                               {editingMsg === msg.id ? (
                                 <div className="flex items-center gap-1">
@@ -872,7 +878,10 @@ export default function UserMessagesPage() {
                     })
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-[10px] text-muted-foreground/40">NO MESSAGES YET — START THE CONVERSATION</p>
+                      <div className="text-center space-y-3">
+                        <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto opacity-15" />
+                        <p className="text-[10px] text-muted-foreground/40 tracking-wider leading-relaxed">NO MESSAGES YET — START THE CONVERSATION</p>
+                      </div>
                     </div>
                   )}
                   <div ref={chatEndRef} />
@@ -880,18 +889,18 @@ export default function UserMessagesPage() {
 
                 {/* Context menu */}
                 {contextMenu && (
-                  <div className="fixed border border-border bg-card z-50 min-w-[120px]"
+                  <div className="fixed border border-border bg-card z-50 min-w-[140px] shadow-[0_0_20px_hsl(0_0%_0%/0.5)]"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                     onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => {
                       const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
                       if (msg) { setEditingMsg(msg.id); setEditText(msg.content); }
                       setContextMenu(null);
-                    }} className="w-full text-left text-[10px] px-3 py-1.5 hover:bg-foreground/5 text-foreground flex items-center gap-2">
+                    }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
                       <Pencil className="h-3 w-3" /> EDIT
                     </button>
                     <button onClick={() => deleteMessage(contextMenu.msgId)}
-                      className="w-full text-left text-[10px] px-3 py-1.5 hover:bg-destructive/10 text-destructive flex items-center gap-2">
+                      className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-destructive/10 text-destructive flex items-center gap-3">
                       <Trash2 className="h-3 w-3" /> DELETE
                     </button>
                   </div>
@@ -899,24 +908,24 @@ export default function UserMessagesPage() {
 
                 {/* Typing indicator */}
                 {typingUsers.length > 0 && (
-                  <div className="px-3 py-1 border-t border-border">
-                    <p className="text-[9px] text-muted-foreground animate-pulse">
+                  <div className="px-5 py-2 border-t border-border">
+                    <p className="text-[9px] text-muted-foreground animate-pulse tracking-wider">
                       {typingUsers.map(getDisplayName).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
                     </p>
                   </div>
                 )}
 
                 {/* Input */}
-                <div className="p-3 border-t border-border flex gap-2">
+                <div className="px-4 py-3.5 border-t border-border flex gap-3 bg-card/80">
                   {otherIsBlocked ? (
-                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-2">UNBLOCK USER TO SEND MESSAGES</p>
+                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-3 tracking-wider">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
                       <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
-                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-3 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
-                        className="text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                        className="text-foreground border border-foreground px-5 py-3 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
                         <Send className="h-4 w-4" />
                       </button>
                     </>
@@ -924,11 +933,14 @@ export default function UserMessagesPage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center space-y-3">
-                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto opacity-20" />
-                  <p className="text-[11px] text-muted-foreground tracking-wider">SELECT A CONVERSATION</p>
-                  <p className="text-[9px] text-muted-foreground/50">or start a new DM / group</p>
+              <div className="flex-1 flex items-center justify-center terminal-grid">
+                <div className="text-center space-y-4 px-6">
+                  <div className="border border-border/40 p-6 inline-block">
+                    <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto opacity-15" />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground tracking-[0.25em] leading-relaxed">SELECT A CONVERSATION</p>
+                  <p className="text-[9px] text-muted-foreground/40 leading-relaxed">or start a new DM / group</p>
+                  <div className="w-16 border-b border-border/30 mx-auto" />
                 </div>
               </div>
             )}
