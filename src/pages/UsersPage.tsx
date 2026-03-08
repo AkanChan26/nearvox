@@ -6,7 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Ticket, Copy, Check } from "lucide-react";
+import { Ticket, Copy, Check, X } from "lucide-react";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
