@@ -75,6 +75,9 @@ export default function UserMessagesPage() {
   const [editText, setEditText] = useState("");
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [showConvoMenu, setShowConvoMenu] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const presenceChannelRef = useRef<any>(null);
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({
