@@ -334,9 +334,12 @@ export default function UserPostsPage() {
 
   const isImageFile = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
 
+  const Layout = isAdminRoute ? AdminLayout : UserLayout;
+  const topicPrefix = isAdminRoute ? "/admin/topic" : "/topic";
+
   return (
-    <UserLayout>
-      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
+    <Layout>
+      <PageHeader title={isMine ? "YOUR POSTS" : "ALL POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
         <div className="flex items-center gap-2">
           {!isMine && userLocation && (
             <button
