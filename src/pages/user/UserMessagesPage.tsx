@@ -808,67 +808,85 @@ export default function UserMessagesPage() {
                     chatMessages.map((msg) => {
                       const isMine = msg.sender_id === user?.id;
                       const msgReactions = getReactionsForMsg(msg.id);
+                      const isGroup = activeConversation?.type === "group";
+                      const reply = parseReply(msg.content);
+                      const displayContent = reply ? reply.mainText : msg.content;
                       return (
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group relative`}>
-                          <div className="relative max-w-[70%]">
+                          <div className="relative max-w-[65%]">
                             {/* Hover actions */}
-                            <div className={`absolute top-0 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1`}>
+                            <div className={`absolute -top-1 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
+                              <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
+                                className="text-muted-foreground hover:text-foreground p-1">
+                                <Reply className="h-3 w-3" />
+                              </button>
                               <button onClick={(e) => { e.stopPropagation(); setShowReactions(showReactions === msg.id ? null : msg.id); }}
-                                className="text-muted-foreground hover:text-foreground p-0.5">
+                                className="text-muted-foreground hover:text-foreground p-1">
                                 <SmilePlus className="h-3 w-3" />
                               </button>
                               {isMine && (
                                 <button onClick={(e) => handleMsgAction(e, msg.id)}
-                                  className="text-muted-foreground hover:text-foreground p-0.5">
+                                  className="text-muted-foreground hover:text-foreground p-1">
                                   <MoreVertical className="h-3 w-3" />
                                 </button>
                               )}
                             </div>
 
-                            {/* Reaction picker */}
+                            {/* Reaction picker - expanded grid */}
                             {showReactions === msg.id && (
-                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card flex gap-0.5 p-1 z-50`}
+                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card grid grid-cols-8 gap-0.5 p-1.5 z-50 shadow-[0_0_15px_hsl(0_0%_0%/0.4)]`}
                                 onClick={(e) => e.stopPropagation()}>
                                 {QUICK_EMOJIS.map((emoji) => (
                                   <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
-                                    className="hover:bg-foreground/10 px-1 py-0.5 text-sm">
+                                    className="hover:bg-foreground/10 p-1 text-sm leading-none">
                                     {emoji}
                                   </button>
                                 ))}
                               </div>
                             )}
 
-                            {/* Message bubble */}
-                            <div className={`${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/40 border-border"} border px-4 py-3`}>
-                              {!isMine && (
-                                <p className="text-[9px] text-muted-foreground mb-1.5 font-mono tracking-wider">{getDisplayName(msg.sender_id)}</p>
-                              )}
-                              {editingMsg === msg.id ? (
-                                <div className="flex items-center gap-1">
-                                  <input value={editText} onChange={(e) => setEditText(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === "Enter") editMessage(msg.id); if (e.key === "Escape") { setEditingMsg(null); setEditText(""); } }}
-                                    className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none border-b border-foreground/30" autoFocus />
-                                  <button onClick={() => editMessage(msg.id)} className="text-foreground"><Check className="h-3 w-3" /></button>
-                                  <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3 w-3" /></button>
+                            {/* Message bubble - compact, rounded */}
+                            <div className={`${isMine ? "bg-foreground/8 border-foreground/15" : "bg-muted/30 border-border/60"} border rounded-sm`}>
+                              {/* Reply preview */}
+                              {reply && (
+                                <div className="px-2.5 pt-2 pb-0">
+                                  <div className="border-l-2 border-foreground/30 pl-2 py-0.5">
+                                    <p className="text-[9px] text-muted-foreground truncate leading-normal">{reply.replyText}</p>
+                                  </div>
                                 </div>
-                              ) : (
-                                <p className="text-[11px] text-foreground break-words leading-relaxed">{msg.content}</p>
                               )}
-                              <div className="flex items-center justify-end gap-1 mt-0.5">
-                                {msg.is_edited && <span className="text-[7px] text-muted-foreground/50 italic">edited</span>}
-                                <p className="text-[8px] text-muted-foreground/60">
-                                  {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                                </p>
-                                {msg.sender_id === user?.id && (() => {
-                                  const status = getReadStatus(msg);
-                                  return status === "read" ? (
-                                    <CheckCheck className="h-3 w-3 text-primary" />
-                                  ) : status === "delivered" ? (
-                                    <CheckCheck className="h-3 w-3 text-muted-foreground/60" />
-                                  ) : (
-                                    <Check className="h-3 w-3 text-muted-foreground/60" />
-                                  );
-                                })()}
+                              {/* Only show sender name in group chats for other users */}
+                              {isGroup && !isMine && (
+                                <p className="text-[8px] text-muted-foreground/70 px-2.5 pt-1.5 pb-0 tracking-wider">{getDisplayName(msg.sender_id)}</p>
+                              )}
+                              <div className="px-2.5 py-1.5">
+                                {editingMsg === msg.id ? (
+                                  <div className="flex items-center gap-1">
+                                    <input value={editText} onChange={(e) => setEditText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === "Enter") editMessage(msg.id); if (e.key === "Escape") { setEditingMsg(null); setEditText(""); } }}
+                                      className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none border-b border-foreground/30" autoFocus />
+                                    <button onClick={() => editMessage(msg.id)} className="text-foreground"><Check className="h-3 w-3" /></button>
+                                    <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3 w-3" /></button>
+                                  </div>
+                                ) : (
+                                  <p className="text-[11px] text-foreground break-words leading-relaxed">{displayContent}</p>
+                                )}
+                                <div className="flex items-center justify-end gap-1 mt-0.5">
+                                  {msg.is_edited && <span className="text-[7px] text-muted-foreground/40 italic">edited</span>}
+                                  <p className="text-[8px] text-muted-foreground/50">
+                                    {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                                  </p>
+                                  {msg.sender_id === user?.id && (() => {
+                                    const status = getReadStatus(msg);
+                                    return status === "read" ? (
+                                      <CheckCheck className="h-2.5 w-2.5 text-primary" />
+                                    ) : status === "delivered" ? (
+                                      <CheckCheck className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                    ) : (
+                                      <Check className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                    );
+                                  })()}
+                                </div>
                               </div>
                             </div>
 
@@ -877,7 +895,7 @@ export default function UserMessagesPage() {
                               <div className={`flex flex-wrap gap-0.5 mt-0.5 ${isMine ? "justify-end" : "justify-start"}`}>
                                 {msgReactions.map((r) => (
                                   <button key={r.emoji} onClick={() => toggleReaction(msg.id, r.emoji)}
-                                    className={`text-[10px] px-1 py-0 border ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border bg-muted/20"} hover:bg-foreground/10`}>
+                                    className={`text-[10px] px-1 py-0 border rounded-sm ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border bg-muted/20"} hover:bg-foreground/10`}>
                                     {r.emoji} {r.count > 1 && <span className="text-[8px]">{r.count}</span>}
                                   </button>
                                 ))}
