@@ -14,6 +14,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { ProfileAvatar } from "@/components/Avatars";
 
 type UnifiedItem = {
   id: string;
