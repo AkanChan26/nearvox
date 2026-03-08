@@ -351,7 +351,7 @@ export default function UserBoardDetailPage() {
 }
 
 function PostCard({
-  post, isLiked, isOwner, onLike, onDelete, onReport,
+  post, isLiked, isOwner, isAdmin, onLike, onDelete, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
   commentsQueryFn, onDeleteComment, currentUserId,
 }: any) {
