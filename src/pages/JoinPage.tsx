@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, Terminal, ChevronRight, User, MapPin, Mail, Lock, Ticket, Shuffle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { USER_AVATARS, ProfileAvatar } from "@/components/Avatars";
 
 const normalizeInviteInput = (value: string) => {
   const trimmed = value.trim();
