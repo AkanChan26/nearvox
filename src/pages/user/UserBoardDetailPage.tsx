@@ -613,20 +613,20 @@ function PostCard({
 
       {/* Comments */}
       {showComments && (
-        <div className="mt-3 border-t border-border pt-3 space-y-2">
+        <div className="mt-2 border-t border-border pt-2 space-y-1.5">
           {comments && comments.map((c: any) => (
-            <div key={c.id} className="flex gap-2">
-              <ProfileAvatar avatarId={c.profile?.avatar} size={24} />
+            <div key={c.id} className="flex gap-1.5">
+              <ProfileAvatar avatarId={c.profile?.avatar} size={18} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs text-foreground font-bold">{c.profile?.anonymous_name || "User"}</span>
-                  <span className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-[10px] text-foreground font-bold">{c.profile?.anonymous_name || "User"}</span>
+                  <span className="text-[9px] text-muted-foreground">{formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}</span>
                 </div>
-                <p className="text-xs text-foreground/80">{c.content}</p>
+                <p className="text-[10px] text-foreground/80">{c.content}</p>
               </div>
               {c.user_id === currentUserId && (
-                <button onClick={() => onDeleteComment(c.id)} className="text-muted-foreground hover:text-destructive p-1">
-                  <Trash2 className="h-3 w-3" />
+                <button onClick={() => onDeleteComment(c.id)} className="text-muted-foreground hover:text-destructive p-0.5">
+                  <Trash2 className="h-2.5 w-2.5" />
                 </button>
               )}
             </div>
@@ -638,10 +638,10 @@ function PostCard({
               onChange={(e) => onCommentChange(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onAddComment()}
               placeholder="Add a comment..."
-              className="flex-1 bg-background border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+              className="flex-1 bg-background border border-border px-2.5 py-1.5 text-[10px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
             />
-            <button onClick={onAddComment} disabled={!commentText?.trim()} className="text-xs text-foreground border border-border px-3 py-2 hover:bg-foreground/5 disabled:opacity-50">
-              <Send className="h-3 w-3" />
+            <button onClick={onAddComment} disabled={!commentText?.trim()} className="text-foreground border border-border px-2 py-1.5 hover:bg-foreground/5 disabled:opacity-50">
+              <Send className="h-2.5 w-2.5" />
             </button>
           </div>
         </div>
