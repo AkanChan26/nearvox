@@ -11,7 +11,6 @@ import {
   CheckCheck, Reply, CornerDownRight, Smile,
 } from "lucide-react";
 import { formatDistanceToNow, format, isToday, isYesterday, isSameDay } from "date-fns";
-import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import { OnlineIndicator } from "@/components/OnlineIndicator";
 
 type Conversation = {
@@ -82,7 +81,7 @@ export default function UserMessagesPage() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<any>(null);
-  const { isOnline } = useOnlinePresence();
+  const { isOnline } = useAuth();
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({

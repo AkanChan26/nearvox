@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,8 @@ interface AuthContextType {
   isAdmin: boolean;
   adminUsername: string | null;
   loading: boolean;
+  onlineUsers: Set<string>;
+  isOnline: (userId: string) => boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
@@ -21,7 +23,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminUsername, setAdminUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
+  const channelRef = useRef<any>(null);
   const navigate = useNavigate();
+
+  // ── GLOBAL ONLINE PRESENCE ──
+  useEffect(() => {
+    if (!user) {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+      setOnlineUsers(new Set());
+      return;
+    }
+
+    const channel = supabase.channel("global-presence", {
+      config: { presence: { key: user.id } },
+    });
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const ids = new Set<string>(Object.keys(state));
+        setOnlineUsers(ids);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({ online_at: new Date().toISOString() });
+        }
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [user?.id]);
+
+  const isOnline = (userId: string) => onlineUsers.has(userId);
 
   const checkAdminRole = async (userId: string) => {
     const { data, error } = await supabase.rpc("has_role", {
@@ -100,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ session, user, isAdmin, adminUsername, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ session, user, isAdmin, adminUsername, loading, onlineUsers, isOnline, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
