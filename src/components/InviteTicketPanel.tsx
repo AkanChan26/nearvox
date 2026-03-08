@@ -85,15 +85,16 @@ export function InviteTicketPanel({ onClose, embedded = false }: Props) {
       : inviterProfile.anonymous_name
     : null;
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80">
-      <div className="w-full max-w-md border border-border bg-card p-4">
+  const content = (
+    <>
+      {!embedded && (
         <div className="flex items-center justify-between mb-4">
           <p className="text-xs text-muted-foreground tracking-[0.3em]">INVITE TICKETS</p>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-4 w-4" />
           </button>
         </div>
+      )}
 
         {inviterName && (
           <div className="border border-border p-2 mb-4">
