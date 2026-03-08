@@ -296,6 +296,12 @@ export default function TopicPage() {
             <ArrowLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
             <span className="hidden sm:inline">BACK</span>
           </button>
+          <button
+            onClick={() => navigate(secondaryNavPath)}
+            className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider min-h-[36px] px-2 sm:min-h-0 sm:px-0"
+          >
+            {secondaryNavLabel}
+          </button>
           <div className="h-3 w-px bg-border" />
           <p className="text-foreground text-sm glow-text tracking-widest">NEARVOX</p>
         </div>
@@ -305,8 +311,8 @@ export default function TopicPage() {
         {/* Topic */}
         <div className={`p-4 border mb-6 ${topicIsAdmin || topic.is_announcement ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}>
           {topic.is_announcement && <p className="text-[9px] admin-text tracking-[0.3em] mb-2">◆ SYSTEM ANNOUNCEMENT</p>}
-          <h1 className={`text-lg mb-2 ${topicIsAdmin || topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
-          <div className={`text-sm leading-relaxed mb-3 whitespace-pre-wrap ${topicIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>
+          <h1 className={`text-xs mb-2 tracking-wider ${topicIsAdmin || topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
+          <div className={`text-[11px] leading-relaxed mb-3 whitespace-pre-wrap ${topicIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>
             <RichContent content={topic.content} />
           </div>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
