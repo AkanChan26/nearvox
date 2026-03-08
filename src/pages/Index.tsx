@@ -3,53 +3,23 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
-  LogOut, ChevronDown, ChevronUp, Shield, Terminal,
-  Ticket, Copy, Check, X, Eye, Image, FileText,
-  Paperclip, Users, AlertTriangle, Megaphone, BarChart3,
+  LogOut, Shield, Terminal,
+  Ticket, Copy, Check, X,
+  Users, AlertTriangle, Megaphone, BarChart3,
   Settings, TrendingUp, Hash, MessageSquare,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 
 const Index = () => {
   const { adminUsername, isAdmin, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
-  // Section collapse state
-  const [sections, setSections] = useState({
-    users: true,
-    posts: true,
-    marketplace: false,
-    reports: true,
-    announcements: false,
-    settings: false,
-  });
-  const toggle = (key: keyof typeof sections) => setSections((s) => ({ ...s, [key]: !s[key] }));
-
-  // Users state
-  const [userSearch, setUserSearch] = useState("");
-  const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-
-  // Announcements state
-  const [showAnnForm, setShowAnnForm] = useState(false);
-  const [annTitle, setAnnTitle] = useState("");
-  const [annContent, setAnnContent] = useState("");
-  const [annTarget, setAnnTarget] = useState("GLOBAL");
-
-  // Settings state
-  const [adminHandle, setAdminHandle] = useState("");
-  const [savingSettings, setSavingSettings] = useState(false);
-
-  // Post preview
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showInvites, setShowInvites] = useState(false);
 
   // ── DATA QUERIES ──
 
@@ -93,7 +63,6 @@ const Index = () => {
     },
   });
 
-  // Category breakdown
   const { data: categoryBreakdown } = useQuery({
     queryKey: ["category-breakdown"],
     queryFn: async () => {
@@ -107,36 +76,6 @@ const Index = () => {
     },
   });
 
-  // Users
-  const { data: users } = useQuery({
-    queryKey: ["admin-users", userSearch],
-    queryFn: async () => {
-      let query = supabase.from("profiles").select("*").order("created_at", { ascending: false });
-      if (userSearch) query = query.ilike("username", `%${userSearch}%`);
-      const { data } = await query;
-      return data || [];
-    },
-  });
-
-  const { data: allTickets } = useQuery({
-    queryKey: ["admin-all-tickets"],
-    queryFn: async () => {
-      const { data } = await supabase.from("invite_tickets").select("*").order("created_at", { ascending: false });
-      return data || [];
-    },
-  });
-
-  const inviterIds = [...new Set(users?.map((u) => u.invited_by).filter(Boolean) || [])];
-  const { data: inviters } = useQuery({
-    queryKey: ["inviter-profiles", inviterIds],
-    queryFn: async () => {
-      if (inviterIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, username, anonymous_name, is_admin").in("user_id", inviterIds as string[]);
-      return data || [];
-    },
-    enabled: inviterIds.length > 0,
-  });
-
   const { data: adminTickets, refetch: refetchTickets } = useQuery({
     queryKey: ["admin-tickets", user?.id],
     queryFn: async () => {
@@ -146,56 +85,6 @@ const Index = () => {
     enabled: !!user,
   });
 
-  // Posts
-  const { data: posts } = useQuery({
-    queryKey: ["admin-posts"],
-    queryFn: async () => {
-      const { data } = await supabase.from("posts").select("*").order("created_at", { ascending: false });
-      return data || [];
-    },
-  });
-
-  const creatorIds = [...new Set(posts?.map((p) => p.user_id) || [])];
-  const { data: creators } = useQuery({
-    queryKey: ["admin-post-creators", creatorIds],
-    queryFn: async () => {
-      if (creatorIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, username, anonymous_name, is_admin").in("user_id", creatorIds);
-      return data || [];
-    },
-    enabled: creatorIds.length > 0,
-  });
-
-  // Marketplace
-  const { data: listings } = useQuery({
-    queryKey: ["admin-listings"],
-    queryFn: async () => {
-      const { data } = await supabase.from("marketplace_listings").select("*").order("created_at", { ascending: false });
-      return data || [];
-    },
-  });
-
-  const listingUserIds = [...new Set(listings?.map((l) => l.user_id) || [])];
-  const { data: listingSellers } = useQuery({
-    queryKey: ["listing-sellers", listingUserIds],
-    queryFn: async () => {
-      if (listingUserIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, username, anonymous_name").in("user_id", listingUserIds);
-      return data || [];
-    },
-    enabled: listingUserIds.length > 0,
-  });
-
-  // Reports
-  const { data: reports } = useQuery({
-    queryKey: ["admin-reports"],
-    queryFn: async () => {
-      const { data } = await supabase.from("reports").select("*").order("created_at", { ascending: false });
-      return data || [];
-    },
-  });
-
-  // Announcements
   const { data: announcements } = useQuery({
     queryKey: ["admin-announcements"],
     queryFn: async () => {
@@ -204,22 +93,10 @@ const Index = () => {
     },
   });
 
-  // Admin profile for settings
-  const { data: adminProfile } = useQuery({
-    queryKey: ["admin-profile", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("*").eq("user_id", user!.id).single();
-      if (data && !adminHandle) setAdminHandle(data.username);
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  // System log
   const { data: recentTopics } = useQuery({
     queryKey: ["recent-activity-topics"],
     queryFn: async () => {
-      const { data } = await supabase.from("topics").select("id, title, created_at, is_announcement").order("created_at", { ascending: false }).limit(3);
+      const { data } = await supabase.from("topics").select("id, title, created_at, is_announcement").order("created_at", { ascending: false }).limit(5);
       return data || [];
     },
   });
@@ -242,60 +119,21 @@ const Index = () => {
 
   // ── HELPERS ──
 
-  const getInviterName = (invitedBy: string | null) => {
-    if (!invitedBy) return "DIRECT / UNKNOWN";
-    const inviter = inviters?.find((i) => i.user_id === invitedBy);
-    if (!inviter) return invitedBy.slice(0, 8);
-    return inviter.is_admin ? `${inviter.username} (ADMIN)` : inviter.anonymous_name || inviter.username;
-  };
-
-  const getTicketUsedBy = (userId: string) => {
-    const ticket = allTickets?.find((t) => t.used_by === userId);
-    return ticket ? ticket.invite_code : null;
-  };
-
-  const getCreatorInfo = (userId: string) => {
-    const creator = creators?.find((c) => c.user_id === userId);
-    return {
-      name: creator?.is_admin ? creator.username : creator?.anonymous_name || creator?.username || "Unknown",
-      isAdmin: creator?.is_admin || false,
-    };
-  };
-
-  const getSellerName = (userId: string) => {
-    const s = listingSellers?.find((s) => s.user_id === userId);
-    return s?.username || s?.anonymous_name || "?";
-  };
-
   const getLookupName = (userId: string) => {
     const p = recentProfiles?.find((p) => p.user_id === userId);
     if (!p) return userId.slice(0, 8);
     return p.anonymous_name || p.username;
   };
 
-  const timeSince = (date: string) => {
-    const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  };
-
-  const isImage = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
-
-  const getPublicUrl = (path: string) => {
-    const { data } = supabase.storage.from("post-attachments").getPublicUrl(path);
-    return data.publicUrl;
+  const getInviterName = (invitedBy: string | null) => {
+    if (!invitedBy) return "";
+    const p = recentProfiles?.find((pr) => pr.user_id === invitedBy);
+    return p ? (p.anonymous_name || p.username) : invitedBy.slice(0, 8);
   };
 
   // ── ACTIONS ──
 
   const handleLogout = async () => { await signOut(); navigate("/login"); };
-
-  const handleStatusChange = async (userId: string, newStatus: "active" | "suspended" | "banned") => {
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("user_id", userId);
-    if (error) toast.error("Failed"); else { toast.success(`User ${newStatus}`); queryClient.invalidateQueries({ queryKey: ["admin-users"] }); }
-  };
 
   const generateTicket = async () => {
     if (!user) return;
@@ -312,54 +150,11 @@ const Index = () => {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
-  const handleDeletePost = async (postId: string, attachments?: string[]) => {
-    if (attachments?.length) await supabase.storage.from("post-attachments").remove(attachments);
-    const { error } = await supabase.from("posts").delete().eq("id", postId);
-    if (error) toast.error("Failed"); else { toast.success("Post deleted"); queryClient.invalidateQueries({ queryKey: ["admin-posts"] }); }
-  };
-
-  const handlePinPost = async (postId: string, pinned: boolean) => {
-    const { error } = await supabase.from("posts").update({ is_pinned: !pinned }).eq("id", postId);
-    if (error) toast.error("Failed"); else { toast.success(pinned ? "Unpinned" : "Pinned"); queryClient.invalidateQueries({ queryKey: ["admin-posts"] }); }
-  };
-
-  const handleListingStatus = async (id: string, status: "active" | "removed") => {
-    const { error } = await supabase.from("marketplace_listings").update({ status }).eq("id", id);
-    if (error) toast.error("Failed"); else { toast.success(status === "active" ? "Approved" : "Removed"); queryClient.invalidateQueries({ queryKey: ["admin-listings"] }); }
-  };
-
-  const handleReportStatus = async (id: string, status: "reviewing" | "resolved" | "dismissed") => {
-    const { error } = await supabase.from("reports").update({ status }).eq("id", id);
-    if (error) toast.error("Failed"); else { toast.success(`Report ${status}`); queryClient.invalidateQueries({ queryKey: ["admin-reports"] }); }
-  };
-
-  const handleAnnSubmit = async () => {
-    if (!annTitle || !annContent || !user) return;
-    const { error } = await supabase.from("announcements").insert({ admin_id: user.id, title: annTitle, content: annContent, target_location: annTarget });
-    if (error) toast.error("Failed"); else {
-      toast.success("Broadcast sent"); setAnnTitle(""); setAnnContent(""); setAnnTarget("GLOBAL"); setShowAnnForm(false);
-      queryClient.invalidateQueries({ queryKey: ["admin-announcements"] });
-    }
-  };
-
-  const handleRevokeAnn = async (id: string) => {
-    const { error } = await supabase.from("announcements").update({ is_active: false }).eq("id", id);
-    if (error) toast.error("Failed"); else { toast.success("Revoked"); queryClient.invalidateQueries({ queryKey: ["admin-announcements"] }); }
-  };
-
-  const handleSaveSettings = async () => {
-    if (!user || !adminHandle) return;
-    setSavingSettings(true);
-    const { error } = await supabase.from("profiles").update({ username: adminHandle }).eq("user_id", user.id);
-    if (error) toast.error("Failed"); else { toast.success("Saved"); queryClient.invalidateQueries({ queryKey: ["admin-profile"] }); }
-    setSavingSettings(false);
-  };
-
   // Build activity log
   const activityLog = [
     ...(recentProfiles?.map((p) => ({
       time: new Date(p.created_at),
-      text: `User "${p.anonymous_name || p.username}" registered${p.invited_by ? ` (invited by ${getInviterName(p.invited_by)})` : ""} — ${p.location || "Unknown region"}`,
+      text: `User "${p.anonymous_name || p.username}" registered${p.invited_by ? ` (inv: ${getInviterName(p.invited_by)})` : ""} — ${p.location || "Unknown region"}`,
       type: "user" as const,
     })) || []),
     ...(recentTopics?.map((t) => ({
@@ -385,19 +180,6 @@ const Index = () => {
     { label: "SETTINGS", icon: Settings, hint: "admin config", path: "/settings" },
     { label: "INVITES", icon: Ticket, hint: `${adminTickets?.length ?? 0} available`, path: "#invites" },
   ];
-
-  // Section header component
-  const SectionHeader = ({ title, count, sectionKey }: { title: string; count?: number; sectionKey: keyof typeof sections }) => (
-    <button
-      onClick={() => toggle(sectionKey)}
-      className="w-full flex items-center justify-between text-left terminal-header mb-0"
-    >
-      <span>{title}{count !== undefined ? ` — ${count}` : ""}</span>
-      {sections[sectionKey] ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-    </button>
-  );
-
-  const [showInvites, setShowInvites] = useState(false);
 
   return (
     <AdminLayout showBack={false}>
@@ -428,7 +210,7 @@ const Index = () => {
             </div>
           </div>
 
-          {/* ── CATEGORY CARDS (same as user panel) ── */}
+          {/* ── CATEGORY CARDS ── */}
           <div>
             <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
               &gt; NAVIGATE — SELECT MODULE
@@ -584,13 +366,6 @@ const Index = () => {
           </p>
         </div>
       </div>
-
-      {/* Image Preview Modal */}
-      {previewUrl && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/90" onClick={() => setPreviewUrl(null)}>
-          <img src={previewUrl} alt="Preview" className="max-w-full max-h-[75vh] object-contain border border-border" />
-        </div>
-      )}
     </AdminLayout>
   );
 };

@@ -54,7 +54,7 @@ const App = () => (
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
-            {/* /admin/dashboard removed — consolidated into / */}
+            
             <Route path="/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
             <Route path="/posts" element={<AdminRoute><PostsPage /></AdminRoute>} />
             <Route path="/marketplace" element={<AdminRoute><MarketplacePage /></AdminRoute>} />
