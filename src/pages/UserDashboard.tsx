@@ -71,17 +71,35 @@ export default function UserDashboard() {
     },
   });
 
-  // Unread messages count
-  const { data: messageCount } = useQuery({
-    queryKey: ["user-message-count", user?.id],
+  // Unread chat messages count
+  const { data: unreadChatCount } = useQuery({
+    queryKey: ["unread-chat-count", user?.id],
     queryFn: async () => {
-      const { count } = await supabase
-        .from("messages")
-        .select("*", { count: "exact", head: true })
-        .or(`recipient_id.eq.${user!.id},recipient_id.is.null`);
-      return count || 0;
+      // Get my conversation memberships with last_read_at
+      const { data: memberships } = await supabase
+        .from("conversation_members")
+        .select("conversation_id, last_read_at")
+        .eq("user_id", user!.id);
+      if (!memberships || memberships.length === 0) return 0;
+
+      let unreadCount = 0;
+      for (const mem of memberships) {
+        const query = supabase
+          .from("chat_messages")
+          .select("id", { count: "exact", head: true })
+          .eq("conversation_id", mem.conversation_id)
+          .neq("sender_id", user!.id)
+          .is("deleted_at", null);
+        if (mem.last_read_at) {
+          query.gt("created_at", mem.last_read_at);
+        }
+        const { count } = await query;
+        if (count && count > 0) unreadCount += count;
+      }
+      return unreadCount;
     },
     enabled: !!user,
+    refetchInterval: 30000,
   });
 
   const { data: unreadNotifs } = useQuery({
@@ -229,14 +247,17 @@ export default function UserDashboard() {
           </button>
           <button
             onClick={() => navigate("/user/messages")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Mail className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              {(unreadChatCount ?? 0) > 0 && (
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+              )}
             </div>
             <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
-            {(messageCount ?? 0) > 0 && (
-              <p className="text-[9px] text-foreground mt-0.5">{messageCount} messages</p>
+            {(unreadChatCount ?? 0) > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{unreadChatCount} unread</p>
             )}
           </button>
           <button
