@@ -461,6 +461,17 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
+                    {/* Edit (own post) */}
+                    {isOwner && (
+                      <button
+                        onClick={() => { setEditingPost(post.id); setEditContent(post.content); }}
+                        className="flex items-center gap-0.5 hover:text-foreground"
+                      >
+                        <Edit2 className="h-2.5 w-2.5" />
+                        EDIT
+                      </button>
+                    )}
+
                     {/* Delete (own post) */}
                     {isOwner && (
                       <button
