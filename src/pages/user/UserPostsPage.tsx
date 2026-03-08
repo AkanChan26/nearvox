@@ -32,14 +32,21 @@ export default function UserPostsPage() {
   const [reportReason, setReportReason] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+
   const { data: posts, isLoading } = useQuery({
-    queryKey: ["user-posts-feed"],
+    queryKey: ["user-posts-feed", isMine],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("posts")
         .select("*")
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
+      if (isMine && user) {
+        query = query.eq("user_id", user.id);
+      }
+      const { data } = await query;
       return data || [];
     },
   });

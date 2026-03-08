@@ -164,8 +164,17 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Quick Access Row: Announcements, Messages, Settings, Invites */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-6">
+        {/* Quick Access Row */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 mb-6">
+          <button
+            onClick={() => navigate("/user/posts?mine=true")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <FileText className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">YOUR POSTS</p>
+          </button>
           <button
             onClick={() => navigate("/user/announcements")}
             className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
