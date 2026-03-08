@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Shield, Eye, EyeOff, Terminal, ChevronRight, User, MapPin, Mail, Lock, Ticket } from "lucide-react";
+import { Shield, Eye, EyeOff, Terminal, ChevronRight, User, MapPin, Mail, Lock, Ticket, Shuffle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const normalizeInviteInput = (value: string) => {
@@ -24,7 +24,7 @@ export default function JoinPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [username, setUsername] = useState("");
+  const [anonymousName, setAnonymousName] = useState("");
   const [region, setRegion] = useState("");
   const [code, setCode] = useState(inviteCode);
   const [error, setError] = useState("");
@@ -32,7 +32,8 @@ export default function JoinPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [validating, setValidating] = useState(false);
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
-  const [step, setStep] = useState(1); // 1 = invite code, 2 = details
+  const [step, setStep] = useState(1);
+  const [generatingName, setGeneratingName] = useState(false);
 
   const validateCode = useCallback(async (rawValue: string) => {
     const normalizedCode = normalizeInviteInput(rawValue);
@@ -52,11 +53,19 @@ export default function JoinPage() {
       const isValid = await validateCode(normalizedCode);
       setCodeValid(isValid);
       setValidating(false);
-      // Auto-advance if came from URL with valid code
       if (isValid && inviteCode) setStep(2);
     }, 350);
     return () => clearTimeout(timeout);
   }, [code, validateCode, inviteCode]);
+
+  const generateRandomName = async () => {
+    setGeneratingName(true);
+    const { data, error } = await supabase.rpc("generate_anonymous_name");
+    if (!error && data) {
+      setAnonymousName(data);
+    }
+    setGeneratingName(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,11 +75,11 @@ export default function JoinPage() {
     setLoading(true);
     const isStillValid = await validateCode(normalizedCode);
     if (!isStillValid) { setError("INVALID OR USED INVITE CODE"); setLoading(false); return; }
-    if (!name.trim() || !username.trim() || !region.trim()) { setError("ALL FIELDS ARE REQUIRED"); setLoading(false); return; }
+    if (!name.trim() || !anonymousName.trim() || !region.trim()) { setError("ALL FIELDS ARE REQUIRED"); setLoading(false); return; }
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name: name.trim(), username: username.trim(), region: region.trim() } },
+      options: { data: { name: name.trim(), anonymous_name: anonymousName.trim(), region: region.trim() } },
     });
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
     if (signUpData.user) {
@@ -89,7 +98,7 @@ export default function JoinPage() {
 
       <div className="w-full max-w-sm relative z-10 px-4">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="flex items-center justify-center gap-2 mb-3">
             <div className="h-px w-8 bg-foreground/30" />
             <Shield className="h-6 w-6 text-foreground glow-text" />
@@ -154,25 +163,37 @@ export default function JoinPage() {
               <>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
-                    <User className="h-2.5 w-2.5" /> NAME:
+                    <User className="h-2.5 w-2.5" /> YOUR NAME:
                   </p>
                   <input
                     type="text" value={name} onChange={(e) => setName(e.target.value)}
-                    placeholder="Your full name"
+                    placeholder="Your real name (private)"
                     className="w-full bg-input border border-border text-foreground text-sm px-3 py-2.5 focus:outline-none focus:border-foreground/60 focus:bg-foreground/5 placeholder:text-muted-foreground transition-none"
                     required
                   />
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
-                    <User className="h-2.5 w-2.5" /> USERNAME:
+                    <Shield className="h-2.5 w-2.5" /> ANONYMOUS IDENTITY:
                   </p>
-                  <input
-                    type="text" value={username} onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Choose a handle"
-                    className="w-full bg-input border border-border text-foreground text-sm px-3 py-2.5 focus:outline-none focus:border-foreground/60 focus:bg-foreground/5 placeholder:text-muted-foreground transition-none"
-                    required
-                  />
+                  <div className="flex gap-1.5">
+                    <input
+                      type="text" value={anonymousName} onChange={(e) => setAnonymousName(e.target.value)}
+                      placeholder="e.g. CipherArc, NeonDrifter..."
+                      className="flex-1 bg-input border border-border text-foreground text-sm px-3 py-2.5 focus:outline-none focus:border-foreground/60 focus:bg-foreground/5 placeholder:text-muted-foreground transition-none"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={generateRandomName}
+                      disabled={generatingName}
+                      className="px-3 border border-border text-muted-foreground hover:text-foreground hover:border-foreground/60 transition-none flex items-center gap-1 min-h-[42px]"
+                      title="Generate random anonymous name"
+                    >
+                      <Shuffle className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-muted-foreground mt-1">This is how others will see you on the network</p>
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
