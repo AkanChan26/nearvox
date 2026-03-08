@@ -270,16 +270,16 @@ export default function UserDashboard() {
             })}
             <button
               onClick={() => navigate("/user/posts")}
-              className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
+              className="text-left p-3 sm:p-3.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="text-[10px] text-muted-foreground/60 font-mono">[10]</span>
-                <MessageSquare className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[9px] text-muted-foreground/60 font-mono">[10]</span>
+                <MessageSquare className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
-              <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1.5">
+              <p className="text-[9px] sm:text-[10px] text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1">
                 ALL POSTS
               </p>
-              <p className="text-[9px] text-muted-foreground/50 leading-relaxed tracking-wide">
+              <p className="text-[8px] text-muted-foreground/50 leading-relaxed tracking-wide">
                 Browse everything
               </p>
             </button>
