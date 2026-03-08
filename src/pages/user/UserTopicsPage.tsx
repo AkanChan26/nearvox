@@ -154,14 +154,14 @@ export default function UserTopicsPage() {
         </div>
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {topics?.length ?? 0} THREADS
+          {filteredTopics.length} THREADS
         </p>
 
         {isLoading ? (
           <p className="text-xs text-muted-foreground cursor-blink">SCANNING NETWORK</p>
-        ) : topics && topics.length > 0 ? (
+        ) : filteredTopics.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {topics.map((topic, index) => {
+            {filteredTopics.map((topic, index) => {
               const isAdmin = isCreatorAdmin(topic.user_id);
               const isAnnouncement = topic.is_announcement;
               const CatIcon = getCategoryIcon((topic as any).category || "discussions");
