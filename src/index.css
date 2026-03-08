@@ -97,15 +97,15 @@
     @apply flex-1 mx-2 border-b border-dotted border-border;
   }
   .glow-text {
-    text-shadow: 0 0 8px hsl(120 100% 50% / 0.6), 0 0 20px hsl(120 100% 50% / 0.3);
+    text-shadow: 0 0 6px hsl(120 60% 42% / 0.4), 0 0 15px hsl(120 60% 42% / 0.15);
   }
   .glow-admin {
-    text-shadow: 0 0 8px hsl(199 91% 56% / 0.6), 0 0 20px hsl(199 91% 56% / 0.3);
+    text-shadow: 0 0 6px hsl(199 91% 56% / 0.4), 0 0 15px hsl(199 91% 56% / 0.15);
   }
   .scanline {
     background: repeating-linear-gradient(
       0deg, transparent, transparent 2px,
-      hsl(120 100% 50% / 0.02) 2px, hsl(120 100% 50% / 0.02) 4px
+      hsl(120 60% 42% / 0.015) 2px, hsl(120 60% 42% / 0.015) 4px
     );
     pointer-events: none;
   }
