@@ -149,12 +149,22 @@ export default function UserPostsPage() {
     );
   }, [posts, topics, isMine, regionFilter, userLocation]);
 
-  // Likes (posts only)
+  // Likes (posts)
   const { data: myLikes } = useQuery({
     queryKey: ["my-likes", user?.id],
     queryFn: async () => {
       const { data } = await supabase.from("post_likes").select("post_id").eq("user_id", user!.id);
       return new Set(data?.map((l: any) => l.post_id) || []);
+    },
+    enabled: !!user,
+  });
+
+  // Likes (topics)
+  const { data: myTopicLikes } = useQuery({
+    queryKey: ["my-topic-likes", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("topic_likes").select("topic_id").eq("user_id", user!.id);
+      return new Set(data?.map((l: any) => l.topic_id) || []);
     },
     enabled: !!user,
   });
