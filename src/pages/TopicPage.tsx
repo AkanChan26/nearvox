@@ -236,6 +236,7 @@ export default function TopicPage() {
                     className={`p-3 border ${replyIsAdmin ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}
                   >
                     <div className="flex items-center gap-2 mb-1.5">
+                      <ProfileAvatar avatarId={getAvatar(reply.user_id)} isAdmin={replyIsAdmin} size={18} />
                       <span className={`text-[10px] font-bold ${replyIsAdmin ? "admin-text glow-admin" : "text-foreground"}`}>
                         {getName(reply.user_id)}
                         {replyIsAdmin && <span className="admin-badge ml-1">ADMIN</span>}
