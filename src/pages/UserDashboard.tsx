@@ -9,7 +9,6 @@ import {
   Megaphone, Mail, Settings, Ticket, FileText, Bell,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
-import { NetworkNodeMap } from "@/components/NetworkNodeMap";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 
 export default function UserDashboard() {
@@ -177,9 +176,6 @@ export default function UserDashboard() {
             })}
           </div>
         </div>
-
-        {/* Network Node Map */}
-        <NetworkNodeMap />
 
         {/* Quick Access Row */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-1.5 mb-6">
