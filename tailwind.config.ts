@@ -77,8 +77,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Silkscreen"', '"Share Tech Mono"', 'monospace'],
-        mono: ['"Silkscreen"', '"Share Tech Mono"', 'monospace'],
+        sans: ['"Press Start 2P"', 'cursive'],
+        mono: ['"Press Start 2P"', 'cursive'],
         pixel: ['"Press Start 2P"', 'cursive'],
         terminal: ['"VT323"', 'monospace'],
       },
