@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
@@ -8,13 +8,33 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp, Edit2,
+  ChevronDown, ChevronUp, Edit2, Hash, Tag,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { TOPIC_CATEGORIES } from "@/lib/categories";
+
+type UnifiedItem = {
+  id: string;
+  type: "post" | "topic";
+  content: string;
+  title?: string;
+  category?: string;
+  user_id: string;
+  created_at: string;
+  location?: string | null;
+  is_pinned: boolean;
+  is_announcement: boolean;
+  likes_count: number;
+  comments_count: number;
+  replies_count?: number;
+  views_count?: number;
+  attachments: string[];
+};
 
 export default function UserPostsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const isMine = searchParams.get("mine") === "true";
@@ -31,47 +51,87 @@ export default function UserPostsPage() {
   const [reportingPost, setReportingPost] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  const { data: posts, isLoading } = useQuery({
+  // Fetch posts
+  const { data: posts, isLoading: postsLoading } = useQuery({
     queryKey: ["user-posts-feed", isMine],
     queryFn: async () => {
-      let query = supabase
-        .from("posts")
-        .select("*")
-        .order("is_pinned", { ascending: false })
-        .order("created_at", { ascending: false });
-      if (isMine && user) {
-        query = query.eq("user_id", user.id);
-      }
+      let query = supabase.from("posts").select("*").order("created_at", { ascending: false });
+      if (isMine && user) query = query.eq("user_id", user.id);
       const { data } = await query;
       return data || [];
     },
   });
 
+  // Fetch topics
+  const { data: topics, isLoading: topicsLoading } = useQuery({
+    queryKey: ["user-topics-feed", isMine],
+    queryFn: async () => {
+      let query = supabase.from("topics").select("*").order("created_at", { ascending: false });
+      if (isMine && user) query = query.eq("user_id", user.id);
+      const { data } = await query;
+      return data || [];
+    },
+  });
+
+  const isLoading = postsLoading || topicsLoading;
+
+  // Merge into unified list
+  const unified: UnifiedItem[] = useMemo(() => {
+    const postItems: UnifiedItem[] = (posts || []).map((p) => ({
+      id: p.id,
+      type: "post" as const,
+      content: p.content,
+      user_id: p.user_id,
+      created_at: p.created_at,
+      location: p.location,
+      is_pinned: p.is_pinned,
+      is_announcement: p.is_announcement,
+      likes_count: p.likes_count,
+      comments_count: p.comments_count,
+      attachments: (p.attachments as string[]) || [],
+    }));
+    const topicItems: UnifiedItem[] = (topics || []).map((t) => ({
+      id: t.id,
+      type: "topic" as const,
+      content: t.content,
+      title: t.title,
+      category: t.category || undefined,
+      user_id: t.user_id,
+      created_at: t.created_at,
+      location: t.location,
+      is_pinned: t.is_pinned,
+      is_announcement: t.is_announcement,
+      likes_count: 0,
+      comments_count: 0,
+      replies_count: t.replies_count,
+      views_count: t.views_count,
+      attachments: [],
+    }));
+    return [...postItems, ...topicItems].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [posts, topics]);
+
+  // Likes (posts only)
   const { data: myLikes } = useQuery({
     queryKey: ["my-likes", user?.id],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("post_likes")
-        .select("post_id")
-        .eq("user_id", user!.id);
+      const { data } = await supabase.from("post_likes").select("post_id").eq("user_id", user!.id);
       return new Set(data?.map((l: any) => l.post_id) || []);
     },
     enabled: !!user,
   });
 
-  const creatorIds = [...new Set(posts?.map((p) => p.user_id) || [])];
+  // Creators
+  const creatorIds = [...new Set(unified.map((p) => p.user_id))];
   const { data: creators } = useQuery({
     queryKey: ["post-creators", creatorIds],
     queryFn: async () => {
       if (creatorIds.length === 0) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, anonymous_name, is_admin, username")
-        .in("user_id", creatorIds);
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username").in("user_id", creatorIds);
       return data || [];
     },
     enabled: creatorIds.length > 0,
@@ -82,11 +142,7 @@ export default function UserPostsPage() {
     queryKey: ["post-comments", expandedComments],
     queryFn: async () => {
       if (!expandedComments) return [];
-      const { data } = await supabase
-        .from("post_comments")
-        .select("*")
-        .eq("post_id", expandedComments)
-        .order("created_at", { ascending: true });
+      const { data } = await supabase.from("post_comments").select("*").eq("post_id", expandedComments).order("created_at", { ascending: true });
       return data || [];
     },
     enabled: !!expandedComments,
@@ -97,10 +153,7 @@ export default function UserPostsPage() {
     queryKey: ["comment-users", commentUserIds],
     queryFn: async () => {
       if (commentUserIds.length === 0) return [];
-      const { data } = await supabase
-        .from("profiles")
-        .select("user_id, anonymous_name, is_admin, username")
-        .in("user_id", commentUserIds);
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username").in("user_id", commentUserIds);
       return data || [];
     },
     enabled: commentUserIds.length > 0,
@@ -113,9 +166,7 @@ export default function UserPostsPage() {
     return creator.anonymous_name || "Anonymous";
   };
 
-  const isCreatorAdmin = (userId: string) => {
-    return creators?.find((c) => c.user_id === userId)?.is_admin || false;
-  };
+  const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
 
   const getCommentUserName = (userId: string) => {
     const u = commentUsers?.find((c) => c.user_id === userId);
@@ -123,6 +174,13 @@ export default function UserPostsPage() {
     if (u.is_admin) return u.username || "ADMIN";
     return u.anonymous_name || "Anonymous";
   };
+
+  const getCategoryLabel = (cat?: string) => {
+    if (!cat) return null;
+    return TOPIC_CATEGORIES.find((c) => c.value === cat);
+  };
+
+  // ── ACTIONS ──
 
   const handleLike = async (postId: string) => {
     if (!user) return;
@@ -136,28 +194,34 @@ export default function UserPostsPage() {
     queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
   };
 
-  const handleDelete = async (postId: string, attachments?: string[]) => {
-    if (attachments && attachments.length > 0) {
-      await supabase.storage.from("post-attachments").remove(attachments);
-    }
-    const { error } = await supabase.from("posts").delete().eq("id", postId);
-    if (error) toast.error("Failed to delete");
-    else {
-      toast.success("Post deleted");
-      queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
+  const handleDelete = async (item: UnifiedItem) => {
+    if (item.type === "post") {
+      if (item.attachments.length > 0) {
+        await supabase.storage.from("post-attachments").remove(item.attachments);
+      }
+      const { error } = await supabase.from("posts").delete().eq("id", item.id);
+      if (error) toast.error("Failed to delete");
+      else { toast.success("Post deleted"); queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] }); }
+    } else {
+      const { error } = await supabase.from("topics").delete().eq("id", item.id);
+      if (error) toast.error("Failed to delete topic");
+      else { toast.success("Topic deleted"); queryClient.invalidateQueries({ queryKey: ["user-topics-feed"] }); }
     }
   };
 
-  const handleUpdate = async (postId: string) => {
+  const handleUpdate = async (item: UnifiedItem) => {
     if (!editContent.trim()) return;
-    const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", postId);
-    if (error) toast.error("Failed to update");
-    else {
-      toast.success("Post updated");
-      setEditingPost(null);
-      setEditContent("");
-      queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
+    if (item.type === "post") {
+      const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", item.id);
+      if (error) toast.error("Failed to update");
+      else { toast.success("Post updated"); queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] }); }
+    } else {
+      const { error } = await supabase.from("topics").update({ content: editContent.trim() }).eq("id", item.id);
+      if (error) toast.error("Failed to update");
+      else { toast.success("Topic updated"); queryClient.invalidateQueries({ queryKey: ["user-topics-feed"] }); }
     }
+    setEditingPost(null);
+    setEditContent("");
   };
 
   const handleReport = async (postId: string) => {
@@ -169,11 +233,7 @@ export default function UserPostsPage() {
       reason: reportReason.trim(),
     });
     if (error) toast.error("Failed to report");
-    else {
-      toast.success("Report submitted");
-      setReportingPost(null);
-      setReportReason("");
-    }
+    else { toast.success("Report submitted"); setReportingPost(null); setReportReason(""); }
   };
 
   const handleComment = async (postId: string) => {
@@ -205,7 +265,6 @@ export default function UserPostsPage() {
   const handlePost = async () => {
     if (!user || !newContent.trim()) return;
     setPosting(true);
-
     let attachmentPaths: string[] = [];
     if (selectedFiles.length > 0) {
       setUploading(true);
@@ -217,27 +276,18 @@ export default function UserPostsPage() {
       }
       setUploading(false);
     }
-
     const { error } = await supabase.from("posts").insert({
       user_id: user.id,
       content: newContent.trim(),
       location: newLocation.trim() || null,
       attachments: attachmentPaths,
     });
-
     if (error) {
       toast.error("Failed to post");
     } else {
       toast.success("Posted!");
-      await supabase.from("activity_logs").insert({
-        user_id: user.id,
-        action: "post_created",
-        details: { content_preview: newContent.trim().slice(0, 50) },
-      });
-      setNewContent("");
-      setNewLocation("");
-      setSelectedFiles([]);
-      setShowCreate(false);
+      await supabase.from("activity_logs").insert({ user_id: user.id, action: "post_created", details: { content_preview: newContent.trim().slice(0, 50) } });
+      setNewContent(""); setNewLocation(""); setSelectedFiles([]); setShowCreate(false);
       queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
     }
     setPosting(false);
@@ -248,11 +298,11 @@ export default function UserPostsPage() {
     return data.publicUrl;
   };
 
-  const isImage = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
+  const isImageFile = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
 
   return (
     <UserLayout>
-      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS ACROSS CATEGORIES" : "COMMUNITY POSTS & UPDATES"}>
+      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : "COMMUNITY POSTS & TOPICS"}>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setSearchParams(isMine ? {} : { mine: "true" })}
@@ -289,90 +339,93 @@ export default function UserPostsPage() {
               placeholder="Location (optional)"
               className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground mb-2"
             />
-
             <div className="flex items-center gap-2 mb-2">
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-1"
-              >
-                <Paperclip className="h-3 w-3" />
-                ATTACH FILES
+              <button type="button" onClick={() => fileRef.current?.click()} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-1">
+                <Paperclip className="h-3 w-3" /> ATTACH FILES
               </button>
-              <input
-                ref={fileRef}
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx,.txt"
-                className="hidden"
-                onChange={(e) => {
-                  const files = Array.from(e.target.files || []);
-                  setSelectedFiles((prev) => [...prev, ...files]);
-                }}
-              />
-              <span className="text-[9px] text-muted-foreground">
-                {selectedFiles.length > 0 ? `${selectedFiles.length} file(s)` : "Images, PDFs, docs"}
-              </span>
+              <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.txt" className="hidden" onChange={(e) => { const files = Array.from(e.target.files || []); setSelectedFiles((prev) => [...prev, ...files]); }} />
+              <span className="text-[9px] text-muted-foreground">{selectedFiles.length > 0 ? `${selectedFiles.length} file(s)` : "Images, PDFs, docs"}</span>
             </div>
-
             {selectedFiles.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {selectedFiles.map((f, i) => (
                   <div key={i} className="flex items-center gap-1 text-[10px] text-foreground border border-border px-2 py-0.5">
                     {f.type.startsWith("image/") ? <Image className="h-2.5 w-2.5" /> : <FileText className="h-2.5 w-2.5" />}
                     <span className="max-w-[100px] truncate">{f.name}</span>
-                    <button onClick={() => setSelectedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-destructive">
-                      <X className="h-2.5 w-2.5" />
-                    </button>
+                    <button onClick={() => setSelectedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-destructive"><X className="h-2.5 w-2.5" /></button>
                   </div>
                 ))}
               </div>
             )}
-
-            <button
-              onClick={handlePost}
-              disabled={posting || !newContent.trim()}
-              className="text-sm text-foreground border border-foreground px-4 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-30"
-            >
+            <button onClick={handlePost} disabled={posting || !newContent.trim()} className="text-sm text-foreground border border-foreground px-4 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-30">
               {uploading ? "[UPLOADING...]" : posting ? "[POSTING...]" : "[POST]"}
             </button>
           </div>
         )}
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {posts?.length ?? 0} POSTS
+          {unified.length} ITEMS
         </p>
 
         {isLoading ? (
           <p className="text-xs text-muted-foreground cursor-blink">LOADING FEED</p>
-        ) : posts && posts.length > 0 ? (
+        ) : unified.length > 0 ? (
           <div className="space-y-2">
-            {posts.map((post) => {
-              const isAdmin = isCreatorAdmin(post.user_id);
-              const isOwner = post.user_id === user?.id;
-              const isLiked = myLikes?.has(post.id);
-              const attachments = (post as any).attachments as string[] || [];
-              const isCommentsOpen = expandedComments === post.id;
+            {unified.map((item) => {
+              const isAdmin = isCreatorAdmin(item.user_id);
+              const isOwner = item.user_id === user?.id;
+              const isLiked = item.type === "post" ? myLikes?.has(item.id) : false;
+              const isCommentsOpen = expandedComments === item.id;
+              const catInfo = getCategoryLabel(item.category);
 
               return (
                 <div
-                  key={post.id}
+                  key={`${item.type}-${item.id}`}
                   className={`p-3 border transition-none ${
-                    post.is_announcement
+                    item.is_announcement
                       ? "admin-box border-[hsl(var(--admin-border))]"
-                      : post.is_pinned
+                      : item.is_pinned
                       ? "border-foreground/20 bg-foreground/5"
                       : "border-border"
                   }`}
                 >
-                  {post.is_announcement && (
-                    <p className="text-[9px] admin-text tracking-[0.3em] mb-1">◆ ANNOUNCEMENT</p>
+                  {/* Type badge */}
+                  <div className="flex items-center gap-2 mb-1">
+                    {item.type === "topic" ? (
+                      <span className="text-[9px] text-muted-foreground tracking-wider flex items-center gap-1">
+                        <Hash className="h-2.5 w-2.5" /> TOPIC
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-muted-foreground tracking-wider flex items-center gap-1">
+                        <FileText className="h-2.5 w-2.5" /> POST
+                      </span>
+                    )}
+                    {catInfo && (
+                      <span className="text-[9px] text-foreground/70 tracking-wider flex items-center gap-0.5 border border-border px-1.5 py-0.5">
+                        <Tag className="h-2 w-2" />
+                        {catInfo.label.toUpperCase()}
+                      </span>
+                    )}
+                    {item.is_announcement && (
+                      <span className="text-[9px] admin-text tracking-[0.3em]">◆ ANNOUNCEMENT</span>
+                    )}
+                    {item.is_pinned && !item.is_announcement && (
+                      <span className="text-[9px] text-foreground tracking-[0.3em]">📌 PINNED</span>
+                    )}
+                  </div>
+
+                  {/* Title for topics */}
+                  {item.title && (
+                    <button
+                      onClick={() => navigate(`/topic/${item.id}`)}
+                      className="text-sm text-foreground font-bold mb-1 hover:underline text-left block"
+                    >
+                      {item.title}
+                    </button>
                   )}
-                  {post.is_pinned && !post.is_announcement && (
-                    <p className="text-[9px] text-foreground tracking-[0.3em] mb-1">📌 PINNED</p>
-                  )}
+
                   {/* Content or Edit form */}
-                  {editingPost === post.id ? (
+                  {editingPost === item.id ? (
                     <div className="mb-2">
                       <textarea
                         value={editContent}
@@ -381,20 +434,20 @@ export default function UserPostsPage() {
                         className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none mb-1"
                       />
                       <div className="flex gap-2">
-                        <button onClick={() => handleUpdate(post.id)} disabled={!editContent.trim()} className="text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30">[SAVE]</button>
+                        <button onClick={() => handleUpdate(item)} disabled={!editContent.trim()} className="text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30">[SAVE]</button>
                         <button onClick={() => { setEditingPost(null); setEditContent(""); }} className="text-[10px] text-muted-foreground border border-border px-2 py-0.5 hover:text-foreground">[CANCEL]</button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{post.content}</p>
+                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{item.content}</p>
                   )}
 
-                  {/* Attachments */}
-                  {attachments.length > 0 && (
+                  {/* Attachments (posts only) */}
+                  {item.attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {attachments.map((path, i) => {
+                      {item.attachments.map((path, i) => {
                         const url = getPublicUrl(path);
-                        if (isImage(path)) {
+                        if (isImageFile(path)) {
                           return (
                             <button key={i} onClick={() => setPreviewUrl(url)} className="relative group border border-border overflow-hidden w-24 h-24">
                               <img src={url} alt="" className="w-full h-full object-cover" />
@@ -414,46 +467,74 @@ export default function UserPostsPage() {
                     </div>
                   )}
 
-                  {/* Post meta */}
+                  {/* Meta */}
                   <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
                     <span className={isAdmin ? "admin-text glow-admin" : ""}>
-                      {getCreatorName(post.user_id)}
+                      {getCreatorName(item.user_id)}
                       {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
                     </span>
-                    {post.location && (
-                      <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{post.location}</span>
+                    {item.location && (
+                      <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />{item.location}</span>
+                    )}
+                    {item.type === "topic" && (
+                      <span className="flex items-center gap-0.5">
+                        <Eye className="h-2.5 w-2.5" />{item.views_count ?? 0}
+                      </span>
                     )}
                     <span className="flex items-center gap-0.5 ml-auto">
                       <Clock className="h-2.5 w-2.5" />
-                      {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
                     </span>
                   </div>
 
                   {/* Action bar */}
                   <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border">
-                    {/* Like */}
-                    <button
-                      onClick={() => handleLike(post.id)}
-                      className={`flex items-center gap-0.5 transition-none ${isLiked ? "text-destructive" : "hover:text-foreground"}`}
-                    >
-                      <Heart className={`h-2.5 w-2.5 ${isLiked ? "fill-current" : ""}`} />
-                      {post.likes_count}
-                    </button>
-
-                    {/* Comment toggle */}
-                    <button
-                      onClick={() => setExpandedComments(isCommentsOpen ? null : post.id)}
-                      className="flex items-center gap-0.5 hover:text-foreground"
-                    >
-                      <MessageSquare className="h-2.5 w-2.5" />
-                      {post.comments_count}
-                      {isCommentsOpen ? <ChevronUp className="h-2 w-2" /> : <ChevronDown className="h-2 w-2" />}
-                    </button>
-
-                    {/* Report (not own post) */}
-                    {!isOwner && (
+                    {/* Like (posts only) */}
+                    {item.type === "post" && (
                       <button
-                        onClick={() => setReportingPost(reportingPost === post.id ? null : post.id)}
+                        onClick={() => handleLike(item.id)}
+                        className={`flex items-center gap-0.5 transition-none ${isLiked ? "text-destructive" : "hover:text-foreground"}`}
+                      >
+                        <Heart className={`h-2.5 w-2.5 ${isLiked ? "fill-current" : ""}`} />
+                        {item.likes_count}
+                      </button>
+                    )}
+
+                    {/* Comments (posts) / Replies (topics) */}
+                    {item.type === "post" ? (
+                      <button
+                        onClick={() => setExpandedComments(isCommentsOpen ? null : item.id)}
+                        className="flex items-center gap-0.5 hover:text-foreground"
+                      >
+                        <MessageSquare className="h-2.5 w-2.5" />
+                        {item.comments_count}
+                        {isCommentsOpen ? <ChevronUp className="h-2 w-2" /> : <ChevronDown className="h-2 w-2" />}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => navigate(`/topic/${item.id}`)}
+                        className="flex items-center gap-0.5 hover:text-foreground"
+                      >
+                        <MessageSquare className="h-2.5 w-2.5" />
+                        {item.replies_count ?? 0} replies
+                      </button>
+                    )}
+
+                    {/* View topic */}
+                    {item.type === "topic" && (
+                      <button
+                        onClick={() => navigate(`/topic/${item.id}`)}
+                        className="flex items-center gap-0.5 hover:text-foreground"
+                      >
+                        <Eye className="h-2.5 w-2.5" />
+                        VIEW
+                      </button>
+                    )}
+
+                    {/* Report (not own) */}
+                    {!isOwner && item.type === "post" && (
+                      <button
+                        onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
                         className="flex items-center gap-0.5 hover:text-warning"
                       >
                         <Flag className="h-2.5 w-2.5" />
@@ -461,10 +542,10 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
-                    {/* Edit (own post) */}
+                    {/* Edit (own) */}
                     {isOwner && (
                       <button
-                        onClick={() => { setEditingPost(post.id); setEditContent(post.content); }}
+                        onClick={() => { setEditingPost(item.id); setEditContent(item.content); }}
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <Edit2 className="h-2.5 w-2.5" />
@@ -472,10 +553,10 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
-                    {/* Delete (own post) */}
+                    {/* Delete (own) */}
                     {isOwner && (
                       <button
-                        onClick={() => handleDelete(post.id, attachments)}
+                        onClick={() => handleDelete(item)}
                         className="flex items-center gap-0.5 text-destructive hover:underline ml-auto"
                       >
                         <Trash2 className="h-2.5 w-2.5" />
@@ -484,8 +565,8 @@ export default function UserPostsPage() {
                     )}
                   </div>
 
-                  {/* Report form */}
-                  {reportingPost === post.id && (
+                  {/* Report form (posts only) */}
+                  {reportingPost === item.id && item.type === "post" && (
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] text-muted-foreground mb-1">&gt; REPORT REASON:</p>
                       <div className="flex gap-2">
@@ -496,7 +577,7 @@ export default function UserPostsPage() {
                           className="flex-1 bg-input border border-border text-foreground text-[11px] px-2 py-1 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
                         />
                         <button
-                          onClick={() => handleReport(post.id)}
+                          onClick={() => handleReport(item.id)}
                           disabled={!reportReason.trim()}
                           className="text-[10px] text-warning border border-warning px-2 py-0.5 hover:bg-warning hover:text-background disabled:opacity-30"
                         >
@@ -506,8 +587,8 @@ export default function UserPostsPage() {
                     </div>
                   )}
 
-                  {/* Comments section */}
-                  {isCommentsOpen && (
+                  {/* Comments section (posts only) */}
+                  {isCommentsOpen && item.type === "post" && (
                     <div className="mt-2 pt-2 border-t border-border">
                       {comments && comments.length > 0 ? (
                         <div className="space-y-1.5 mb-2">
@@ -529,22 +610,16 @@ export default function UserPostsPage() {
                       ) : (
                         <p className="text-[10px] text-muted-foreground mb-2">No comments yet</p>
                       )}
-
                       <div className="flex gap-2">
                         <input
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
                           placeholder="Write a comment..."
                           className="flex-1 bg-input border border-border text-foreground text-[11px] px-2 py-1 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && !e.shiftKey) {
-                              e.preventDefault();
-                              handleComment(post.id);
-                            }
-                          }}
+                          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(item.id); } }}
                         />
                         <button
-                          onClick={() => handleComment(post.id)}
+                          onClick={() => handleComment(item.id)}
                           disabled={postingComment || !commentText.trim()}
                           className="text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30"
                         >
@@ -559,8 +634,8 @@ export default function UserPostsPage() {
           </div>
         ) : (
           <div className="terminal-box text-center py-8">
-            <p className="text-xs text-muted-foreground mb-2">NO POSTS YET</p>
-            <p className="text-[10px] text-muted-foreground">Be the first to post something</p>
+            <p className="text-xs text-muted-foreground mb-2">NO POSTS OR TOPICS YET</p>
+            <p className="text-[10px] text-muted-foreground">Create a post or start a topic in any category</p>
           </div>
         )}
       </div>
