@@ -73,7 +73,9 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Press Start 2P', cursive;
     font-size: 10px;
-    line-height: 1.6;
+    line-height: 2;
+    letter-spacing: 0.02em;
+    word-spacing: 0.1em;
   }
 
   h1, h2, h3, h4, h5, h6,
@@ -82,11 +84,13 @@
   }
 
   /* Mobile-responsive base sizes */
-  h1 { font-size: 0.8rem; line-height: 1.5; }
-  h2 { font-size: 0.7rem; line-height: 1.5; }
-  h3 { font-size: 0.6rem; line-height: 1.5; }
-  p, span, a, button, label, li, td, th, div { font-size: inherit; }
-  input, textarea, select { font-size: 11px; }
+  h1 { font-size: 0.8rem; line-height: 1.8; margin-bottom: 0.5em; }
+  h2 { font-size: 0.7rem; line-height: 1.8; margin-bottom: 0.4em; }
+  h3 { font-size: 0.6rem; line-height: 1.8; margin-bottom: 0.3em; }
+  p { line-height: 2; margin-bottom: 0.4em; }
+  span, a, button, label, li, td, th, div { font-size: inherit; }
+  input, textarea, select { font-size: 11px; line-height: 1.8; padding: 0.6em 0.8em; }
+  button { padding: 0.5em 0.8em; }
 
   @media (min-width: 640px) {
     body { font-size: 11px; }
