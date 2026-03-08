@@ -288,7 +288,7 @@ const Index = () => {
                 </button>
               </div>
               {adminTickets && adminTickets.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1 sm:gap-1.5">
                   {adminTickets.map((t) => (
                     <div key={t.id} className="flex items-center justify-between border border-border px-2 py-1">
                       <span className="text-[10px] text-foreground font-mono">{t.invite_code}</span>

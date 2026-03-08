@@ -357,7 +357,7 @@ export default function UserDashboard() {
       {/* Floating + Button */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed bottom-6 right-6 z-40 h-12 w-12 flex items-center justify-center border border-foreground bg-background hover:bg-foreground hover:text-background transition-none glow-text"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 h-12 w-12 flex items-center justify-center border border-foreground bg-background hover:bg-foreground hover:text-background transition-none glow-text"
       >
         <Plus className="h-5 w-5" />
       </button>
