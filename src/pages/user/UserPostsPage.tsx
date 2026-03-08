@@ -706,6 +706,6 @@ export default function UserPostsPage() {
           </div>
         </div>
       )}
-    </UserLayout>
+    </Layout>
   );
 }
