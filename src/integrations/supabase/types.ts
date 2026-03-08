@@ -433,6 +433,35 @@ export type Database = {
           },
         ]
       }
+      topic_likes: {
+        Row: {
+          created_at: string
+          id: string
+          topic_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          topic_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          topic_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_likes_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           category: Database["public"]["Enums"]["topic_category"] | null
@@ -442,6 +471,7 @@ export type Database = {
           is_announcement: boolean
           is_pinned: boolean
           last_activity_at: string
+          likes_count: number
           location: string | null
           replies_count: number
           title: string
@@ -457,6 +487,7 @@ export type Database = {
           is_announcement?: boolean
           is_pinned?: boolean
           last_activity_at?: string
+          likes_count?: number
           location?: string | null
           replies_count?: number
           title: string
@@ -472,6 +503,7 @@ export type Database = {
           is_announcement?: boolean
           is_pinned?: boolean
           last_activity_at?: string
+          likes_count?: number
           location?: string | null
           replies_count?: number
           title?: string
