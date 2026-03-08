@@ -577,7 +577,7 @@ export default function UserPostsPage() {
                     {/* View topic */}
                     {item.type === "topic" && (
                       <button
-                        onClick={() => navigate(`/topic/${item.id}`)}
+                        onClick={() => navigate(`${topicPrefix}/${item.id}`)}
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <Eye className="h-2.5 w-2.5" />
