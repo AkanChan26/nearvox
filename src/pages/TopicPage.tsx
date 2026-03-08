@@ -207,7 +207,8 @@ export default function TopicPage() {
           <div className="text-sm text-foreground/80 leading-relaxed mb-3 whitespace-pre-wrap">
             <RichContent content={topic.content} />
           </div>
-          <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            <ProfileAvatar avatarId={getAvatar(topic.user_id)} isAdmin={topicIsAdmin} size={22} />
             <span className={topicIsAdmin ? "admin-text glow-admin" : ""}>
               {getName(topic.user_id)}
               {topicIsAdmin && <span className="admin-badge ml-1">ADMIN</span>}
