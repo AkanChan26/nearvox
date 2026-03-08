@@ -24,6 +24,8 @@ import UserPostsPage from "./pages/user/UserPostsPage";
 import UserMarketplacePage from "./pages/user/UserMarketplacePage";
 import UserSettingsPage from "./pages/user/UserSettingsPage";
 import UserInvitesPage from "./pages/user/UserInvitesPage";
+import UserAnnouncementsPage from "./pages/user/UserAnnouncementsPage";
+import UserMessagesPage from "./pages/user/UserMessagesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
