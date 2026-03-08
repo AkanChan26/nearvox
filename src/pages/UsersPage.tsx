@@ -1,17 +1,18 @@
+import { useState } from "react";
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Ticket, Copy, Check, X } from "lucide-react";
+import { Ticket, Copy, Check, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -19,16 +20,39 @@ export default function UsersPage() {
     queryKey: ["admin-users", search],
     queryFn: async () => {
       let query = supabase.from("profiles").select("*").order("created_at", { ascending: false });
-      if (search) {
-        query = query.ilike("username", `%${search}%`);
-      }
-      if (user?.id) {
-        query = query.neq("user_id", user.id);
-      }
+      if (search) query = query.ilike("username", `%${search}%`);
+      if (user?.id) query = query.neq("user_id", user.id);
       const { data, error } = await query;
       if (error) throw error;
       return data;
     },
+  });
+
+  // Fetch invite ticket info for all users
+  const { data: allTickets } = useQuery({
+    queryKey: ["admin-all-tickets"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("invite_tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+  });
+
+  // Fetch inviter profiles for users who were invited
+  const inviterIds = [...new Set(users?.map((u) => u.invited_by).filter(Boolean) || [])];
+  const { data: inviters } = useQuery({
+    queryKey: ["inviter-profiles", inviterIds],
+    queryFn: async () => {
+      if (inviterIds.length === 0) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, username, anonymous_name, is_admin")
+        .in("user_id", inviterIds as string[]);
+      return data || [];
+    },
+    enabled: inviterIds.length > 0,
   });
 
   // Admin's tickets
@@ -46,11 +70,35 @@ export default function UsersPage() {
     enabled: !!user,
   });
 
-  const handleStatusChange = async (userId: string, newStatus: "suspended" | "banned") => {
+  // Activity logs
+  const { data: activityLogs } = useQuery({
+    queryKey: ["admin-activity-logs"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("activity_logs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      return data || [];
+    },
+  });
+
+  const getInviterName = (invitedBy: string | null) => {
+    if (!invitedBy) return "DIRECT / UNKNOWN";
+    const inviter = inviters?.find((i) => i.user_id === invitedBy);
+    if (!inviter) return invitedBy.slice(0, 8);
+    return inviter.is_admin ? `${inviter.username} (ADMIN)` : inviter.anonymous_name || inviter.username;
+  };
+
+  const getTicketUsedBy = (userId: string) => {
+    const ticket = allTickets?.find((t) => t.used_by === userId);
+    return ticket ? ticket.invite_code : null;
+  };
+
+  const handleStatusChange = async (userId: string, newStatus: "active" | "suspended" | "banned") => {
     const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("user_id", userId);
-    if (error) {
-      toast.error("Failed to update user status");
-    } else {
+    if (error) toast.error("Failed to update user status");
+    else {
       toast.success(`User ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     }
@@ -59,17 +107,9 @@ export default function UsersPage() {
   const generateTicket = async () => {
     if (!user) return;
     setGenerating(true);
-    const { data, error } = await supabase
-      .from("invite_tickets")
-      .insert({ owner_id: user.id })
-      .select()
-      .single();
-    if (error) {
-      toast.error("Failed to generate ticket");
-    } else {
-      toast.success("Invite ticket generated");
-      refetchTickets();
-    }
+    const { error } = await supabase.from("invite_tickets").insert({ owner_id: user.id }).select().single();
+    if (error) toast.error("Failed to generate ticket");
+    else { toast.success("Invite ticket generated"); refetchTickets(); }
     setGenerating(false);
   };
 
@@ -84,11 +124,11 @@ export default function UsersPage() {
   return (
     <AdminLayout>
       <PageHeader title="USER REGISTRY" description="// MANAGE AND MONITOR USER ACCOUNTS">
-        <Input
+        <input
           placeholder="> SEARCH USER..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-56 bg-input border-border text-foreground placeholder:text-muted-foreground text-xs"
+          className="w-56 bg-input border border-border text-foreground placeholder:text-muted-foreground text-xs px-3 py-2 focus:outline-none focus:border-foreground"
         />
       </PageHeader>
 
@@ -106,17 +146,13 @@ export default function UsersPage() {
               {generating ? "GENERATING..." : "[+ GENERATE TICKET]"}
             </button>
           </div>
-
           {tickets && tickets.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               {tickets.map((ticket) => (
                 <div key={ticket.id} className="flex items-center justify-between border border-border p-2">
                   <span className="text-xs text-foreground font-mono tracking-wider">{ticket.invite_code}</span>
                   <div className="flex items-center gap-1 ml-2">
-                    <button
-                      onClick={() => copyTicketLink(ticket.invite_code)}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
+                    <button onClick={() => copyTicketLink(ticket.invite_code)} className="text-muted-foreground hover:text-foreground">
                       {copiedCode === ticket.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                     </button>
                     <button
@@ -142,40 +178,126 @@ export default function UsersPage() {
         <div className="terminal-box">
           <div className="terminal-header">REGISTERED USERS — {users?.length ?? 0} RECORDS</div>
 
-          <div className="flex items-center text-[10px] text-muted-foreground tracking-wider pb-2 mb-2 border-b border-border">
-            <span className="w-24">ID</span>
-            <span className="w-28">NAME</span>
-            <span className="flex-1">HANDLE</span>
-            <span className="w-28">REGION</span>
-            <span className="w-24">STATUS</span>
-            <span className="w-32 text-right">ACTIONS</span>
-          </div>
-
           {isLoading ? (
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
           ) : users && users.length > 0 ? (
-            users.map((u) => (
-              <div key={u.id} className="flex items-center text-xs py-2 border-b border-border last:border-0 hover:bg-muted/50 transition-none">
-                <span className="w-24 text-muted-foreground">{u.id.slice(0, 8)}</span>
-                <span className="w-28 text-muted-foreground">{(u as any).name || "—"}</span>
-                <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
-                  {u.username}
-                  {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
-                </span>
-                <span className="w-28 text-muted-foreground">{u.location || "—"}</span>
-                <span className={`w-24 ${
-                  u.status === "active" ? "text-foreground" :
-                  u.status === "suspended" ? "text-warning" : "text-destructive"
-                }`}>{u.status?.toUpperCase()}</span>
-                <span className="w-32 text-right space-x-2">
-                  <button className="text-foreground hover:underline">[VIEW]</button>
-                  <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-warning hover:underline">[SUS]</button>
-                  <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-destructive hover:underline">[BAN]</button>
-                </span>
-              </div>
-            ))
+            <div className="space-y-1">
+              {users.map((u) => {
+                const isExpanded = expandedUser === u.user_id;
+                const ticketCode = getTicketUsedBy(u.user_id);
+
+                return (
+                  <div key={u.id} className="border border-border">
+                    {/* Summary row */}
+                    <div className="flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
+                      <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
+                      <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                        {u.username}
+                        {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
+                      </span>
+                      <span className="w-20 text-muted-foreground text-[10px]">{u.location || "—"}</span>
+                      <span className={`w-20 text-[10px] ${
+                        u.status === "active" ? "text-foreground" :
+                        u.status === "suspended" ? "text-warning" : "text-destructive"
+                      }`}>{u.status?.toUpperCase()}</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => setExpandedUser(isExpanded ? null : u.user_id)}
+                          className="text-muted-foreground hover:text-foreground p-0.5"
+                        >
+                          {isExpanded ? <ChevronUp className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                        </button>
+                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[10px] text-warning hover:underline">[SUS]</button>
+                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[10px] text-destructive hover:underline">[BAN]</button>
+                        {u.status !== "active" && (
+                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[10px] text-foreground hover:underline">[ACTIVATE]</button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expanded details */}
+                    {isExpanded && (
+                      <div className="border-t border-border bg-muted/20 px-3 py-2 space-y-1">
+                        <div className="grid grid-cols-2 gap-2 text-[10px]">
+                          <div>
+                            <span className="text-muted-foreground">FULL NAME: </span>
+                            <span className="text-foreground">{u.name || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">USERNAME: </span>
+                            <span className="text-foreground">@{u.username}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">ANON NAME: </span>
+                            <span className="text-foreground">{u.anonymous_name || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">REGION: </span>
+                            <span className="text-foreground">{u.location || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">JOINED: </span>
+                            <span className="text-foreground">{formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">INVITED BY: </span>
+                            <span className="text-foreground">{getInviterName(u.invited_by)}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">TICKET USED: </span>
+                            <span className="text-foreground font-mono">{ticketCode || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">INTERESTS: </span>
+                            <span className="text-foreground">{u.interests?.join(", ") || "—"}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">STATUS: </span>
+                            <span className={
+                              u.status === "active" ? "text-foreground" :
+                              u.status === "suspended" ? "text-warning" : "text-destructive"
+                            }>{u.status?.toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">USER ID: </span>
+                            <span className="text-foreground font-mono text-[9px]">{u.user_id}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           ) : (
             <p className="text-xs text-muted-foreground py-2">NO USERS FOUND</p>
+          )}
+        </div>
+
+        {/* Recent Activity Logs */}
+        <div className="terminal-box">
+          <div className="terminal-header">USER ACTIVITY LOG</div>
+          {activityLogs && activityLogs.length > 0 ? (
+            <div className="space-y-0.5">
+              {activityLogs.map((log: any) => {
+                const logUser = users?.find((u) => u.user_id === log.user_id);
+                return (
+                  <div key={log.id} className="text-[11px] flex items-start gap-2">
+                    <span className="text-muted-foreground shrink-0">
+                      [{new Date(log.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
+                    </span>
+                    <span className="text-foreground">
+                      <span className="text-foreground/70">{logUser?.anonymous_name || log.user_id.slice(0, 8)}</span>
+                      {" → "}
+                      {log.action.replace(/_/g, " ").toUpperCase()}
+                      {log.details?.content_preview && ` — "${log.details.content_preview}"`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-[11px] text-muted-foreground cursor-blink">NO ACTIVITY LOGGED</p>
           )}
         </div>
       </div>
