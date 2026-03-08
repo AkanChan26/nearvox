@@ -81,7 +81,7 @@ export default function JoinPage() {
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name: name.trim(), anonymous_name: anonymousName.trim(), region: region.trim() } },
+      options: { data: { name: name.trim(), anonymous_name: anonymousName.trim(), region: region.trim(), avatar: selectedAvatar } },
     });
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
     if (signUpData.user) {
