@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Image, FileText, Eye } from "lucide-react";
+import { Image, FileText, Eye, Heart } from "lucide-react";
 import { useState } from "react";
 
 export default function PostsPage() {
@@ -38,12 +38,34 @@ export default function PostsPage() {
     enabled: creatorIds.length > 0,
   });
 
+  // Admin likes
+  const { data: myLikes } = useQuery({
+    queryKey: ["admin-my-likes", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("post_likes").select("post_id").eq("user_id", user!.id);
+      return new Set(data?.map((l) => l.post_id) || []);
+    },
+    enabled: !!user,
+  });
+
   const getCreatorInfo = (userId: string) => {
     const creator = creators?.find((c) => c.user_id === userId);
     return {
       name: creator?.is_admin ? creator.username : creator?.anonymous_name || creator?.username || "Unknown",
       isAdmin: creator?.is_admin || false,
     };
+  };
+
+  const handleLike = async (postId: string) => {
+    if (!user) return;
+    const isLiked = myLikes?.has(postId);
+    if (isLiked) {
+      await supabase.from("post_likes").delete().eq("post_id", postId).eq("user_id", user.id);
+    } else {
+      await supabase.from("post_likes").insert({ post_id: postId, user_id: user.id });
+    }
+    queryClient.invalidateQueries({ queryKey: ["admin-my-likes"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-posts"] });
   };
 
   const handleDelete = async (postId: string, attachments?: string[]) => {
@@ -96,6 +118,7 @@ export default function PostsPage() {
             posts.map((post: any) => {
               const { name, isAdmin } = getCreatorInfo(post.user_id);
               const attachments = post.attachments as string[] || [];
+              const isLiked = myLikes?.has(post.id);
 
               return (
                 <div
@@ -150,7 +173,13 @@ export default function PostsPage() {
                   )}
 
                   <div className="flex items-center gap-4 text-[10px]">
-                    <span className="text-muted-foreground">LIKES:{post.likes_count}</span>
+                    <button
+                      onClick={() => handleLike(post.id)}
+                      className={`flex items-center gap-1 transition-none ${isLiked ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      <Heart className={`h-3 w-3 ${isLiked ? "fill-current" : ""}`} />
+                      {post.likes_count}
+                    </button>
                     <span className="text-muted-foreground">COMMENTS:{post.comments_count}</span>
                     {attachments.length > 0 && <span className="text-muted-foreground">FILES:{attachments.length}</span>}
                     <span className="ml-auto space-x-2">
