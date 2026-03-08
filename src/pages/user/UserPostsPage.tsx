@@ -174,7 +174,7 @@ export default function UserPostsPage() {
   const { data: myReports } = useQuery({
     queryKey: ["my-reports-posts", user?.id],
     queryFn: async () => {
-      const { data } = await supabase.from("reports").select("id, reported_post_id, report_type").eq("reporter_id", user!.id).eq("status", "pending");
+      const { data } = await supabase.from("reports").select("id, reported_post_id, reported_user_id, report_type").eq("reporter_id", user!.id).eq("status", "pending");
       return data || [];
     },
     enabled: !!user,
