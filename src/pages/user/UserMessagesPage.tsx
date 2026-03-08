@@ -569,15 +569,15 @@ export default function UserMessagesPage() {
 
             {/* New DM Search */}
             {showNewDm && (
-              <div className="p-2 border-b border-border bg-muted/20">
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="p-3 border-b border-border bg-muted/20">
+                <div className="flex items-center justify-between mb-2">
                   <p className="text-[10px] text-muted-foreground">&gt; FIND USER:</p>
-                  <button onClick={() => { setShowNewDm(false); setDmSearch(""); }} className="text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                  <button onClick={() => { setShowNewDm(false); setDmSearch(""); }} className="text-muted-foreground hover:text-foreground p-1"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input value={dmSearch} onChange={(e) => setDmSearch(e.target.value)} placeholder="Type anonymous name..."
-                    className="w-full bg-input border border-border text-foreground text-[11px] pl-7 pr-2 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" autoFocus />
+                    className="w-full bg-input border border-border text-foreground text-[11px] pl-8 pr-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" autoFocus />
                 </div>
                 {searchResults && searchResults.length > 0 && (
                   <div className="mt-1 border border-border bg-card max-h-32 overflow-y-auto">
