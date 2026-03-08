@@ -12,6 +12,8 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useOnlinePresence } from "@/hooks/useOnlinePresence";
+import { OnlineIndicator } from "@/components/OnlineIndicator";
 
 type Conversation = {
   id: string;
@@ -78,6 +80,7 @@ export default function UserMessagesPage() {
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<any>(null);
+  const { isOnline } = useOnlinePresence();
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({
@@ -641,6 +644,7 @@ export default function UserMessagesPage() {
                 conversations.map((convo) => {
                   const isActive = activeConvo === convo.id;
                   const isGroup = convo.type === "group";
+                  const dmOtherId = !isGroup ? getOtherUserId(convo) : null;
                   const lastMsg = lastMessages?.[convo.id];
                   const unread = hasUnread(convo.id);
                   return (
@@ -648,10 +652,18 @@ export default function UserMessagesPage() {
                       className={`w-full text-left p-2.5 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
                       <div className="flex items-center gap-2">
                         {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
-                        {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />)}
+                        {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : 
+                          <div className="relative shrink-0">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            {dmOtherId && <OnlineIndicator isOnline={isOnline(dmOtherId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
+                          </div>
+                        )}
                         <span className={`text-[11px] font-mono truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
+                        {!isGroup && dmOtherId && isOnline(dmOtherId) && (
+                          <span className="text-[9px] text-foreground/60 shrink-0">online</span>
+                        )}
                         {isGroup && <span className="text-[9px] text-muted-foreground ml-auto shrink-0">{getConvoMemberCount(convo.id)}</span>}
                       </div>
                       {lastMsg && (
@@ -683,8 +695,18 @@ export default function UserMessagesPage() {
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
-                  {activeConversation.type === "group" ? <Hash className="h-3.5 w-3.5 text-muted-foreground" /> : <User className="h-3.5 w-3.5 text-muted-foreground" />}
+                  {activeConversation.type === "group" ? <Hash className="h-3.5 w-3.5 text-muted-foreground" /> : 
+                    <div className="relative">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      {otherUserId && <OnlineIndicator isOnline={isOnline(otherUserId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
+                    </div>
+                  }
                   <span className="text-[11px] text-foreground font-mono truncate">{getConvoDisplayName(activeConversation)}</span>
+                  {activeConversation.type === "direct" && otherUserId && (
+                    <span className={`text-[9px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
+                      {isOnline(otherUserId) ? "online" : "offline"}
+                    </span>
+                  )}
                   {activeConversation.type === "group" && (
                     <span className="text-[9px] text-muted-foreground">{activeMembers?.length || 0} members</span>
                   )}
