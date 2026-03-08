@@ -552,18 +552,18 @@ export default function UserMessagesPage() {
     <UserLayout>
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
-      <div className="px-4 py-4">
-        <div className="border border-border flex flex-col md:flex-row" style={{ height: "min(70vh, 520px)", minHeight: "360px" }}>
+      <div className="px-4 sm:px-6 py-4">
+        <div className="border border-border flex flex-col md:flex-row" style={{ height: "min(78vh, 620px)", minHeight: "400px" }}>
           {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-72 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
-            <div className="p-2 border-b border-border flex gap-1.5">
+          <div className={`w-full md:w-80 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
+            <div className="p-3 border-b border-border flex gap-2">
               <button onClick={() => { setShowNewDm(true); setShowNewGroup(false); }}
-                className="flex items-center gap-1 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
-                <User className="h-3 w-3" /> NEW DM
+                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                <User className="h-3.5 w-3.5" /> NEW DM
               </button>
               <button onClick={() => { setShowNewGroup(true); setShowNewDm(false); }}
-                className="flex items-center gap-1 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
-                <Users className="h-3 w-3" /> NEW GROUP
+                className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none flex-1 justify-center">
+                <Users className="h-3.5 w-3.5" /> NEW GROUP
               </button>
             </div>
 
