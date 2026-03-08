@@ -676,11 +676,11 @@ export default function UserMessagesPage() {
                         })()}
                       </div>
                       {lastMsg && (
-                        <p className={`text-[10px] truncate mt-0.5 ml-5 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
+                        <p className={`text-[10px] truncate mt-1 ml-6 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
                           {getDisplayName(lastMsg.sender_id)}: {lastMsg.content.slice(0, 40)}
                         </p>
                       )}
-                      <p className="text-[9px] text-muted-foreground/60 ml-5 mt-0.5">
+                      <p className="text-[9px] text-muted-foreground/60 ml-6 mt-0.5">
                         {formatDistanceToNow(new Date(convo.updated_at), { addSuffix: true })}
                       </p>
                     </button>
