@@ -285,23 +285,23 @@ export default function UserDashboard() {
         </div>
 
         {/* Two-column layout on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8">
           {/* Left Column */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-5 sm:space-y-8">
             {/* Announcements Preview */}
             {announcements && announcements.length > 0 && (
-              <div className="border border-admin-border bg-card p-4 sm:p-5">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="border border-admin-border bg-card p-5 sm:p-6">
+                <div className="flex items-center gap-2.5 mb-4">
                   <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[hsl(var(--admin))]" />
                   <span className="text-xs sm:text-sm admin-text tracking-[0.3em]">SYSTEM ANNOUNCEMENTS</span>
                   <button onClick={() => navigate("/user/announcements")} className="text-[10px] sm:text-xs text-muted-foreground hover:text-foreground ml-auto">[VIEW ALL]</button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {announcements.slice(0, 3).map((ann: any) => (
-                    <div key={ann.id} className="admin-box px-3 py-2">
-                      <p className="text-xs sm:text-sm admin-text font-bold">{ann.title}</p>
-                      <p className="text-xs text-secondary-foreground truncate">{ann.content}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <div key={ann.id} className="admin-box px-4 py-3">
+                      <p className="text-xs sm:text-sm admin-text font-bold leading-relaxed">{ann.title}</p>
+                      <p className="text-xs text-secondary-foreground truncate mt-1 leading-relaxed">{ann.content}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1.5">
                         {new Date(ann.created_at).toLocaleDateString()} · TARGET: {ann.target_location}
                       </p>
                     </div>
@@ -311,8 +311,8 @@ export default function UserDashboard() {
             )}
 
             {/* Trending Section */}
-            <div className="border border-border bg-card p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="border border-border bg-card p-5 sm:p-6">
+              <div className="flex items-center gap-2.5 mb-4">
                 <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-foreground" />
                 <span className="text-xs sm:text-sm text-muted-foreground tracking-[0.3em]">
                   TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
@@ -324,11 +324,11 @@ export default function UserDashboard() {
                     <button
                       key={topic.id}
                       onClick={() => navigate(`/topic/${topic.id}`)}
-                      className="w-full text-left text-xs sm:text-sm flex items-center gap-2.5 hover:bg-foreground/5 px-2 py-1.5 transition-none group"
+                      className="w-full text-left text-xs sm:text-sm flex items-center gap-3 hover:bg-foreground/5 px-3 py-2.5 transition-none group"
                     >
                       <Hash className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-foreground shrink-0" />
-                      <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
-                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                      <span className="text-foreground/80 group-hover:text-foreground truncate leading-relaxed">{topic.title}</span>
+                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1.5">
                         <MessageSquare className="h-3 w-3" />
                         {topic.replies_count}
                       </span>
@@ -336,7 +336,7 @@ export default function UserDashboard() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs sm:text-sm text-muted-foreground">NO TRENDING TOPICS YET</p>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">NO TRENDING TOPICS YET</p>
               )}
             </div>
           </div>
@@ -344,8 +344,8 @@ export default function UserDashboard() {
           {/* Right Column */}
           <div>
             {/* Recent Activity */}
-            <div className="border border-border bg-card p-4 sm:p-5">
-              <div className="flex items-center gap-2 mb-3">
+            <div className="border border-border bg-card p-5 sm:p-6">
+              <div className="flex items-center gap-2.5 mb-4">
                 <span className="text-xs sm:text-sm text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground ml-auto">{timeStr}</span>
               </div>
@@ -355,15 +355,15 @@ export default function UserDashboard() {
                     <button
                       key={topic.id}
                       onClick={() => navigate(`/topic/${topic.id}`)}
-                      className="w-full text-left text-xs sm:text-sm flex items-center gap-2.5 hover:bg-foreground/5 px-2 py-1.5 transition-none"
+                      className="w-full text-left text-xs sm:text-sm flex items-center gap-3 hover:bg-foreground/5 px-3 py-2.5 transition-none"
                     >
                       <span className="text-muted-foreground shrink-0 text-[10px] sm:text-xs">
                         [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
                       </span>
-                      <span className={`truncate ${topic.is_announcement ? "admin-text" : "text-foreground/70"}`}>
+                      <span className={`truncate leading-relaxed ${topic.is_announcement ? "admin-text" : "text-foreground/70"}`}>
                         {topic.is_announcement ? "📢 " : ""}{topic.title}
                       </span>
-                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                      <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1.5">
                         <MessageSquare className="h-3 w-3" />
                         {topic.replies_count}
                       </span>
@@ -372,9 +372,9 @@ export default function UserDashboard() {
                   ))}
                 </div>
               ) : (
-                <p className="text-xs sm:text-sm text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
+                <p className="text-xs sm:text-sm text-muted-foreground cursor-blink leading-relaxed">NO RECENT ACTIVITY</p>
               )}
-              <div className="mt-3 pt-3 border-t border-border">
+              <div className="mt-4 pt-4 border-t border-border">
                 <p className="text-xs text-muted-foreground cursor-blink">user@nearvox:~$</p>
               </div>
             </div>
