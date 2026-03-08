@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
-  Terminal, User, TrendingUp, Hash,
+  Terminal, User, TrendingUp, Hash, Plus,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
@@ -28,23 +28,7 @@ export default function UserDashboard() {
     enabled: !!user,
   });
 
-  const { data: topicCount } = useQuery({
-    queryKey: ["user-topic-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("topics").select("*", { count: "exact", head: true });
-      return count || 0;
-    },
-  });
-
-  const { data: postCount } = useQuery({
-    queryKey: ["user-post-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("posts").select("*", { count: "exact", head: true });
-      return count || 0;
-    },
-  });
-
-  // Trending topics (most replies + views in user's region or globally)
+  // Trending topics (most replies in user's region or globally)
   const { data: trendingTopics } = useQuery({
     queryKey: ["trending-topics", profile?.location],
     queryFn: async () => {
@@ -53,12 +37,10 @@ export default function UserDashboard() {
         .select("id, title, replies_count, views_count, category, location")
         .order("replies_count", { ascending: false })
         .limit(5);
-      // If user has location, prioritize their region
       if (profile?.location) {
         query = query.ilike("location", `%${profile.location}%`);
       }
       const { data } = await query;
-      // If no regional results, fall back to global
       if (!data || data.length === 0) {
         const { data: globalData } = await supabase
           .from("topics")
@@ -127,36 +109,10 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Status Bar */}
-        <div className="border border-border bg-card p-3 mb-6">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
-            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">NETWORK STATUS</span>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-1">
-            <div className="text-[10px]">
-              <span className="text-muted-foreground">STATUS: </span>
-              <span className="text-foreground glow-text">CONNECTED</span>
-            </div>
-            <div className="text-[10px]">
-              <span className="text-muted-foreground">IDENTITY: </span>
-              <span className="text-foreground">{profile?.anonymous_name || "..."}</span>
-            </div>
-            <div className="text-[10px]">
-              <span className="text-muted-foreground">TOPICS: </span>
-              <span className="text-foreground">{topicCount ?? "..."}</span>
-            </div>
-            <div className="text-[10px]">
-              <span className="text-muted-foreground">POSTS: </span>
-              <span className="text-foreground">{postCount ?? "..."}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Category Grid */}
+        {/* Category Grid - 10 categories */}
         <div className="mb-6">
           <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
-            &gt; BROWSE BY CATEGORY
+            &gt; NAVIGATE — SELECT MODULE
           </p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5">
             {TOPIC_CATEGORIES.map((cat) => {
@@ -165,14 +121,14 @@ export default function UserDashboard() {
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/user/topics?category=${cat.value}`)}
-                  className="text-left p-2.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                 >
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
                     <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
                   </div>
-                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight truncate">
-                    {cat.label.split(" & ")[0].toUpperCase()}
+                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                    {cat.label.toUpperCase()}
                   </p>
                 </button>
               );
@@ -181,14 +137,14 @@ export default function UserDashboard() {
         </div>
 
         {/* Trending Section */}
-        {trendingTopics && trendingTopics.length > 0 && (
-          <div className="border border-border bg-card p-3 mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-3 w-3 text-foreground" />
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">
-                TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
-              </span>
-            </div>
+        <div className="border border-border bg-card p-3 mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <TrendingUp className="h-3 w-3 text-foreground" />
+            <span className="text-[10px] text-muted-foreground tracking-[0.3em]">
+              TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
+            </span>
+          </div>
+          {trendingTopics && trendingTopics.length > 0 ? (
             <div className="space-y-0.5">
               {trendingTopics.map((topic: any) => (
                 <button
@@ -205,22 +161,9 @@ export default function UserDashboard() {
                 </button>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* New Topic Button */}
-        <div className="mb-6">
-          <button
-            onClick={() => setShowCreate(true)}
-            className="w-full text-left p-3 border border-foreground/30 bg-foreground/5 hover:border-foreground hover:bg-foreground/10 transition-none group flex items-center gap-3"
-          >
-            <span className="text-[10px] text-foreground font-mono">[+]</span>
-            <MessageSquare className="h-3.5 w-3.5 text-foreground" />
-            <div>
-              <p className="text-xs text-foreground glow-text tracking-wider">START NEW TOPIC</p>
-              <p className="text-[9px] text-muted-foreground">Choose a category and start a discussion</p>
-            </div>
-          </button>
+          ) : (
+            <p className="text-[11px] text-muted-foreground">NO TRENDING TOPICS YET</p>
+          )}
         </div>
 
         {/* Recent Activity */}
@@ -263,6 +206,14 @@ export default function UserDashboard() {
           // NEARVOX — ANONYMOUS COMMUNITY NETWORK
         </p>
       </div>
+
+      {/* Floating + Button */}
+      <button
+        onClick={() => setShowCreate(true)}
+        className="fixed bottom-6 right-6 z-40 h-12 w-12 flex items-center justify-center border border-foreground bg-background hover:bg-foreground hover:text-background transition-none glow-text"
+      >
+        <Plus className="h-5 w-5" />
+      </button>
 
       {showCreate && <CreateTopicDialog onClose={() => setShowCreate(false)} />}
     </div>

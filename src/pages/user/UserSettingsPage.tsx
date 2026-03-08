@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,20 +24,46 @@ export default function UserSettingsPage() {
     enabled: !!user,
   });
 
+  const [username, setUsername] = useState("");
   const [location, setLocation] = useState("");
   const [interests, setInterests] = useState("");
 
   // Sync form with loaded data
-  const isReady = profile && !isLoading;
-  if (isReady && !location && profile.location) setLocation(profile.location);
-  if (isReady && !interests && profile.interests) setInterests(profile.interests.join(", "));
+  useEffect(() => {
+    if (profile) {
+      if (!username && profile.username) setUsername(profile.username);
+      if (!location && profile.location) setLocation(profile.location);
+      if (!interests && profile.interests) setInterests(profile.interests.join(", "));
+    }
+  }, [profile]);
 
   const handleSave = async () => {
     if (!user) return;
+    if (!username.trim()) {
+      toast.error("Username cannot be empty");
+      return;
+    }
     setSaving(true);
+
+    // Check username uniqueness if changed
+    if (profile && username.trim() !== profile.username) {
+      const { data: existing } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("username", username.trim())
+        .neq("user_id", user.id)
+        .maybeSingle();
+      if (existing) {
+        toast.error("Username already taken");
+        setSaving(false);
+        return;
+      }
+    }
+
     const { error } = await supabase
       .from("profiles")
       .update({
+        username: username.trim(),
         location: location.trim() || null,
         interests: interests.split(",").map((i) => i.trim()).filter(Boolean),
       })
@@ -48,6 +74,7 @@ export default function UserSettingsPage() {
     } else {
       toast.success("Settings saved");
       queryClient.invalidateQueries({ queryKey: ["my-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["my-profile-settings"] });
     }
     setSaving(false);
   };
@@ -71,11 +98,6 @@ export default function UserSettingsPage() {
                   <span className="terminal-value text-xs">{profile.anonymous_name || "N/A"}</span>
                 </div>
                 <div className="terminal-row">
-                  <span className="terminal-label text-[10px]">USERNAME</span>
-                  <span className="terminal-dots" />
-                  <span className="terminal-value text-xs">{profile.username}</span>
-                </div>
-                <div className="terminal-row">
                   <span className="terminal-label text-[10px]">MEMBER SINCE</span>
                   <span className="terminal-dots" />
                   <span className="terminal-value text-xs">
@@ -89,6 +111,16 @@ export default function UserSettingsPage() {
             <div className="terminal-box">
               <div className="terminal-header">EDIT PROFILE</div>
               <div className="space-y-3">
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1">&gt; USERNAME:</p>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Your username"
+                    className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
+                  />
+                </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1">&gt; REGION / SECTOR:</p>
                   <input
