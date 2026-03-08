@@ -164,6 +164,7 @@ export type Database = {
           invited_by: string | null
           is_admin: boolean
           location: string | null
+          name: string | null
           status: Database["public"]["Enums"]["content_status"]
           updated_at: string
           user_id: string
@@ -177,6 +178,7 @@ export type Database = {
           invited_by?: string | null
           is_admin?: boolean
           location?: string | null
+          name?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
           user_id: string
@@ -190,6 +192,7 @@ export type Database = {
           invited_by?: string | null
           is_admin?: boolean
           location?: string | null
+          name?: string | null
           status?: Database["public"]["Enums"]["content_status"]
           updated_at?: string
           user_id?: string
