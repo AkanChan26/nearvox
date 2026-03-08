@@ -925,10 +925,10 @@ export default function UserMessagesPage() {
               </>
             ) : (
               <div className="flex-1 flex items-center justify-center">
-                <div className="text-center">
-                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-30" />
-                  <p className="text-[11px] text-muted-foreground">SELECT A CONVERSATION</p>
-                  <p className="text-[9px] text-muted-foreground/60 mt-1">or start a new DM / group</p>
+                <div className="text-center space-y-3">
+                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto opacity-20" />
+                  <p className="text-[11px] text-muted-foreground tracking-wider">SELECT A CONVERSATION</p>
+                  <p className="text-[9px] text-muted-foreground/50">or start a new DM / group</p>
                 </div>
               </div>
             )}
