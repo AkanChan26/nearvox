@@ -13,9 +13,9 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users", search],
