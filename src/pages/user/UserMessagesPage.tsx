@@ -796,6 +796,16 @@ export default function UserMessagesPage() {
                                 <p className="text-[8px] text-muted-foreground/60">
                                   {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
                                 </p>
+                                {msg.sender_id === user?.id && (() => {
+                                  const status = getReadStatus(msg);
+                                  return status === "read" ? (
+                                    <CheckCheck className="h-3 w-3 text-primary" />
+                                  ) : status === "delivered" ? (
+                                    <CheckCheck className="h-3 w-3 text-muted-foreground/60" />
+                                  ) : (
+                                    <Check className="h-3 w-3 text-muted-foreground/60" />
+                                  );
+                                })()}
                               </div>
                             </div>
 
