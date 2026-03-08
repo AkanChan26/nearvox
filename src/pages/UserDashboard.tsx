@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
-import NetworkNodeMap from "@/components/NetworkNodeMap";
+
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -260,8 +260,6 @@ export default function UserDashboard() {
           </button>
         </div>
 
-        {/* Network Node Map */}
-        <NetworkNodeMap />
 
         {/* Announcements Preview */}
         {announcements && announcements.length > 0 && (
