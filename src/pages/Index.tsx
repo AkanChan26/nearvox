@@ -253,7 +253,7 @@ const Index = () => {
           </div>
 
           {/* ── ADMIN QUICK ACCESS CARDS ── */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-1.5">
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-1 sm:gap-1.5">
             {adminQuickCards.map((card) => {
               const Icon = card.icon;
               return (
