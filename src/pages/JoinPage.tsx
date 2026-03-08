@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff, Terminal, ChevronRight, User, MapPin, Mail, Lock, Ticket, Shuffle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { USER_AVATARS, ProfileAvatar } from "@/components/Avatars";
 
 const normalizeInviteInput = (value: string) => {
   const trimmed = value.trim();
@@ -26,6 +27,7 @@ export default function JoinPage() {
   const [name, setName] = useState("");
   const [anonymousName, setAnonymousName] = useState("");
   const [region, setRegion] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("user-1");
   const [code, setCode] = useState(inviteCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,7 +81,7 @@ export default function JoinPage() {
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name: name.trim(), anonymous_name: anonymousName.trim(), region: region.trim() } },
+      options: { data: { name: name.trim(), anonymous_name: anonymousName.trim(), region: region.trim(), avatar: selectedAvatar } },
     });
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
     if (signUpData.user) {
@@ -194,6 +196,27 @@ export default function JoinPage() {
                     </button>
                   </div>
                   <p className="text-[9px] text-muted-foreground mt-1">This is how others will see you on the network</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
+                    <User className="h-2.5 w-2.5" /> CHOOSE AVATAR:
+                  </p>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {USER_AVATARS.map((av) => (
+                      <button
+                        key={av.id}
+                        type="button"
+                        onClick={() => setSelectedAvatar(av.id)}
+                        className={`p-1 border transition-none flex items-center justify-center ${
+                          selectedAvatar === av.id
+                            ? "border-foreground bg-foreground/10"
+                            : "border-border hover:border-foreground/40"
+                        }`}
+                      >
+                        <av.Component size={28} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">

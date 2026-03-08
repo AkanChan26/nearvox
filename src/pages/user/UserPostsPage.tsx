@@ -14,6 +14,7 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { ProfileAvatar } from "@/components/Avatars";
 
 type UnifiedItem = {
   id: string;
@@ -175,7 +176,7 @@ export default function UserPostsPage() {
     queryKey: ["post-creators", creatorIds],
     queryFn: async () => {
       if (creatorIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username").in("user_id", creatorIds);
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
       return data || [];
     },
     enabled: creatorIds.length > 0,
@@ -211,6 +212,7 @@ export default function UserPostsPage() {
   };
 
   const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
+  const getCreatorAvatar = (userId: string) => (creators?.find((c) => c.user_id === userId) as any)?.avatar || "user-1";
 
   const getCommentUserName = (userId: string) => {
     const u = commentUsers?.find((c) => c.user_id === userId);
@@ -544,7 +546,8 @@ export default function UserPostsPage() {
                   )}
 
                   {/* Meta */}
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
+                    <ProfileAvatar avatarId={getCreatorAvatar(item.user_id)} isAdmin={isAdmin} size={18} />
                     <span className={isAdmin ? "admin-text glow-admin" : ""}>
                       {getCreatorName(item.user_id)}
                       {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}

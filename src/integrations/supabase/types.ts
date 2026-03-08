@@ -309,6 +309,7 @@ export type Database = {
       profiles: {
         Row: {
           anonymous_name: string | null
+          avatar: string | null
           created_at: string
           id: string
           interests: string[] | null
@@ -323,6 +324,7 @@ export type Database = {
         }
         Insert: {
           anonymous_name?: string | null
+          avatar?: string | null
           created_at?: string
           id?: string
           interests?: string[] | null
@@ -337,6 +339,7 @@ export type Database = {
         }
         Update: {
           anonymous_name?: string | null
+          avatar?: string | null
           created_at?: string
           id?: string
           interests?: string[] | null

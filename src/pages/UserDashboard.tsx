@@ -5,11 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
-  Terminal, User, TrendingUp, Hash, Plus,
+  Terminal, TrendingUp, Hash, Plus,
   Megaphone, Mail, Settings, Ticket, FileText, Bell,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { ProfileAvatar } from "@/components/Avatars";
 
 
 export default function UserDashboard() {
@@ -130,14 +131,12 @@ export default function UserDashboard() {
             </div>
             <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-6 sm:ml-7">ANONYMOUS NETWORK</p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ProfileAvatar avatarId={(profile as any)?.avatar} size={36} />
             <div className="text-right">
-              <div className="flex items-center gap-1.5 justify-end">
-                <User className="h-3 w-3 text-foreground" />
-                <p className="text-xs sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[100px] sm:max-w-none">
-                  {profile?.username || "..."}
-                </p>
-              </div>
+              <p className="text-xs sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[100px] sm:max-w-none">
+                {profile?.anonymous_name || profile?.username || "..."}
+              </p>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wider truncate max-w-[120px] sm:max-w-none">
                 {profile?.location || "SET REGION"}
               </p>

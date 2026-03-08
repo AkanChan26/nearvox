@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, MessageSquare, Eye, Clock, Send, FileIcon, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { ProfileAvatar } from "@/components/Avatars";
 
 function RichContent({ content }: { content: string }) {
   const parts = useMemo(() => {
@@ -113,7 +114,7 @@ export default function TopicPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, anonymous_name, is_admin, username")
+        .select("user_id, anonymous_name, is_admin, username, avatar")
         .in("user_id", uniqueUserIds);
       return data || [];
     },
@@ -130,6 +131,7 @@ export default function TopicPage() {
   const isAdmin = (userId: string) => {
     return profiles?.find((p) => p.user_id === userId)?.is_admin || false;
   };
+  const getAvatar = (userId: string) => (profiles?.find((p) => p.user_id === userId) as any)?.avatar || "user-1";
 
   // Realtime replies
   useEffect(() => {
@@ -205,7 +207,8 @@ export default function TopicPage() {
           <div className="text-sm text-foreground/80 leading-relaxed mb-3 whitespace-pre-wrap">
             <RichContent content={topic.content} />
           </div>
-          <div className="flex items-center gap-4 text-[10px] text-muted-foreground">
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            <ProfileAvatar avatarId={getAvatar(topic.user_id)} isAdmin={topicIsAdmin} size={22} />
             <span className={topicIsAdmin ? "admin-text glow-admin" : ""}>
               {getName(topic.user_id)}
               {topicIsAdmin && <span className="admin-badge ml-1">ADMIN</span>}
@@ -233,6 +236,7 @@ export default function TopicPage() {
                     className={`p-3 border ${replyIsAdmin ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}
                   >
                     <div className="flex items-center gap-2 mb-1.5">
+                      <ProfileAvatar avatarId={getAvatar(reply.user_id)} isAdmin={replyIsAdmin} size={18} />
                       <span className={`text-[10px] font-bold ${replyIsAdmin ? "admin-text glow-admin" : "text-foreground"}`}>
                         {getName(reply.user_id)}
                         {replyIsAdmin && <span className="admin-badge ml-1">ADMIN</span>}

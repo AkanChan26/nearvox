@@ -5,6 +5,7 @@ import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { ProfileAvatar } from "@/components/Avatars";
 import {
   User, MapPin, Ticket, Clock, Shield,
   ArrowLeft, UserCheck, MessageSquare, Heart, Eye,
@@ -202,6 +203,13 @@ export default function AdminUserProfilePage() {
                 }`}>
                   [{profile.status?.toUpperCase()}]
                 </span>
+              </div>
+              <div className="flex items-center gap-3 mb-3">
+                <ProfileAvatar avatarId={(profile as any).avatar} isAdmin={profile.is_admin} size={48} />
+                <div>
+                  <p className="text-foreground font-bold text-sm">{profile.anonymous_name || profile.username}</p>
+                  <p className="text-[9px] text-muted-foreground">@{profile.username}</p>
+                </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-[11px]">
                 <div>
