@@ -66,7 +66,10 @@ export function AdminSidebar() {
       <div className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-foreground">TheCaptain</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs admin-text glow-admin font-bold">TheCaptain</p>
+              <span className="admin-badge">ADMIN</span>
+            </div>
             <p className="text-[10px] text-muted-foreground">ROOT ACCESS</p>
           </div>
           <button className="text-muted-foreground hover:text-destructive transition-colors">
