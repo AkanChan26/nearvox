@@ -297,7 +297,7 @@ export default function UserPostsPage() {
     const item = unified.find((u) => u.id === itemId);
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
-      reported_post_id: itemType === "post" ? itemId : null,
+      reported_post_id: itemId,
       reported_user_id: item?.user_id || null,
       report_type: itemType,
       reason: reportReason.trim(),
@@ -641,9 +641,12 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
-                    {/* Report (not own — both posts and topics) */}
+                    {/* Report (any post/topic — not own) */}
                     {!isOwner && (() => {
-                      const existingReport = myReports?.find((r) => r.reported_post_id === item.id || (r.report_type === item.type && r.reported_post_id === item.id));
+                      const existingReport = myReports?.find((r) => {
+                        if (item.type === "post") return r.reported_post_id === item.id;
+                        return r.report_type === "topic" && r.reported_post_id === item.id;
+                      });
                       return existingReport ? (
                         <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">
                           <Flag className="h-2.5 w-2.5 fill-current" /> UNDO REPORT
