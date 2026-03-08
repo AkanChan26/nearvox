@@ -1,12 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Shield, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+const normalizeInviteInput = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  try {
+    const maybeUrl = new URL(trimmed);
+    const codeFromUrl = maybeUrl.searchParams.get("code");
+    if (codeFromUrl) return codeFromUrl.trim().toLowerCase();
+  } catch {
+    // Not a URL, continue
+  }
+
+  const codeMatch = trimmed.match(/[?&]code=([^&]+)/i);
+  if (codeMatch?.[1]) {
+    return decodeURIComponent(codeMatch[1]).trim().toLowerCase();
+  }
+
+  return trimmed.toLowerCase();
+};
+
 export default function JoinPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const inviteCode = searchParams.get("code") || "";
+  const inviteCode = normalizeInviteInput(searchParams.get("code") || "");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,36 +40,67 @@ export default function JoinPage() {
   const [validating, setValidating] = useState(false);
   const [codeValid, setCodeValid] = useState<boolean | null>(null);
 
+  const validateCode = useCallback(async (rawValue: string) => {
+    const normalizedCode = normalizeInviteInput(rawValue);
+    if (!normalizedCode) return false;
+
+    const primaryResult = await supabase.rpc("validate_invite_code", { _code: normalizedCode });
+    if (!primaryResult.error) {
+      return !!primaryResult.data;
+    }
+
+    // Fallback for stale generated client typings/function cache
+    const fallbackResult = await supabase.rpc("validate_invite_code", { code: normalizedCode } as any);
+    if (!fallbackResult.error) {
+      return !!fallbackResult.data;
+    }
+
+    return false;
+  }, []);
+
   // Validate invite code
   useEffect(() => {
-    if (!code || code.length < 4) {
+    const normalizedCode = normalizeInviteInput(code);
+    if (!normalizedCode || normalizedCode.length < 4) {
       setCodeValid(null);
       return;
     }
+
     const timeout = setTimeout(async () => {
       setValidating(true);
-      const { data } = await supabase.rpc("validate_invite_code", { _code: code });
-      setCodeValid(!!data);
+      const isValid = await validateCode(normalizedCode);
+      setCodeValid(isValid);
       setValidating(false);
-    }, 500);
+    }, 350);
+
     return () => clearTimeout(timeout);
-  }, [code]);
+  }, [code, validateCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!codeValid) {
+    const normalizedCode = normalizeInviteInput(code);
+
+    if (!normalizedCode) {
+      setError("INVITE CODE IS REQUIRED");
+      return;
+    }
+
+    setLoading(true);
+
+    const isStillValid = await validateCode(normalizedCode);
+    if (!isStillValid) {
       setError("INVALID OR USED INVITE CODE");
+      setLoading(false);
       return;
     }
 
     if (!name.trim() || !username.trim() || !region.trim()) {
       setError("ALL FIELDS ARE REQUIRED");
+      setLoading(false);
       return;
     }
-
-    setLoading(true);
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
@@ -72,7 +123,7 @@ export default function JoinPage() {
     // Consume the invite code
     if (signUpData.user) {
       await supabase.rpc("consume_invite_code", {
-        _code: code,
+        _code: normalizedCode,
         new_user_id: signUpData.user.id,
       });
     }
