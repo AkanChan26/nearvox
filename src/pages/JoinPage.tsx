@@ -72,7 +72,7 @@ export default function JoinPage() {
     // Consume the invite code
     if (signUpData.user) {
       await supabase.rpc("consume_invite_code", {
-        code,
+        _code: code,
         new_user_id: signUpData.user.id,
       });
     }
