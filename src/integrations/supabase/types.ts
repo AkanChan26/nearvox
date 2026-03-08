@@ -359,6 +359,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_topic_views: { Args: { topic_id: string }; Returns: undefined }
       validate_invite_code: { Args: { code: string }; Returns: boolean }
     }
     Enums: {
