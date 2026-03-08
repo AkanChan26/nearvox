@@ -1,16 +1,10 @@
 import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  ShoppingBag,
-  AlertTriangle,
-  Megaphone,
-  BarChart3,
-  Settings,
-  LogOut,
+  LayoutDashboard, Users, FileText, ShoppingBag,
+  AlertTriangle, Megaphone, BarChart3, Settings, LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { title: "DASHBOARD", url: "/", icon: LayoutDashboard, cmd: "01" },
@@ -25,22 +19,26 @@ const navItems = [
 
 export function AdminSidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut, adminUsername, isAdmin } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-56 flex flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Header */}
       <div className="px-4 py-4 border-b border-sidebar-border">
         <p className="text-foreground text-lg glow-text tracking-widest">NEARVOX</p>
         <p className="text-[10px] text-muted-foreground tracking-[0.4em] mt-0.5">ADMIN TERMINAL v1.0</p>
       </div>
 
-      {/* System status bar */}
       <div className="px-4 py-2 border-b border-sidebar-border">
         <p className="text-[10px] text-muted-foreground">STATUS: <span className="text-foreground">ONLINE</span></p>
         <p className="text-[10px] text-muted-foreground">SESSION: <span className="text-foreground">ACTIVE</span></p>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 py-3 overflow-y-auto">
         <p className="px-4 text-[10px] text-muted-foreground tracking-[0.3em] mb-2">COMMAND MENU</p>
         {navItems.map((item) => {
@@ -62,17 +60,16 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="border-t border-sidebar-border px-4 py-3">
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-xs admin-text glow-admin font-bold">TheCaptain</p>
-              <span className="admin-badge">ADMIN</span>
+              <p className="text-xs admin-text glow-admin font-bold">{adminUsername || "ADMIN"}</p>
+              {isAdmin && <span className="admin-badge">ADMIN</span>}
             </div>
             <p className="text-[10px] text-muted-foreground">ROOT ACCESS</p>
           </div>
-          <button className="text-muted-foreground hover:text-destructive transition-colors">
+          <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors">
             <LogOut className="h-3 w-3" />
           </button>
         </div>
