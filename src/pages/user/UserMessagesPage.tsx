@@ -829,6 +829,7 @@ export default function UserMessagesPage() {
 
                             {/* Message bubble */}
                             <div className={`${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/40 border-border"} border px-4 py-3`}>
+                              {!isMine && (
                                 <p className="text-[9px] text-muted-foreground mb-1.5 font-mono tracking-wider">{getDisplayName(msg.sender_id)}</p>
                               )}
                               {editingMsg === msg.id ? (
