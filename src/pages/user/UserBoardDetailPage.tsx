@@ -240,7 +240,15 @@ export default function UserBoardDetailPage() {
             <Users className="h-3.5 w-3.5" /> {board.members_count} members
           </span>
           <span className="text-xs text-muted-foreground">{board.posts_count} posts</span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            {(board.created_by === user?.id || profile?.is_admin) && (
+              <button
+                onClick={() => { if (confirm("Delete this board and all its posts?")) deleteBoard.mutate(); }}
+                className="text-xs text-muted-foreground border border-border px-3 py-1.5 hover:text-destructive hover:border-destructive tracking-wider"
+              >
+                DELETE
+              </button>
+            )}
             {isMember ? (
               <button
                 onClick={() => leaveBoard.mutate()}

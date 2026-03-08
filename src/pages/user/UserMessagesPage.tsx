@@ -716,9 +716,19 @@ export default function UserMessagesPage() {
                       {isOnline(otherUserId) ? "online" : "offline"}
                     </span>
                   )}
-                  {activeConversation.type === "group" && (
-                    <span className="text-[9px] text-muted-foreground">{activeMembers?.length || 0} members</span>
-                  )}
+                  {activeConversation.type === "group" && (() => {
+                    const onlineCount = activeMembers?.filter((uid: string) => isOnline(uid)).length || 0;
+                    return (
+                      <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                        {activeMembers?.length || 0} members
+                        {onlineCount > 0 && (
+                          <span className="flex items-center gap-0.5">
+                            • <span className="h-1.5 w-1.5 rounded-full bg-foreground inline-block" /> {onlineCount} online
+                          </span>
+                        )}
+                      </span>
+                    );
+                  })()}
                   <div className="ml-auto flex items-center gap-1 relative">
                     {activeConversation.type === "group" && activeConversation.created_by === user?.id && (
                       <button onClick={(e) => { e.stopPropagation(); setShowAddMember(!showAddMember); setAddMemberSearch(""); }}

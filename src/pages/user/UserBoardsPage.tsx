@@ -159,6 +159,18 @@ export default function UserBoardsPage() {
                     {isMember && (
                       <span className="text-foreground text-[10px] tracking-wider ml-auto">JOINED</span>
                     )}
+                    {(board.created_by === user?.id || profile?.is_admin) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm("Delete this board and all its posts?")) deleteBoard.mutate(board.id);
+                        }}
+                        className="ml-auto text-muted-foreground hover:text-destructive p-1"
+                        title="Delete board"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                 </button>
               );
