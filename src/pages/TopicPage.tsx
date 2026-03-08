@@ -403,7 +403,7 @@ export default function TopicPage() {
                           value={editContent}
                           onChange={(e) => setEditContent(e.target.value)}
                           rows={2}
-                          className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none"
+                          className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none"
                         />
                         <div className="flex gap-2 justify-end">
                           <button onClick={() => setEditingReplyId(null)} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-1 border border-border">
@@ -415,7 +415,7 @@ export default function TopicPage() {
                         </div>
                       </div>
                     ) : (
-                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
+                      <p className={`text-[11px] leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
                     )}
 
                     {/* Reply actions */}
@@ -454,7 +454,7 @@ export default function TopicPage() {
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder="Type your reply..."
             rows={3}
-            className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground"
+            className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground"
           />
           <div className="flex justify-end mt-2">
             <button type="submit" disabled={submitting || !replyContent.trim()} className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-30">
@@ -475,7 +475,7 @@ export default function TopicPage() {
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Describe why you're reporting this..."
               rows={3}
-              className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground mb-3"
+              className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground mb-3"
             />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setReportingId(null)} className="text-[10px] text-muted-foreground border border-border px-3 py-1.5 hover:text-foreground">CANCEL</button>
