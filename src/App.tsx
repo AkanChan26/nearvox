@@ -53,6 +53,7 @@ const App = () => (
             <Route path="/user/invites" element={<ProtectedRoute><UserInvitesPage /></ProtectedRoute>} />
             <Route path="/user/announcements" element={<ProtectedRoute><UserAnnouncementsPage /></ProtectedRoute>} />
             <Route path="/user/messages" element={<ProtectedRoute><UserMessagesPage /></ProtectedRoute>} />
+            <Route path="/user/notifications" element={<ProtectedRoute><UserNotificationsPage /></ProtectedRoute>} />
 
             {/* Admin routes */}
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
