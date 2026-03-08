@@ -841,13 +841,22 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
+                {/* Typing indicator */}
+                {typingUsers.length > 0 && (
+                  <div className="px-3 py-1 border-t border-border">
+                    <p className="text-[9px] text-muted-foreground animate-pulse">
+                      {typingUsers.map(getDisplayName).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
+                    </p>
+                  </div>
+                )}
+
                 {/* Input */}
                 <div className="p-2 border-t border-border flex gap-2">
                   {otherIsBlocked ? (
                     <p className="flex-1 text-[10px] text-muted-foreground text-center py-1.5">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
-                      <input value={msgText} onChange={(e) => setMsgText(e.target.value)} onKeyDown={handleKeyDown}
+                      <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
