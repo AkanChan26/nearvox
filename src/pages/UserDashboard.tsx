@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
   Terminal, User, TrendingUp, Hash, Plus,
-  Megaphone, Mail, Settings, Ticket, FileText,
+  Megaphone, Mail, Settings, Ticket, FileText, Bell,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
@@ -77,6 +77,19 @@ export default function UserDashboard() {
         .from("messages")
         .select("*", { count: "exact", head: true })
         .or(`recipient_id.eq.${user!.id},recipient_id.is.null`);
+      return count || 0;
+    },
+    enabled: !!user,
+  });
+
+  const { data: unreadNotifs } = useQuery({
+    queryKey: ["unread-notification-count", user?.id],
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("notifications")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .eq("is_read", false);
       return count || 0;
     },
     enabled: !!user,
@@ -165,7 +178,22 @@ export default function UserDashboard() {
         </div>
 
         {/* Quick Access Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-1.5 mb-6">
+          <button
+            onClick={() => navigate("/user/notifications")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Bell className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              {(unreadNotifs ?? 0) > 0 && (
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+              )}
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">NOTIFICATIONS</p>
+            {(unreadNotifs ?? 0) > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{unreadNotifs} unread</p>
+            )}
+          </button>
           <button
             onClick={() => navigate("/user/posts?mine=true")}
             className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
