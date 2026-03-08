@@ -12,7 +12,11 @@ import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserTopicsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
+  const baseTopicsPath = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topics" : "/user/topics";
+  const topicPathPrefix = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topic" : "/topic";
   const categoryFilter = searchParams.get("category") || "";
   const [showCreate, setShowCreate] = useState(false);
 
