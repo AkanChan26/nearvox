@@ -122,7 +122,7 @@ export default function UserTopicsPage() {
               return (
                 <button
                   key={topic.id}
-                  onClick={() => navigate(`/topic/${topic.id}`)}
+                  onClick={() => navigate(`${topicPathPrefix}/${topic.id}`)}
                   className={`text-left p-3 border transition-none group flex flex-col gap-1.5 ${
                     isAnnouncement
                       ? "admin-box border-[hsl(var(--admin-border))] col-span-1 md:col-span-2"

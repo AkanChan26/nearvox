@@ -321,7 +321,7 @@ const Index = () => {
                 {recentTopics.map((topic: any) => (
                   <button
                     key={topic.id}
-                    onClick={() => navigate(`/topic/${topic.id}`)}
+                    onClick={() => navigate(`/admin/topic/${topic.id}`)}
                     className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
                   >
                     <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
