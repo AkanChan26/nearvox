@@ -937,6 +937,7 @@ export default function UserMessagesPage() {
                               </div>
                             )}
                           </div>
+                          </div>
                         </div>
                       );
                     })
