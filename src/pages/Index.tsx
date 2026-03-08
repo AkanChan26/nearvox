@@ -376,6 +376,16 @@ const Index = () => {
   const now = new Date();
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
+  const adminModules = [
+    { label: "USERS", hint: `${profileCount ?? 0} total`, path: "/users" },
+    { label: "POSTS", hint: `${postCount ?? 0} total`, path: "/posts" },
+    { label: "MARKETPLACE", hint: `${listingCount ?? 0} listings`, path: "/marketplace" },
+    { label: "REPORTS", hint: `${pendingReports ?? 0} pending`, path: "/reports" },
+    { label: "ANNOUNCEMENTS", hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
+    { label: "ANALYTICS", hint: "metrics", path: "/analytics" },
+    { label: "SETTINGS", hint: "admin config", path: "/settings" },
+  ];
+
   // Section header component
   const SectionHeader = ({ title, count, sectionKey }: { title: string; count?: number; sectionKey: keyof typeof sections }) => (
     <button
