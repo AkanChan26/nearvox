@@ -351,7 +351,7 @@ export type Database = {
     }
     Functions: {
       consume_invite_code: {
-        Args: { code: string; new_user_id: string }
+        Args: { _code: string; new_user_id: string }
         Returns: undefined
       }
       generate_anonymous_name: { Args: never; Returns: string }
@@ -363,7 +363,7 @@ export type Database = {
         Returns: boolean
       }
       increment_topic_views: { Args: { topic_id: string }; Returns: undefined }
-      validate_invite_code: { Args: { code: string }; Returns: boolean }
+      validate_invite_code: { Args: { _code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
