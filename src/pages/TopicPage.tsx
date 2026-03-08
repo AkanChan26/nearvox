@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, MessageSquare, Eye, Clock, Send, FileIcon, ExternalLink } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { ProfileAvatar } from "@/components/Avatars";
 
 function RichContent({ content }: { content: string }) {
   const parts = useMemo(() => {
