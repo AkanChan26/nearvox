@@ -381,7 +381,7 @@ function PostCard({
           </button>
           {showMenu && (
             <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[120px]">
-              {isOwner && (
+              {(isOwner || isAdmin) && (
                 <button onClick={() => { onDelete(); setShowMenu(false); }} className="w-full text-left text-xs text-destructive px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
