@@ -357,7 +357,7 @@ export default function TopicPage() {
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
                     )}
 
                     {/* Reply actions */}
