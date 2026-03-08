@@ -41,6 +41,7 @@ export type Database = {
       announcements: {
         Row: {
           admin_id: string
+          attachments: string[] | null
           content: string
           created_at: string
           id: string
@@ -51,6 +52,7 @@ export type Database = {
         }
         Insert: {
           admin_id: string
+          attachments?: string[] | null
           content: string
           created_at?: string
           id?: string
@@ -61,6 +63,7 @@ export type Database = {
         }
         Update: {
           admin_id?: string
+          attachments?: string[] | null
           content?: string
           created_at?: string
           id?: string
@@ -166,6 +169,38 @@ export type Database = {
           sender_id?: string
         }
         Relationships: []
+      }
+      post_comments: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_likes: {
         Row: {
