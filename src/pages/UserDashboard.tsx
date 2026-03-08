@@ -247,14 +247,17 @@ export default function UserDashboard() {
           </button>
           <button
             onClick={() => navigate("/user/messages")}
-            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
             <div className="flex items-center gap-1.5 mb-1">
               <Mail className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              {(unreadChatCount ?? 0) > 0 && (
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+              )}
             </div>
             <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
-            {(messageCount ?? 0) > 0 && (
-              <p className="text-[9px] text-foreground mt-0.5">{messageCount} messages</p>
+            {(unreadChatCount ?? 0) > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{unreadChatCount} unread</p>
             )}
           </button>
           <button
