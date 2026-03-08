@@ -347,6 +347,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_invite_code: {
+        Args: { code: string; new_user_id: string }
+        Returns: undefined
+      }
       generate_anonymous_name: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -355,6 +359,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_invite_code: { Args: { code: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
