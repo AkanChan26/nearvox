@@ -212,6 +212,7 @@ export default function UserPostsPage() {
   };
 
   const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
+  const getCreatorAvatar = (userId: string) => (creators?.find((c) => c.user_id === userId) as any)?.avatar || "user-1";
 
   const getCommentUserName = (userId: string) => {
     const u = commentUsers?.find((c) => c.user_id === userId);
