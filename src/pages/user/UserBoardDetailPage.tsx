@@ -307,6 +307,7 @@ export default function UserBoardDetailPage() {
                 post={post}
                 isLiked={myLikes?.has(post.id) || false}
                 isOwner={post.user_id === user?.id}
+                isAdmin={profile?.is_admin || false}
                 onLike={() => toggleLike.mutate(post.id)}
                 onDelete={() => deletePost.mutate(post.id)}
                 onReport={() => setReportPostId(post.id)}
@@ -350,7 +351,7 @@ export default function UserBoardDetailPage() {
 }
 
 function PostCard({
-  post, isLiked, isOwner, onLike, onDelete, onReport,
+  post, isLiked, isOwner, isAdmin, onLike, onDelete, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
   commentsQueryFn, onDeleteComment, currentUserId,
 }: any) {
@@ -380,7 +381,7 @@ function PostCard({
           </button>
           {showMenu && (
             <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[120px]">
-              {isOwner && (
+              {(isOwner || isAdmin) && (
                 <button onClick={() => { onDelete(); setShowMenu(false); }} className="w-full text-left text-xs text-destructive px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
                   <Trash2 className="h-3 w-3" /> Delete
                 </button>
