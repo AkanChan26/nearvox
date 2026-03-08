@@ -306,15 +306,15 @@ export default function UserDashboard() {
                 <button
                   key={item.label}
                   onClick={() => navigate(item.path)}
-                  className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_15px_hsl(145_80%_56%/0.05)] transition-all duration-150 group relative"
+                  className="text-left p-3 sm:p-3.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_15px_hsl(145_80%_56%/0.05)] transition-all duration-150 group relative"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     {item.pulse && (
-                      <span className="h-2 w-2 rounded-full bg-foreground animate-pulse shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />
                     )}
                   </div>
-                  <p className="text-[10px] sm:text-xs text-foreground group-hover:glow-text tracking-wider leading-relaxed">
+                  <p className="text-[8px] sm:text-[9px] text-foreground group-hover:glow-text tracking-wider leading-relaxed">
                     {item.label}
                   </p>
                   {item.badge && (
