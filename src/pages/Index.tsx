@@ -376,6 +376,16 @@ const Index = () => {
   const now = new Date();
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
+  const adminModules = [
+    { label: "USERS", hint: `${profileCount ?? 0} total`, path: "/users" },
+    { label: "POSTS", hint: `${postCount ?? 0} total`, path: "/posts" },
+    { label: "MARKETPLACE", hint: `${listingCount ?? 0} listings`, path: "/marketplace" },
+    { label: "REPORTS", hint: `${pendingReports ?? 0} pending`, path: "/reports" },
+    { label: "ANNOUNCEMENTS", hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
+    { label: "ANALYTICS", hint: "metrics", path: "/analytics" },
+    { label: "SETTINGS", hint: "admin config", path: "/settings" },
+  ];
+
   // Section header component
   const SectionHeader = ({ title, count, sectionKey }: { title: string; count?: number; sectionKey: keyof typeof sections }) => (
     <button
@@ -417,6 +427,21 @@ const Index = () => {
                 <LogOut className="h-3.5 w-3.5" />
               </button>
             </div>
+          </div>
+
+          {/* ── MODULE CARDS ── */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {adminModules.map((module) => (
+              <button
+                key={module.label}
+                onClick={() => navigate(module.path)}
+                className="text-left border border-border bg-card p-3 hover:border-foreground/40 hover:bg-foreground/5 transition-none"
+              >
+                <p className="text-[9px] text-muted-foreground tracking-[0.3em]">[ OPEN MODULE ]</p>
+                <p className="text-xs text-foreground tracking-wider mt-1">{module.label}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">{module.hint}</p>
+              </button>
+            ))}
           </div>
 
           {/* ── SYSTEM STATUS ── */}

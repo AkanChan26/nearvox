@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   session: Session | null;
@@ -22,49 +22,60 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [adminUsername, setAdminUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
 
   const checkAdminRole = async (userId: string) => {
-    const { data } = await supabase.rpc("has_role", {
+    const { data, error } = await supabase.rpc("has_role", {
       _user_id: userId,
       _role: "admin",
     });
-    setIsAdmin(!!data);
 
-    if (data) {
+    if (error) {
+      console.error("Failed to check admin role", error);
+    }
+
+    const admin = !!data;
+    setIsAdmin(admin);
+
+    if (admin) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("username")
         .eq("user_id", userId)
         .single();
       setAdminUsername(profile?.username || "ADMIN");
+    } else {
+      setAdminUsername(null);
     }
 
-    return !!data;
+    return admin;
+  };
+
+  const syncAuthState = async (nextSession: Session | null) => {
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (!nextSession?.user) {
+      setIsAdmin(false);
+      setAdminUsername(null);
+      setLoading(false);
+      return;
+    }
+
+    await checkAdminRole(nextSession.user.id);
+    setLoading(false);
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => checkAdminRole(session.user.id), 0);
-        } else {
-          setIsAdmin(false);
-          setAdminUsername(null);
-        }
-        setLoading(false);
-      }
-    );
+    setLoading(true);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminRole(session.user.id);
-      }
-      setLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      void syncAuthState(nextSession);
+    });
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      void syncAuthState(currentSession);
     });
 
     return () => subscription.unsubscribe();
@@ -74,14 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { error: error as Error };
 
-    // Check admin status and redirect
     if (data.user) {
       const admin = await checkAdminRole(data.user.id);
-      if (admin) {
-        navigate("/");
-      } else {
-        navigate("/dashboard");
-      }
+      navigate(admin ? "/" : "/dashboard", { replace: true });
     }
 
     return { error: null };
