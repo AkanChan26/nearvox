@@ -649,8 +649,8 @@ export default function UserPostsPage() {
                     )}
                   </div>
 
-                  {/* Report form (posts only) */}
-                  {reportingPost === item.id && item.type === "post" && (
+                  {/* Report form */}
+                  {reportingPost === item.id && (
                     <div className="mt-2 pt-2 border-t border-border">
                       <p className="text-[10px] text-muted-foreground mb-1">&gt; REPORT REASON:</p>
                       <div className="flex gap-2">
