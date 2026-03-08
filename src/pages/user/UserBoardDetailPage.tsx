@@ -191,6 +191,39 @@ export default function UserBoardDetailPage() {
     },
   });
 
+  const editPost = useMutation({
+    mutationFn: async ({ postId, title, content }: { postId: string; title: string; content: string }) => {
+      const { error } = await supabase.from("board_posts").update({ title: title.trim() || null, content: content.trim() }).eq("id", postId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Post updated");
+      queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
+    },
+    onError: () => toast.error("Failed to update post"),
+  });
+
+  const repost = useMutation({
+    mutationFn: async (postId: string) => {
+      const original = posts?.find((p: any) => p.id === postId);
+      if (!original) return;
+      const { error } = await supabase.from("board_posts").insert({
+        board_id: id!,
+        user_id: user!.id,
+        title: original.title ? `RE: ${original.title}` : null,
+        content: original.content,
+        attachments: original.attachments || [],
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Reposted!");
+      queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
+      queryClient.invalidateQueries({ queryKey: ["board", id] });
+    },
+    onError: () => toast.error("Failed to repost"),
+  });
+
   const submitReport = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("reports").insert({
