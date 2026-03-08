@@ -128,22 +128,21 @@ const Index = () => {
         {/* Command menu as topic list */}
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">COMMAND MENU</p>
 
-        <div className="space-y-1">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
           {adminSections.map((section) => {
             const Icon = section.icon;
             return (
               <button
                 key={section.url}
                 onClick={() => navigate(section.url)}
-                className="w-full text-left p-3 border border-border hover:border-foreground/30 hover:bg-muted/30 transition-none group flex items-center gap-3"
+                className="text-left p-4 border border-border hover:border-foreground/30 hover:bg-muted/30 transition-none group flex flex-col gap-2"
               >
-                <span className="text-[10px] text-muted-foreground">[{section.cmd}]</span>
-                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-foreground">{section.title}</p>
-                  <p className="text-[10px] text-muted-foreground">{section.description}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-muted-foreground">[{section.cmd}]</span>
+                  <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
                 </div>
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0" />
+                <p className="text-sm text-foreground">{section.title}</p>
+                <p className="text-[10px] text-muted-foreground leading-relaxed">{section.description}</p>
               </button>
             );
           })}
