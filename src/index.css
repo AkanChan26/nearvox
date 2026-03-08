@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Share+Tech+Mono&family=VT323&display=swap');
 
 @layer base {
   :root {
@@ -71,15 +71,33 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Silkscreen', 'Share Tech Mono', monospace;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Press Start 2P', cursive;
+    line-height: 1.4;
+  }
+
+  /* Mobile-responsive heading sizes */
+  h1 { font-size: 0.75rem; }
+  h2 { font-size: 0.65rem; }
+  h3 { font-size: 0.55rem; }
+
+  @media (min-width: 640px) {
+    h1 { font-size: 1rem; }
+    h2 { font-size: 0.85rem; }
+    h3 { font-size: 0.7rem; }
+  }
+
+  @media (min-width: 1024px) {
+    h1 { font-size: 1.15rem; }
+    h2 { font-size: 0.95rem; }
+    h3 { font-size: 0.8rem; }
   }
 
   button, input, textarea, select, label, span, p, a, div, li, td, th {
-    font-family: 'Share Tech Mono', monospace;
+    font-family: 'Silkscreen', 'Share Tech Mono', monospace;
   }
 
   ::-webkit-scrollbar { width: 4px; }
