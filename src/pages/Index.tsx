@@ -10,8 +10,21 @@ import {
   Ticket, Copy, Check, X,
   Users, AlertTriangle, Megaphone, BarChart3,
   Settings, TrendingUp, Hash, MessageSquare,
+  Activity, Wifi,
 } from "lucide-react";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
+
+const MODULE_DESCRIPTIONS: Record<string, string> = {
+  job_hunting: "Find work or hire locally",
+  promotions: "Promote products & services",
+  discussions: "General community talk",
+  confessions: "Anonymous confessions",
+  local_help: "Request or offer help nearby",
+  marketplace: "Buy & sell locally",
+  events: "Community events & meetups",
+  alerts: "Safety alerts & warnings",
+  ideas: "Pitch ideas & startups",
+};
 
 const Index = () => {
   const { adminUsername, isAdmin, user, signOut } = useAuth();
@@ -96,7 +109,7 @@ const Index = () => {
   const { data: recentTopics } = useQuery({
     queryKey: ["recent-activity-topics"],
     queryFn: async () => {
-      const { data } = await supabase.from("topics").select("id, title, created_at, is_announcement").order("created_at", { ascending: false }).limit(5);
+      const { data } = await supabase.from("topics").select("id, title, created_at, is_announcement, category").order("created_at", { ascending: false }).limit(5);
       return data || [];
     },
   });
@@ -172,132 +185,219 @@ const Index = () => {
   const now = new Date();
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
-  const adminQuickCards = [
+  const primaryCategories = TOPIC_CATEGORIES.filter(c => ["job_hunting", "promotions", "discussions", "confessions", "local_help"].includes(c.value));
+  const secondaryCategories = TOPIC_CATEGORIES.filter(c => ["marketplace", "events", "alerts", "ideas"].includes(c.value));
+
+  const adminTools = [
     { label: "USERS", icon: Users, hint: `${profileCount ?? 0} registered`, path: "/users" },
-    { label: "REPORTS", icon: AlertTriangle, hint: `${pendingReports ?? 0} pending`, path: "/reports" },
+    { label: "REPORTS", icon: AlertTriangle, hint: `${pendingReports ?? 0} pending`, path: "/reports", alert: (pendingReports ?? 0) > 0 },
     { label: "ANNOUNCEMENTS", icon: Megaphone, hint: `${announcements?.length ?? 0} records`, path: "/announcements" },
-    { label: "ANALYTICS", icon: BarChart3, hint: "metrics", path: "/analytics" },
-    { label: "SETTINGS", icon: Settings, hint: "admin config", path: "/settings" },
+    { label: "ANALYTICS", icon: BarChart3, hint: "metrics & data", path: "/analytics" },
+    { label: "SETTINGS", icon: Settings, hint: "system config", path: "/settings" },
     { label: "INVITES", icon: Ticket, hint: `${adminTickets?.length ?? 0} available`, path: "#invites" },
+  ];
+
+  const stats = [
+    { label: "STATUS", value: "ONLINE", glow: true },
+    { label: "USERS", value: profileCount ?? "..." },
+    { label: "TOPICS", value: topicCount ?? "..." },
+    { label: "POSTS", value: postCount ?? "..." },
+    { label: "LISTINGS", value: listingCount ?? "..." },
+    { label: "REPORTS", value: `${pendingReports ?? 0}`, warn: (pendingReports ?? 0) > 0 },
   ];
 
   return (
     <AdminLayout showBack={false}>
-      <div className="min-h-screen terminal-grid terminal-flicker">
-        <div className="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-3 sm:space-y-4">
+      <div className="min-h-screen terminal-grid">
+        <div className="max-w-4xl mx-auto px-3 sm:px-5 py-5 sm:py-8 space-y-5 sm:space-y-6">
 
           {/* ── HEADER ── */}
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Terminal className="h-4 w-4 sm:h-5 sm:w-5 text-foreground" />
-                <p className="text-xl sm:text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</p>
-              </div>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-6 sm:ml-7">ADMIN TERMINAL</p>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              <div className="text-right">
-                <div className="flex items-center gap-1.5 justify-end">
-                  <Shield className="h-3 w-3 text-[hsl(var(--admin))]" />
-                  <p className="text-xs sm:text-sm admin-text glow-admin font-bold tracking-wider truncate max-w-[80px] sm:max-w-none">{adminUsername || "USER"}</p>
-                  {isAdmin && <span className="admin-badge hidden sm:inline">ADMIN</span>}
+          <header className="border border-border bg-card p-4 sm:p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2.5 mb-2">
+                  <Terminal className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+                  <h1 className="text-lg sm:text-2xl text-foreground glow-text tracking-[0.3em]">NEARVOX</h1>
                 </div>
-                <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-wider hidden sm:block">ROOT ACCESS GRANTED</p>
+                <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.5em] ml-[30px] sm:ml-[34px]">ADMIN TERMINAL v2.0</p>
               </div>
-              <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors p-1 border border-border hover:border-destructive min-h-[36px] min-w-[36px] sm:min-h-0 sm:min-w-0 flex items-center justify-center">
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="text-right space-y-1">
+                  <div className="flex items-center gap-2 justify-end">
+                    <Shield className="h-3.5 w-3.5 text-[hsl(var(--admin))]" />
+                    <span className="text-sm sm:text-base admin-text glow-admin font-bold tracking-wider">{adminUsername || "USER"}</span>
+                    {isAdmin && <span className="admin-badge text-[8px]">ADMIN</span>}
+                  </div>
+                  <div className="text-[9px] text-muted-foreground tracking-wider space-y-0.5 hidden sm:block">
+                    <p>ACCESS LEVEL: <span className="text-foreground">ROOT</span></p>
+                    <p>STATUS: <span className="text-foreground glow-text flex items-center gap-1 inline-flex"><Wifi className="h-2.5 w-2.5" />ONLINE</span></p>
+                  </div>
+                </div>
+                <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors p-2 border border-border hover:border-destructive min-h-[40px] min-w-[40px] flex items-center justify-center">
+                  <LogOut className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* ── SYSTEM STATUS BAR ── */}
+          <div className="border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-foreground" />
+              </span>
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-[0.3em]">SYSTEM STATUS</span>
+              <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
+            </div>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4">
+              {stats.map((s) => (
+                <div key={s.label} className="text-center sm:text-left">
+                  <p className="text-[9px] text-muted-foreground tracking-wider mb-0.5">{s.label}</p>
+                  <p className={`text-xs sm:text-sm font-bold ${s.glow ? "text-foreground glow-text" : s.warn ? "text-[hsl(var(--warning))]" : "text-foreground"}`}>
+                    {s.value}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
-          {/* ── CATEGORY CARDS ── */}
-          <div>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-2 sm:mb-3">
-              &gt; NAVIGATE — SELECT MODULE
+          {/* ── PRIMARY COMMUNITY MODULES ── */}
+          <section>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4 flex items-center gap-2">
+              <Activity className="h-3 w-3" />
+              PRIMARY MODULES
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 sm:gap-1.5">
-              {TOPIC_CATEGORIES.filter((cat) => cat.value !== "random").map((cat) => {
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+              {primaryCategories.map((cat) => {
                 const Icon = cat.icon;
                 const count = categoryBreakdown?.[cat.value] || 0;
                 return (
                   <button
                     key={cat.value}
                     onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
-                    className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                    className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_15px_hsl(var(--foreground)/0.08)] transition-all duration-200 group"
                   >
-                    <div className="flex items-center gap-1.5 mb-1">
+                    <div className="flex items-center gap-2 mb-2">
                       <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
-                      <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                      <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                     </div>
-                    <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                    <p className="text-[11px] sm:text-xs text-foreground group-hover:glow-text tracking-wider leading-tight mb-1.5">
                       {cat.label.toUpperCase()}
                     </p>
-                    <p className="text-[9px] text-muted-foreground mt-0.5">{count} topics</p>
+                    <p className="text-[9px] text-muted-foreground leading-relaxed mb-2">
+                      {MODULE_DESCRIPTIONS[cat.value]}
+                    </p>
+                    <p className="text-[9px] text-foreground/60">{count} {count === 1 ? "topic" : "topics"}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ── SECONDARY COMMUNITY MODULES ── */}
+          <section>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4">
+              &gt; SECONDARY MODULES
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+              {secondaryCategories.map((cat) => {
+                const Icon = cat.icon;
+                const count = categoryBreakdown?.[cat.value] || 0;
+                return (
+                  <button
+                    key={cat.value}
+                    onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
+                    className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
+                  >
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
+                      <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    </div>
+                    <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
+                      {cat.label.toUpperCase()}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground">{count} topics</p>
                   </button>
                 );
               })}
               <button
                 onClick={() => navigate("/admin/all-posts")}
-                className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
               >
-                <div className="flex items-center gap-1.5 mb-1">
+                <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="text-[9px] text-muted-foreground font-mono">[10]</span>
-                  <MessageSquare className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+                  <MessageSquare className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                 </div>
-                <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
                   ALL POSTS
                 </p>
-                <p className="text-[9px] text-muted-foreground mt-0.5">{(postCount ?? 0) + (topicCount ?? 0)} total</p>
+                <p className="text-[9px] text-muted-foreground">{(postCount ?? 0) + (topicCount ?? 0)} total</p>
               </button>
             </div>
-          </div>
+          </section>
 
-          {/* ── ADMIN QUICK ACCESS CARDS ── */}
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-1 sm:gap-1.5">
-            {adminQuickCards.map((card) => {
-              const Icon = card.icon;
-              return (
-                <button
-                  key={card.label}
-                  onClick={() => {
-                    if (card.path === "#invites") {
-                      setShowInvites(!showInvites);
-                    } else {
-                      navigate(card.path);
-                    }
-                  }}
-                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
-                >
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
-                  </div>
-                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">{card.label}</p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5">{card.hint}</p>
-                </button>
-              );
-            })}
-          </div>
+          {/* ── MODERATION & ADMIN TOOLS ── */}
+          <section>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4 flex items-center gap-2">
+              <Shield className="h-3 w-3 text-[hsl(var(--admin))]" />
+              <span className="admin-text">MODERATION & ADMIN TOOLS</span>
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
+              {adminTools.map((card) => {
+                const Icon = card.icon;
+                return (
+                  <button
+                    key={card.label}
+                    onClick={() => {
+                      if (card.path === "#invites") setShowInvites(!showInvites);
+                      else navigate(card.path);
+                    }}
+                    className={`text-left p-4 sm:p-5 border bg-card transition-all duration-200 group ${
+                      card.alert
+                        ? "border-[hsl(var(--warning)/0.4)] hover:border-[hsl(var(--warning)/0.7)] hover:shadow-[0_0_15px_hsl(var(--warning)/0.1)]"
+                        : "border-[hsl(var(--admin-border))] hover:border-[hsl(var(--admin)/0.4)] hover:shadow-[0_0_15px_hsl(var(--admin)/0.08)]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <Icon className={`h-4 w-4 transition-colors ${card.alert ? "text-[hsl(var(--warning))]" : "text-[hsl(var(--admin)/0.6)] group-hover:text-[hsl(var(--admin))]"}`} />
+                      {card.alert && (
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[hsl(var(--warning))] opacity-75" />
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[hsl(var(--warning))]" />
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-[11px] sm:text-xs tracking-wider mb-1 ${card.alert ? "text-[hsl(var(--warning))]" : "admin-text group-hover:glow-admin"}`}>
+                      {card.label}
+                    </p>
+                    <p className="text-[9px] text-muted-foreground">{card.hint}</p>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
-          {/* ── INVITE TICKETS (inline, toggled) ── */}
+          {/* ── INVITE TICKETS (toggled) ── */}
           {showInvites && (
-            <div className="border border-border bg-card p-3">
-              <div className="flex items-center justify-between mb-2">
+            <div className="border border-[hsl(var(--admin-border))] bg-card p-4">
+              <div className="flex items-center justify-between mb-3">
                 <span className="text-[10px] text-muted-foreground tracking-[0.3em]">INVITE TICKETS — {adminTickets?.length ?? 0} AVAILABLE</span>
-                <button onClick={generateTicket} disabled={generating} className="flex items-center gap-1 text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50">
+                <button onClick={generateTicket} disabled={generating} className="flex items-center gap-1.5 text-[10px] admin-text border border-[hsl(var(--admin-border))] px-3 py-1 hover:bg-[hsl(var(--admin)/0.1)] transition-colors disabled:opacity-50">
                   <Ticket className="h-3 w-3" />{generating ? "..." : "[+ NEW]"}
                 </button>
               </div>
               {adminTickets && adminTickets.length > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-1 sm:gap-1.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {adminTickets.map((t) => (
-                    <div key={t.id} className="flex items-center justify-between border border-border px-2 py-1">
+                    <div key={t.id} className="flex items-center justify-between border border-border px-3 py-2">
                       <span className="text-[10px] text-foreground font-mono">{t.invite_code}</span>
-                      <div className="flex items-center gap-1">
-                        <button onClick={() => copyTicketLink(t.invite_code)} className="text-muted-foreground hover:text-foreground">
-                          {copiedCode === t.invite_code ? <Check className="h-2.5 w-2.5" /> : <Copy className="h-2.5 w-2.5" />}
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => copyTicketLink(t.invite_code)} className="text-muted-foreground hover:text-foreground p-1">
+                          {copiedCode === t.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                         </button>
-                        <button onClick={async () => { await supabase.from("invite_tickets").delete().eq("id", t.id); refetchTickets(); }} className="text-muted-foreground hover:text-destructive">
-                          <X className="h-2.5 w-2.5" />
+                        <button onClick={async () => { await supabase.from("invite_tickets").delete().eq("id", t.id); refetchTickets(); }} className="text-muted-foreground hover:text-destructive p-1">
+                          <X className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
@@ -307,75 +407,61 @@ const Index = () => {
             </div>
           )}
 
-          {/* ── SYSTEM STATUS ── */}
-          <div className="border border-border bg-card p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">SYSTEM STATUS</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-1">
-              <div className="text-[10px]"><span className="text-muted-foreground">STATUS: </span><span className="text-foreground glow-text">ONLINE</span></div>
-              <div className="text-[10px]"><span className="text-muted-foreground">USERS: </span><span className="text-foreground">{profileCount ?? "..."}</span></div>
-              <div className="text-[10px]"><span className="text-muted-foreground">TOPICS: </span><span className="text-foreground">{topicCount ?? "..."}</span></div>
-              <div className="text-[10px]"><span className="text-muted-foreground">POSTS: </span><span className="text-foreground">{postCount ?? "..."}</span></div>
-              <div className="text-[10px]"><span className="text-muted-foreground">LISTINGS: </span><span className="text-foreground">{listingCount ?? "..."}</span></div>
-              <div className="text-[10px]"><span className="text-muted-foreground">REPORTS: </span><span className={`${(pendingReports ?? 0) > 0 ? "text-warning" : "text-foreground"}`}>{pendingReports ?? 0} PENDING</span></div>
-            </div>
-          </div>
-
           {/* ── TRENDING ── */}
-          <div className="border border-border bg-card p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="h-3 w-3 text-foreground" />
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">TRENDING IN GLOBAL</span>
-            </div>
-            {recentTopics && recentTopics.length > 0 ? (
-              <div className="space-y-0.5">
-                {recentTopics.map((topic: any) => (
-                  <button
-                    key={topic.id}
-                    onClick={() => navigate(`/admin/topic/${topic.id}`)}
-                    className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
-                  >
-                    <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
-                    <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
-                    <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
-                      <MessageSquare className="h-2.5 w-2.5" />
-                      {topic.is_announcement ? "ANN" : "0"}
-                    </span>
-                  </button>
-                ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+            <div className="border border-border bg-card p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <TrendingUp className="h-3.5 w-3.5 text-foreground" />
+                <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-[0.3em]">TRENDING IN GLOBAL</span>
               </div>
-            ) : (
-              <p className="text-[11px] text-muted-foreground">NO TOPICS YET</p>
-            )}
+              {recentTopics && recentTopics.length > 0 ? (
+                <div className="space-y-1">
+                  {recentTopics.map((topic: any) => (
+                    <button
+                      key={topic.id}
+                      onClick={() => navigate(`/admin/topic/${topic.id}`)}
+                      className="w-full text-left text-[11px] flex items-center gap-2.5 hover:bg-foreground/5 px-2 py-2 transition-colors group rounded-sm"
+                    >
+                      <Hash className="h-3 w-3 text-foreground/40 group-hover:text-foreground shrink-0 transition-colors" />
+                      <span className="text-foreground/80 group-hover:text-foreground truncate flex-1">{topic.title}</span>
+                      <span className="text-[9px] text-muted-foreground shrink-0">
+                        {topic.category?.toUpperCase().slice(0, 4) || "DISC"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">NO TOPICS YET</p>
+              )}
+            </div>
+
+            {/* ── SYSTEM LOG ── */}
+            <div className="border border-border bg-card p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Activity className="h-3.5 w-3.5 text-foreground" />
+                <span className="text-[10px] sm:text-[11px] text-muted-foreground tracking-[0.3em]">SYSTEM LOG</span>
+                <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
+              </div>
+              {activityLog.length > 0 ? (
+                <div className="space-y-1.5 max-h-[200px] overflow-y-auto">
+                  {activityLog.map((entry, i) => (
+                    <div key={i} className="text-[10px] sm:text-[11px] flex items-start gap-2">
+                      <span className="text-muted-foreground shrink-0 font-mono">[{entry.time.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]</span>
+                      <span className={entry.type === "admin" ? "admin-text" : entry.type === "user" ? "text-foreground" : "text-foreground/70"}>{entry.text}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-muted-foreground cursor-blink">AWAITING ACTIVITY</p>
+              )}
+              <div className="mt-3 pt-2 border-t border-border">
+                <p className="text-[10px] text-muted-foreground cursor-blink">root@nearvox:~$</p>
+              </div>
+            </div>
           </div>
 
-          {/* ── SYSTEM LOG ── */}
-          <div className="border border-border bg-card p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
-              <span className="text-[9px] text-muted-foreground ml-auto">{timeStr}</span>
-            </div>
-            {activityLog.length > 0 ? (
-              <div className="space-y-0.5">
-                {activityLog.map((entry, i) => (
-                  <div key={i} className="text-[11px] flex items-start gap-2">
-                    <span className="text-muted-foreground shrink-0">[{entry.time.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]</span>
-                    <span className={entry.type === "admin" ? "admin-text" : entry.type === "user" ? "text-foreground" : "text-foreground/70"}>{entry.text}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[11px] text-muted-foreground cursor-blink">AWAITING ACTIVITY</p>
-            )}
-            <div className="mt-2 pt-2 border-t border-border">
-              <p className="text-[10px] text-muted-foreground cursor-blink">root@nearvox:~$</p>
-            </div>
-          </div>
-
-          <p className="text-[9px] text-muted-foreground tracking-wider text-center pb-4">
-            // NEARVOX ADMIN CONSOLE — UNAUTHORIZED ACCESS PROHIBITED
+          <p className="text-[9px] text-muted-foreground tracking-wider text-center pb-6">
+            // NEARVOX ADMIN CONSOLE v2.0 — UNAUTHORIZED ACCESS PROHIBITED
           </p>
         </div>
       </div>
