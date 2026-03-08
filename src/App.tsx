@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
+import AdminUserProfilePage from "./pages/AdminUserProfilePage";
 
 import UsersPage from "./pages/UsersPage";
 import PostsPage from "./pages/PostsPage";
@@ -56,6 +57,7 @@ const App = () => (
             <Route path="/" element={<AdminRoute><Index /></AdminRoute>} />
             
             <Route path="/users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+            <Route path="/users/:userId" element={<AdminRoute><AdminUserProfilePage /></AdminRoute>} />
             <Route path="/posts" element={<AdminRoute><PostsPage /></AdminRoute>} />
             <Route path="/marketplace" element={<AdminRoute><MarketplacePage /></AdminRoute>} />
             <Route path="/reports" element={<AdminRoute><ReportsPage /></AdminRoute>} />

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
@@ -7,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Edit2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -15,6 +16,8 @@ import { toast } from "sonner";
 export default function UserPostsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isMine = searchParams.get("mine") === "true";
   const [showCreate, setShowCreate] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [newLocation, setNewLocation] = useState("");
@@ -29,14 +32,21 @@ export default function UserPostsPage() {
   const [reportReason, setReportReason] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const [editingPost, setEditingPost] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
+
   const { data: posts, isLoading } = useQuery({
-    queryKey: ["user-posts-feed"],
+    queryKey: ["user-posts-feed", isMine],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("posts")
         .select("*")
         .order("is_pinned", { ascending: false })
         .order("created_at", { ascending: false });
+      if (isMine && user) {
+        query = query.eq("user_id", user.id);
+      }
+      const { data } = await query;
       return data || [];
     },
   });
@@ -138,6 +148,18 @@ export default function UserPostsPage() {
     }
   };
 
+  const handleUpdate = async (postId: string) => {
+    if (!editContent.trim()) return;
+    const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", postId);
+    if (error) toast.error("Failed to update");
+    else {
+      toast.success("Post updated");
+      setEditingPost(null);
+      setEditContent("");
+      queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
+    }
+  };
+
   const handleReport = async (postId: string) => {
     if (!user || !reportReason.trim()) return;
     const { error } = await supabase.from("reports").insert({
@@ -230,14 +252,22 @@ export default function UserPostsPage() {
 
   return (
     <UserLayout>
-      <PageHeader title="POSTS" description="COMMUNITY POSTS & UPDATES">
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
-        >
-          <Plus className="h-3 w-3" />
-          NEW POST
-        </button>
+      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS ACROSS CATEGORIES" : "COMMUNITY POSTS & UPDATES"}>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSearchParams(isMine ? {} : { mine: "true" })}
+            className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
+          >
+            {isMine ? "[ALL POSTS]" : "[MY POSTS]"}
+          </button>
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
+          >
+            <Plus className="h-3 w-3" />
+            NEW POST
+          </button>
+        </div>
       </PageHeader>
 
       <div className="px-4 py-6">
@@ -341,7 +371,23 @@ export default function UserPostsPage() {
                   {post.is_pinned && !post.is_announcement && (
                     <p className="text-[9px] text-foreground tracking-[0.3em] mb-1">📌 PINNED</p>
                   )}
-                  <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{post.content}</p>
+                  {/* Content or Edit form */}
+                  {editingPost === post.id ? (
+                    <div className="mb-2">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={3}
+                        className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none mb-1"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleUpdate(post.id)} disabled={!editContent.trim()} className="text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30">[SAVE]</button>
+                        <button onClick={() => { setEditingPost(null); setEditContent(""); }} className="text-[10px] text-muted-foreground border border-border px-2 py-0.5 hover:text-foreground">[CANCEL]</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{post.content}</p>
+                  )}
 
                   {/* Attachments */}
                   {attachments.length > 0 && (
@@ -412,6 +458,17 @@ export default function UserPostsPage() {
                       >
                         <Flag className="h-2.5 w-2.5" />
                         REPORT
+                      </button>
+                    )}
+
+                    {/* Edit (own post) */}
+                    {isOwner && (
+                      <button
+                        onClick={() => { setEditingPost(post.id); setEditContent(post.content); }}
+                        className="flex items-center gap-0.5 hover:text-foreground"
+                      >
+                        <Edit2 className="h-2.5 w-2.5" />
+                        EDIT
                       </button>
                     )}
 
