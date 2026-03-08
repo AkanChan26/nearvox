@@ -149,7 +149,7 @@
   }
   .admin-badge {
     color: hsl(var(--admin-foreground));
-    background: linear-gradient(135deg, hsl(var(--admin)), hsl(var(--admin-accent)));
+    background: hsl(var(--admin));
     @apply text-[9px] uppercase tracking-[0.2em] font-bold px-1.5 py-0.5;
   }
 }
