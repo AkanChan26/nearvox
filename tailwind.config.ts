@@ -77,8 +77,10 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans: ['"Share Tech Mono"', 'monospace'],
+        mono: ['"Share Tech Mono"', 'monospace'],
+        pixel: ['"Press Start 2P"', 'cursive'],
+        terminal: ['"VT323"', 'monospace'],
       },
       borderRadius: {
         lg: "var(--radius)",
