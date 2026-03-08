@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,34 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function UserTopicsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin } = useAuth();
-  const [searchParams] = useSearchParams();
+  const { isAdmin, user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const baseTopicsPath = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topics" : "/user/topics";
   const topicPathPrefix = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topic" : "/topic";
   const categoryFilter = searchParams.get("category") || "";
+  const regionFilter = searchParams.get("region") !== "off";
   const [showCreate, setShowCreate] = useState(false);
+
+  // Fetch user profile for region filtering
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile-region", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("location").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const userLocation = myProfile?.location || "";
+
+  // Helper: check if location matches user's region
+  const isNearby = (itemLocation: string | null | undefined): boolean => {
+    if (!userLocation || !itemLocation) return true;
+    const norm = (s: string) => s.toLowerCase().trim();
+    const userParts = norm(userLocation).split(/[,\s]+/);
+    const itemParts = norm(itemLocation).split(/[,\s]+/);
+    return userParts.some((part) => itemParts.some((ip) => ip.includes(part) || part.includes(ip)));
+  };
 
   const { data: topics, isLoading } = useQuery({
     queryKey: ["user-topics", categoryFilter],
@@ -36,6 +58,12 @@ export default function UserTopicsPage() {
       return data || [];
     },
   });
+
+  const filteredTopics = useMemo(() => {
+    if (!topics) return [];
+    if (!regionFilter || !userLocation) return topics;
+    return topics.filter((t) => isNearby(t.location));
+  }, [topics, regionFilter, userLocation]);
 
   const creatorIds = [...new Set(topics?.map((t) => t.user_id) || [])];
   const { data: creators } = useQuery({
