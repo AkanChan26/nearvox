@@ -9,6 +9,7 @@ import {
   Shield, Terminal,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { TOPIC_CATEGORIES, getCategoryLabel } from "@/lib/categories";
 
 const adminSections = [
   { title: "SYSTEM DASHBOARD", desc: "Real-time platform monitoring & system stats", url: "/admin/dashboard", icon: LayoutDashboard, cmd: "01" },
@@ -54,6 +55,20 @@ const Index = () => {
     queryFn: async () => {
       const { count } = await supabase.from("topics").select("*", { count: "exact", head: true });
       return count || 0;
+    },
+  });
+
+  // Category breakdown
+  const { data: categoryBreakdown } = useQuery({
+    queryKey: ["category-breakdown"],
+    queryFn: async () => {
+      const { data } = await supabase.from("topics").select("category");
+      const counts: Record<string, number> = {};
+      data?.forEach((t: any) => {
+        const cat = t.category || "discussions";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+      return counts;
     },
   });
 
@@ -214,6 +229,28 @@ const Index = () => {
               </div>
             </div>
           </div>
+
+          {/* Category Breakdown */}
+          {categoryBreakdown && Object.keys(categoryBreakdown).length > 0 && (
+            <div className="border border-border bg-card p-3 mb-6">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] text-muted-foreground tracking-[0.3em]">TOPIC CATEGORIES</span>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-1">
+                {TOPIC_CATEGORIES.map((cat) => {
+                  const count = categoryBreakdown[cat.value] || 0;
+                  const CatIcon = cat.icon;
+                  return (
+                    <div key={cat.value} className="flex items-center gap-1.5 text-[10px] py-0.5">
+                      <CatIcon className="h-2.5 w-2.5 text-muted-foreground" />
+                      <span className="text-muted-foreground truncate">{cat.label.split(" & ")[0]}</span>
+                      <span className="text-foreground ml-auto">{count}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Command Menu */}
           <div className="mb-6">

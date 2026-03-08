@@ -340,6 +340,7 @@ export type Database = {
       }
       topics: {
         Row: {
+          category: Database["public"]["Enums"]["topic_category"] | null
           content: string
           created_at: string
           id: string
@@ -354,6 +355,7 @@ export type Database = {
           views_count: number
         }
         Insert: {
+          category?: Database["public"]["Enums"]["topic_category"] | null
           content: string
           created_at?: string
           id?: string
@@ -368,6 +370,7 @@ export type Database = {
           views_count?: number
         }
         Update: {
+          category?: Database["public"]["Enums"]["topic_category"] | null
           content?: string
           created_at?: string
           id?: string
@@ -427,6 +430,17 @@ export type Database = {
       listing_status: "active" | "pending" | "flagged" | "removed"
       report_severity: "low" | "medium" | "high" | "critical"
       report_status: "pending" | "reviewing" | "resolved" | "dismissed"
+      topic_category:
+        | "job_hunting"
+        | "promotions"
+        | "discussions"
+        | "confessions"
+        | "local_help"
+        | "marketplace"
+        | "events"
+        | "alerts"
+        | "ideas"
+        | "random"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -559,6 +573,18 @@ export const Constants = {
       listing_status: ["active", "pending", "flagged", "removed"],
       report_severity: ["low", "medium", "high", "critical"],
       report_status: ["pending", "reviewing", "resolved", "dismissed"],
+      topic_category: [
+        "job_hunting",
+        "promotions",
+        "discussions",
+        "confessions",
+        "local_help",
+        "marketplace",
+        "events",
+        "alerts",
+        "ideas",
+        "random",
+      ],
     },
   },
 } as const

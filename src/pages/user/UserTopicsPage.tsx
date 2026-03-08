@@ -1,26 +1,33 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { MessageSquare, Eye, Clock, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
+import { TOPIC_CATEGORIES, getCategoryLabel, getCategoryIcon } from "@/lib/categories";
 
 export default function UserTopicsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryFilter = searchParams.get("category") || "";
   const [showCreate, setShowCreate] = useState(false);
 
   const { data: topics, isLoading } = useQuery({
-    queryKey: ["user-topics"],
+    queryKey: ["user-topics", categoryFilter],
     queryFn: async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("topics")
         .select("*")
         .order("is_pinned", { ascending: false })
         .order("is_announcement", { ascending: false })
         .order("last_activity_at", { ascending: false });
+      if (categoryFilter) {
+        query = query.eq("category", categoryFilter as any);
+      }
+      const { data } = await query;
       return data || [];
     },
   });
@@ -50,9 +57,13 @@ export default function UserTopicsPage() {
     return creators?.find((c) => c.user_id === userId)?.is_admin || false;
   };
 
+  const activeCategoryLabel = categoryFilter
+    ? getCategoryLabel(categoryFilter)
+    : "ALL TOPICS";
+
   return (
     <UserLayout>
-      <PageHeader title="TOPICS" description="BROWSE & JOIN NEARBY DISCUSSIONS">
+      <PageHeader title="TOPICS" description={activeCategoryLabel.toUpperCase()}>
         <button
           onClick={() => setShowCreate(true)}
           className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
@@ -62,9 +73,36 @@ export default function UserTopicsPage() {
         </button>
       </PageHeader>
 
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
+        {/* Category filter tabs */}
+        <div className="flex flex-wrap gap-1 mb-4">
+          <button
+            onClick={() => navigate("/user/topics")}
+            className={`text-[9px] px-2 py-1 border transition-none ${
+              !categoryFilter
+                ? "border-foreground text-foreground bg-foreground/10"
+                : "border-border text-muted-foreground hover:border-foreground/30"
+            }`}
+          >
+            ALL
+          </button>
+          {TOPIC_CATEGORIES.map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+              className={`text-[9px] px-2 py-1 border transition-none ${
+                categoryFilter === cat.value
+                  ? "border-foreground text-foreground bg-foreground/10"
+                  : "border-border text-muted-foreground hover:border-foreground/30"
+              }`}
+            >
+              {cat.label.split(" & ")[0].toUpperCase()}
+            </button>
+          ))}
+        </div>
+
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {topics?.length ?? 0} ACTIVE THREADS
+          {topics?.length ?? 0} THREADS
         </p>
 
         {isLoading ? (
@@ -74,6 +112,7 @@ export default function UserTopicsPage() {
             {topics.map((topic, index) => {
               const isAdmin = isCreatorAdmin(topic.user_id);
               const isAnnouncement = topic.is_announcement;
+              const CatIcon = getCategoryIcon((topic as any).category || "discussions");
 
               return (
                 <button
@@ -90,14 +129,20 @@ export default function UserTopicsPage() {
                   )}
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
+                    <CatIcon className="h-3 w-3 text-muted-foreground" />
                     <span className={`text-sm ${isAnnouncement ? "admin-text font-bold" : "text-foreground"}`}>
                       {topic.title}
                     </span>
                   </div>
-                  <span className={`text-[10px] ${isAdmin ? "admin-text glow-admin" : "text-muted-foreground"}`}>
-                    {getCreatorName(topic.user_id)}
-                    {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[10px] ${isAdmin ? "admin-text glow-admin" : "text-muted-foreground"}`}>
+                      {getCreatorName(topic.user_id)}
+                      {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground border border-border px-1">
+                      {getCategoryLabel((topic as any).category || "discussions")}
+                    </span>
+                  </div>
                   {topic.location && (
                     <span className="text-[10px] text-muted-foreground">📍 {topic.location}</span>
                   )}
@@ -118,7 +163,7 @@ export default function UserTopicsPage() {
         )}
       </div>
 
-      {showCreate && <CreateTopicDialog onClose={() => setShowCreate(false)} />}
+      {showCreate && <CreateTopicDialog onClose={() => setShowCreate(false)} defaultCategory={categoryFilter || undefined} />}
     </UserLayout>
   );
 }

@@ -4,17 +4,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { TOPIC_CATEGORIES } from "@/lib/categories";
 
 interface Props {
   onClose: () => void;
+  defaultCategory?: string;
 }
 
-export function CreateTopicDialog({ onClose }: Props) {
+export function CreateTopicDialog({ onClose, defaultCategory }: Props) {
   const { user, isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [location, setLocation] = useState("");
+  const [category, setCategory] = useState(defaultCategory || "discussions");
   const [isAnnouncement, setIsAnnouncement] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -30,6 +33,7 @@ export function CreateTopicDialog({ onClose }: Props) {
       user_id: user.id,
       is_announcement: isAdmin && isAnnouncement,
       is_pinned: isAdmin && isAnnouncement,
+      category: category as any,
     });
 
     if (error) {
@@ -37,6 +41,8 @@ export function CreateTopicDialog({ onClose }: Props) {
     } else {
       toast.success("Topic created");
       queryClient.invalidateQueries({ queryKey: ["user-topics"] });
+      queryClient.invalidateQueries({ queryKey: ["user-recent-topics"] });
+      queryClient.invalidateQueries({ queryKey: ["trending-topics"] });
       onClose();
     }
     setLoading(false);
@@ -53,6 +59,33 @@ export function CreateTopicDialog({ onClose }: Props) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
+          {/* Category selector */}
+          <div>
+            <p className="text-[10px] text-muted-foreground mb-1">&gt; CATEGORY:</p>
+            <div className="grid grid-cols-2 gap-1">
+              {TOPIC_CATEGORIES.map((cat) => {
+                const Icon = cat.icon;
+                const isSelected = category === cat.value;
+                return (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setCategory(cat.value)}
+                    className={`text-left px-2 py-1.5 text-[10px] border transition-none flex items-center gap-1.5 ${
+                      isSelected
+                        ? "border-foreground bg-foreground/10 text-foreground"
+                        : "border-border text-muted-foreground hover:border-foreground/30"
+                    }`}
+                  >
+                    <span className="text-[9px] font-mono">[{cat.cmd}]</span>
+                    <Icon className="h-2.5 w-2.5" />
+                    {cat.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <div>
             <p className="text-[10px] text-muted-foreground mb-1">&gt; TITLE:</p>
             <input

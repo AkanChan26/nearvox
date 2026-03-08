@@ -4,20 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  MessageSquare, LogOut, Ticket, ChevronRight,
-  FileText, ShoppingBag, Settings, Terminal, User,
+  MessageSquare, LogOut, ChevronRight,
+  Terminal, User, TrendingUp, Hash,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
-import { InviteTicketPanel } from "@/components/InviteTicketPanel";
-
-const userSections = [
-  { title: "TOPICS", desc: "Browse & join nearby discussions", url: "/user/topics", icon: MessageSquare, cmd: "01" },
-  { title: "POSTS", desc: "View community posts & updates", url: "/user/posts", icon: FileText, cmd: "02" },
-  { title: "MARKETPLACE", desc: "Browse local listings & deals", url: "/user/marketplace", icon: ShoppingBag, cmd: "03" },
-  { title: "INVITES", desc: "Manage your invite tickets", url: "/user/invites", icon: Ticket, cmd: "04" },
-  { title: "SETTINGS", desc: "Your profile & preferences", url: "/user/settings", icon: Settings, cmd: "05" },
-];
+import { TOPIC_CATEGORIES } from "@/lib/categories";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -53,12 +44,40 @@ export default function UserDashboard() {
     },
   });
 
+  // Trending topics (most replies + views in user's region or globally)
+  const { data: trendingTopics } = useQuery({
+    queryKey: ["trending-topics", profile?.location],
+    queryFn: async () => {
+      let query = supabase
+        .from("topics")
+        .select("id, title, replies_count, views_count, category, location")
+        .order("replies_count", { ascending: false })
+        .limit(5);
+      // If user has location, prioritize their region
+      if (profile?.location) {
+        query = query.ilike("location", `%${profile.location}%`);
+      }
+      const { data } = await query;
+      // If no regional results, fall back to global
+      if (!data || data.length === 0) {
+        const { data: globalData } = await supabase
+          .from("topics")
+          .select("id, title, replies_count, views_count, category, location")
+          .order("replies_count", { ascending: false })
+          .limit(5);
+        return globalData || [];
+      }
+      return data;
+    },
+    enabled: !!profile,
+  });
+
   const { data: recentTopics } = useQuery({
     queryKey: ["user-recent-topics"],
     queryFn: async () => {
       const { data } = await supabase
         .from("topics")
-        .select("id, title, created_at, is_announcement, replies_count")
+        .select("id, title, created_at, is_announcement, replies_count, category")
         .order("last_activity_at", { ascending: false })
         .limit(5);
       return data || [];
@@ -68,13 +87,6 @@ export default function UserDashboard() {
   const handleLogout = async () => {
     await signOut();
     navigate("/login");
-  };
-
-  const handleSectionClick = (url: string) => {
-    if (url === "/user/invites") {
-      // We'll navigate to a dedicated page instead of panel
-    }
-    navigate(url);
   };
 
   const now = new Date();
@@ -141,46 +153,74 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* Navigation Grid */}
+        {/* Category Grid */}
         <div className="mb-6">
           <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">
-            &gt; NAVIGATE — SELECT MODULE
+            &gt; BROWSE BY CATEGORY
           </p>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {userSections.map((section) => {
-              const Icon = section.icon;
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5">
+            {TOPIC_CATEGORIES.map((cat) => {
+              const Icon = cat.icon;
               return (
                 <button
-                  key={section.url}
-                  onClick={() => handleSectionClick(section.url)}
-                  className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                  key={cat.value}
+                  onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+                  className="text-left p-2.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] text-muted-foreground font-mono">[{section.cmd}]</span>
-                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground" />
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
+                    <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
                   </div>
-                  <p className="text-xs text-foreground group-hover:glow-text tracking-wider leading-tight">
-                    {section.title}
+                  <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight truncate">
+                    {cat.label.split(" & ")[0].toUpperCase()}
                   </p>
-                  <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed">{section.desc}</p>
                 </button>
               );
             })}
-
-            {/* New Topic - special action card */}
-            <button
-              onClick={() => setShowCreate(true)}
-              className="text-left p-3 border border-foreground/30 bg-foreground/5 hover:border-foreground hover:bg-foreground/10 transition-none group"
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] text-foreground font-mono">[+]</span>
-                <MessageSquare className="h-3.5 w-3.5 text-foreground" />
-              </div>
-              <p className="text-xs text-foreground glow-text tracking-wider leading-tight">NEW TOPIC</p>
-              <p className="text-[9px] text-muted-foreground mt-1 leading-relaxed">Start a new discussion</p>
-            </button>
           </div>
+        </div>
+
+        {/* Trending Section */}
+        {trendingTopics && trendingTopics.length > 0 && (
+          <div className="border border-border bg-card p-3 mb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="h-3 w-3 text-foreground" />
+              <span className="text-[10px] text-muted-foreground tracking-[0.3em]">
+                TRENDING IN {(profile?.location || "GLOBAL").toUpperCase()}
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              {trendingTopics.map((topic: any) => (
+                <button
+                  key={topic.id}
+                  onClick={() => navigate(`/topic/${topic.id}`)}
+                  className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
+                >
+                  <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
+                  <span className="text-foreground/80 group-hover:text-foreground truncate">{topic.title}</span>
+                  <span className="text-muted-foreground ml-auto shrink-0 flex items-center gap-1">
+                    <MessageSquare className="h-2.5 w-2.5" />
+                    {topic.replies_count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* New Topic Button */}
+        <div className="mb-6">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="w-full text-left p-3 border border-foreground/30 bg-foreground/5 hover:border-foreground hover:bg-foreground/10 transition-none group flex items-center gap-3"
+          >
+            <span className="text-[10px] text-foreground font-mono">[+]</span>
+            <MessageSquare className="h-3.5 w-3.5 text-foreground" />
+            <div>
+              <p className="text-xs text-foreground glow-text tracking-wider">START NEW TOPIC</p>
+              <p className="text-[9px] text-muted-foreground">Choose a category and start a discussion</p>
+            </div>
+          </button>
         </div>
 
         {/* Recent Activity */}
