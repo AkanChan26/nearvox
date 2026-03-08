@@ -164,24 +164,24 @@ export default function UserDashboard() {
         </div>
 
         {/* Category Grid */}
-        <div className="mb-4 sm:mb-6">
-          <p className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4">
+        <div className="mb-6 sm:mb-8">
+          <p className="text-[10px] sm:text-xs text-muted-foreground tracking-[0.3em] mb-4 sm:mb-5">
             &gt; NAVIGATE — SELECT MODULE
           </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3">
             {TOPIC_CATEGORIES.filter((cat) => cat.value !== "random").map((cat) => {
               const Icon = cat.icon;
               return (
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/user/topics?category=${cat.value}`)}
-                  className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+                  className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                 >
-                  <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-2 mb-2.5">
                     <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">[{cat.cmd}]</span>
                     <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
                   </div>
-                  <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-tight">
+                  <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">
                     {cat.label.toUpperCase()}
                   </p>
                 </button>
@@ -189,13 +189,13 @@ export default function UserDashboard() {
             })}
             <button
               onClick={() => navigate("/user/posts")}
-              className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+              className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
             >
-              <div className="flex items-center gap-2 mb-1.5">
+              <div className="flex items-center gap-2 mb-2.5">
                 <span className="text-[10px] sm:text-xs text-muted-foreground font-mono">[10]</span>
                 <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               </div>
-              <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-tight">
+              <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">
                 ALL POSTS
               </p>
             </button>
