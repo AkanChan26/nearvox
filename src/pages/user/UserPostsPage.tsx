@@ -36,6 +36,8 @@ type UnifiedItem = {
 export default function UserPostsPage() {
   const { user, isAdmin: userIsAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const isMine = searchParams.get("mine") === "true";
