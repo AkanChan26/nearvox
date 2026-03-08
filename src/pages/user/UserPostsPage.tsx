@@ -148,6 +148,18 @@ export default function UserPostsPage() {
     }
   };
 
+  const handleUpdate = async (postId: string) => {
+    if (!editContent.trim()) return;
+    const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", postId);
+    if (error) toast.error("Failed to update");
+    else {
+      toast.success("Post updated");
+      setEditingPost(null);
+      setEditContent("");
+      queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
+    }
+  };
+
   const handleReport = async (postId: string) => {
     if (!user || !reportReason.trim()) return;
     const { error } = await supabase.from("reports").insert({
