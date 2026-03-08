@@ -583,8 +583,8 @@ export default function UserMessagesPage() {
                   <div className="mt-1 border border-border bg-card max-h-32 overflow-y-auto">
                     {searchResults.map((r) => (
                       <button key={r.user_id} onClick={() => startDm(r)}
-                        className="w-full text-left text-[11px] px-2 py-1.5 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-2">
-                        <User className="h-3 w-3 text-muted-foreground" />
+                        className="w-full text-left text-[11px] px-3 py-2 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-2">
+                        <User className="h-3.5 w-3.5 text-muted-foreground" />
                         {r.anonymous_name || r.username}
                         {isBlocked(r.user_id) && <span className="text-[8px] text-destructive ml-auto">BLOCKED</span>}
                       </button>
