@@ -9,6 +9,7 @@ import {
   Shield, Terminal,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { TOPIC_CATEGORIES, getCategoryLabel } from "@/lib/categories";
 
 const adminSections = [
   { title: "SYSTEM DASHBOARD", desc: "Real-time platform monitoring & system stats", url: "/admin/dashboard", icon: LayoutDashboard, cmd: "01" },
