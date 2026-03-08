@@ -286,7 +286,7 @@ export default function UserBoardDetailPage() {
                 commentText={commentText[post.id] || ""}
                 onCommentChange={(text: string) => setCommentText((prev) => ({ ...prev, [post.id]: text }))}
                 onAddComment={() => addComment.mutate(post.id)}
-                loadComments={loadComments}
+                commentsQueryFn={commentsQueryFn}
                 onDeleteComment={(commentId: string) => deleteComment.mutate({ commentId, postId: post.id })}
                 currentUserId={user?.id}
               />
