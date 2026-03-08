@@ -297,7 +297,7 @@ export default function UserPostsPage() {
     const item = unified.find((u) => u.id === itemId);
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
-      reported_post_id: itemType === "post" ? itemId : null,
+      reported_post_id: itemId,
       reported_user_id: item?.user_id || null,
       report_type: itemType,
       reason: reportReason.trim(),
