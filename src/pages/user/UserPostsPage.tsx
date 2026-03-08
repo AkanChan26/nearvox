@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
@@ -7,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp,
+  ChevronDown, ChevronUp, Edit2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -15,6 +16,8 @@ import { toast } from "sonner";
 export default function UserPostsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isMine = searchParams.get("mine") === "true";
   const [showCreate, setShowCreate] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [newLocation, setNewLocation] = useState("");
