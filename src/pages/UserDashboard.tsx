@@ -191,7 +191,7 @@ export default function UserDashboard() {
         </div>
 
         {/* Quick Access Row */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-1.5 mb-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-1 sm:gap-1.5 mb-4 sm:mb-6">
           <button
             onClick={() => navigate("/user/notifications")}
             className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
