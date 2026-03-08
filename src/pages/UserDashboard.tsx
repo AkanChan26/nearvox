@@ -260,8 +260,6 @@ export default function UserDashboard() {
           </button>
         </div>
 
-        {/* Network Node Map */}
-        <NetworkNodeMap />
 
         {/* Announcements Preview */}
         {announcements && announcements.length > 0 && (
