@@ -5,14 +5,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, Trash2 } from "lucide-react";
 import { USER_AVATARS, ProfileAvatar } from "@/components/Avatars";
+import { useNavigate } from "react-router-dom";
 
 export default function UserSettingsPage() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["my-profile-settings", user?.id],
@@ -98,6 +102,37 @@ export default function UserSettingsPage() {
     setAnonymousName(newName);
     toast.success(`Generated: ${newName}`);
     setRegenerating(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    setDeleting(true);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) {
+        toast.error("Not authenticated");
+        setDeleting(false);
+        return;
+      }
+
+      const res = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.error) {
+        toast.error("Failed to delete account");
+        setDeleting(false);
+        return;
+      }
+
+      toast.success("Account deleted");
+      await signOut();
+      navigate("/login", { replace: true });
+    } catch {
+      toast.error("Failed to delete account");
+      setDeleting(false);
+    }
   };
 
   return (
@@ -214,6 +249,46 @@ export default function UserSettingsPage() {
                 >
                   {saving ? "[SAVING...]" : "[SAVE CHANGES]"}
                 </button>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="terminal-box border-destructive/40">
+              <div className="terminal-header text-destructive">DANGER ZONE</div>
+              <div className="space-y-3">
+                <p className="text-[10px] text-muted-foreground">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                {!confirmDelete ? (
+                  <button
+                    onClick={() => setConfirmDelete(true)}
+                    className="flex items-center gap-2 text-sm text-destructive border border-destructive px-4 py-2 hover:bg-destructive hover:text-destructive-foreground transition-none"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    [DELETE ACCOUNT]
+                  </button>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-xs text-destructive font-medium">
+                      ⚠ Are you sure? All your posts, topics, messages, and data will be permanently deleted.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDeleteAccount}
+                        disabled={deleting}
+                        className="text-sm text-destructive-foreground bg-destructive border border-destructive px-4 py-2 hover:bg-destructive/90 transition-none disabled:opacity-50"
+                      >
+                        {deleting ? "[DELETING...]" : "[CONFIRM DELETE]"}
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(false)}
+                        className="text-sm text-foreground border border-border px-4 py-2 hover:bg-muted transition-none"
+                      >
+                        [CANCEL]
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </>
