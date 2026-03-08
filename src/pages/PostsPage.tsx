@@ -4,13 +4,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Image, FileText, Eye, Heart } from "lucide-react";
+import { Image, FileText, Eye, Heart, Pencil, Check, X } from "lucide-react";
 import { useState } from "react";
 
 export default function PostsPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["admin-posts"],
@@ -38,7 +40,6 @@ export default function PostsPage() {
     enabled: creatorIds.length > 0,
   });
 
-  // Admin likes
   const { data: myLikes } = useQuery({
     queryKey: ["admin-my-likes", user?.id],
     queryFn: async () => {
@@ -89,6 +90,18 @@ export default function PostsPage() {
     }
   };
 
+  const handleSaveEdit = async (postId: string) => {
+    if (!editContent.trim()) return;
+    const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", postId);
+    if (error) toast.error("Failed to update");
+    else {
+      toast.success("Post updated");
+      setEditingId(null);
+      setEditContent("");
+      queryClient.invalidateQueries({ queryKey: ["admin-posts"] });
+    }
+  };
+
   const getPublicUrl = (path: string) => {
     const { data } = supabase.storage.from("post-attachments").getPublicUrl(path);
     return data.publicUrl;
@@ -119,6 +132,7 @@ export default function PostsPage() {
               const { name, isAdmin } = getCreatorInfo(post.user_id);
               const attachments = post.attachments as string[] || [];
               const isLiked = myLikes?.has(post.id);
+              const isEditing = editingId === post.id;
 
               return (
                 <div
@@ -143,9 +157,29 @@ export default function PostsPage() {
                   {isAdmin && post.is_announcement && (
                     <p className="text-[10px] admin-text tracking-[0.3em] uppercase mb-1.5">SYSTEM ANNOUNCEMENT</p>
                   )}
-                  <p className={`text-xs mb-1.5 pl-2 border-l ${
-                    isAdmin ? "border-admin-border admin-text/80" : "border-border text-secondary-foreground"
-                  }`}>{post.content}</p>
+
+                  {isEditing ? (
+                    <div className="mb-1.5 pl-2 border-l border-foreground space-y-2">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={3}
+                        className="w-full bg-input border border-border text-foreground text-xs px-3 py-2 focus:outline-none focus:border-foreground resize-none"
+                      />
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => { setEditingId(null); setEditContent(""); }} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1">
+                          <X className="h-2.5 w-2.5" /> [CANCEL]
+                        </button>
+                        <button onClick={() => handleSaveEdit(post.id)} className="text-[10px] text-foreground hover:underline flex items-center gap-1">
+                          <Check className="h-2.5 w-2.5" /> [SAVE]
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className={`text-xs mb-1.5 pl-2 border-l ${
+                      isAdmin ? "border-admin-border admin-text/80" : "border-border text-secondary-foreground"
+                    }`}>{post.content}</p>
+                  )}
 
                   {/* Attachments */}
                   {attachments.length > 0 && (
@@ -183,6 +217,9 @@ export default function PostsPage() {
                     <span className="text-muted-foreground">COMMENTS:{post.comments_count}</span>
                     {attachments.length > 0 && <span className="text-muted-foreground">FILES:{attachments.length}</span>}
                     <span className="ml-auto space-x-2">
+                      <button onClick={() => { setEditingId(post.id); setEditContent(post.content); }} className={`hover:underline ${isAdmin ? "admin-text" : "text-foreground"}`}>
+                        [EDIT]
+                      </button>
                       <button onClick={() => handlePin(post.id, post.is_pinned)} className={`hover:underline ${isAdmin ? "admin-text" : "text-foreground"}`}>
                         [{post.is_pinned ? "UNPIN" : "PIN"}]
                       </button>

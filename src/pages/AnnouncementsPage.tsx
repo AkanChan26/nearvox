@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Paperclip, X, Image, FileText, Eye } from "lucide-react";
+import { Paperclip, X, Image, FileText, Eye, Pencil, Check, Trash2 } from "lucide-react";
 
 export default function AnnouncementsPage() {
   const { user, adminUsername } = useAuth();
@@ -19,6 +19,10 @@ export default function AnnouncementsPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editTarget, setEditTarget] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: announcements, isLoading } = useQuery({
@@ -74,6 +78,38 @@ export default function AnnouncementsPage() {
     if (error) toast.error("Failed");
     else {
       toast.success("Announcement revoked");
+      queryClient.invalidateQueries({ queryKey: ["admin-announcements"] });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Delete this announcement permanently?")) return;
+    const { error } = await supabase.from("announcements").delete().eq("id", id);
+    if (error) toast.error("Failed to delete");
+    else {
+      toast.success("Announcement deleted");
+      queryClient.invalidateQueries({ queryKey: ["admin-announcements"] });
+    }
+  };
+
+  const handleEdit = (ann: any) => {
+    setEditingId(ann.id);
+    setEditTitle(ann.title);
+    setEditContent(ann.content);
+    setEditTarget(ann.target_location);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !editTitle.trim() || !editContent.trim()) return;
+    const { error } = await supabase.from("announcements").update({
+      title: editTitle.trim(),
+      content: editContent.trim(),
+      target_location: editTarget.trim() || "GLOBAL",
+    }).eq("id", editingId);
+    if (error) toast.error("Failed to update");
+    else {
+      toast.success("Announcement updated");
+      setEditingId(null);
       queryClient.invalidateQueries({ queryKey: ["admin-announcements"] });
     }
   };
@@ -174,6 +210,7 @@ export default function AnnouncementsPage() {
           ) : announcements && announcements.length > 0 ? (
             announcements.map((ann: any) => {
               const attachments = (ann.attachments as string[]) || [];
+              const isEditing = editingId === ann.id;
               return (
                 <div key={ann.id} className={`admin-box p-4 my-2 ${!ann.is_active ? "opacity-50" : ""}`}>
                   <div className="flex items-center gap-2 text-[10px] mb-2">
@@ -187,9 +224,35 @@ export default function AnnouncementsPage() {
                     <span className="text-muted-foreground">TARGET:{ann.target_location}</span>
                     <span className="ml-auto text-muted-foreground">{new Date(ann.created_at).toLocaleDateString()}</span>
                   </div>
-                  <p className="text-[10px] admin-text tracking-[0.3em] uppercase mb-1">SYSTEM ANNOUNCEMENT</p>
-                  <p className="text-xs admin-text font-bold mb-0.5">{ann.title}</p>
-                  <p className="text-xs text-secondary-foreground pl-2 border-l border-admin-border">{ann.content}</p>
+
+                  {isEditing ? (
+                    <div className="space-y-2 mb-2">
+                      <div>
+                        <p className="text-[10px] admin-text mb-1">&gt; TITLE:</p>
+                        <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="bg-input border-admin-border text-foreground text-xs" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] admin-text mb-1">&gt; MESSAGE:</p>
+                        <Textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className="bg-input border-admin-border text-foreground text-xs min-h-16 resize-none" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] admin-text mb-1">&gt; TARGET:</p>
+                        <Input value={editTarget} onChange={(e) => setEditTarget(e.target.value)} className="bg-input border-admin-border text-foreground text-xs w-40" />
+                      </div>
+                      <div className="flex gap-2 justify-end">
+                        <button onClick={() => setEditingId(null)} className="text-[10px] text-muted-foreground hover:text-foreground">[CANCEL]</button>
+                        <button onClick={handleSaveEdit} className="text-[10px] admin-text border border-admin-border px-3 py-1 hover:bg-admin hover:text-admin-foreground transition-none">
+                          [SAVE]
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-[10px] admin-text tracking-[0.3em] uppercase mb-1">SYSTEM ANNOUNCEMENT</p>
+                      <p className="text-xs admin-text font-bold mb-0.5">{ann.title}</p>
+                      <p className="text-xs text-secondary-foreground pl-2 border-l border-admin-border">{ann.content}</p>
+                    </>
+                  )}
 
                   {attachments.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -215,9 +278,17 @@ export default function AnnouncementsPage() {
                     </div>
                   )}
 
-                  {ann.is_active && (
-                    <div className="text-right mt-2">
-                      <button onClick={() => handleRevoke(ann.id)} className="text-[10px] text-destructive hover:underline">[REVOKE]</button>
+                  {!isEditing && (
+                    <div className="flex items-center gap-3 text-right mt-2">
+                      <button onClick={() => handleEdit(ann)} className="text-[10px] admin-text hover:underline flex items-center gap-1">
+                        <Pencil className="h-2.5 w-2.5" /> [EDIT]
+                      </button>
+                      {ann.is_active && (
+                        <button onClick={() => handleRevoke(ann.id)} className="text-[10px] text-muted-foreground hover:underline">[REVOKE]</button>
+                      )}
+                      <button onClick={() => handleDelete(ann.id)} className="text-[10px] text-destructive hover:underline flex items-center gap-1 ml-auto">
+                        <Trash2 className="h-2.5 w-2.5" /> [DELETE]
+                      </button>
                     </div>
                   )}
                 </div>
