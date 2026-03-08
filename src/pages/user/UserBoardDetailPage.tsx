@@ -323,9 +323,13 @@ export default function UserBoardDetailPage() {
 function PostCard({
   post, isLiked, isOwner, onLike, onDelete, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
-  loadComments, onDeleteComment, currentUserId,
+  commentsQueryFn, onDeleteComment, currentUserId,
 }: any) {
-  const { data: comments } = loadComments(post.id);
+  const { data: comments } = useQuery({
+    queryKey: ["board-post-comments", post.id],
+    queryFn: () => commentsQueryFn(post.id),
+    enabled: showComments,
+  });
   const [showMenu, setShowMenu] = useState(false);
 
   return (
