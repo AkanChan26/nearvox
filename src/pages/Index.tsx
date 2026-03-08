@@ -60,9 +60,12 @@ const Index = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("reports")
-        .select("*, reporter:profiles!reports_reporter_id_fkey(username), reported:profiles!reports_reported_user_id_fkey(username)")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(5);
+      return data || [];
+    },
+  });
       return data || [];
     },
   });

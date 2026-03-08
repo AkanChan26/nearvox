@@ -12,9 +12,12 @@ export default function ReportsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reports")
-        .select("*, reporter:profiles!reports_reporter_id_fkey(username), reported:profiles!reports_reported_user_id_fkey(username)")
+        .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
+      return data;
+    },
+  });
       return data;
     },
   });
