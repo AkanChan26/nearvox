@@ -203,84 +203,84 @@ export default function UserDashboard() {
         </div>
 
         {/* Quick Access Row */}
-        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-2.5 mb-6 sm:mb-8">
+        <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 sm:gap-3 mb-8 sm:mb-10">
           <button
             onClick={() => navigate("/user/notifications")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               {(unreadNotifs ?? 0) > 0 && (
                 <span className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
               )}
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">NOTIFICATIONS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">NOTIFICATIONS</p>
             {(unreadNotifs ?? 0) > 0 && (
-              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{unreadNotifs} unread</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-1.5">{unreadNotifs} unread</p>
             )}
           </button>
           <button
             onClick={() => navigate("/user/posts?mine=true")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">YOUR POSTS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">YOUR POSTS</p>
           </button>
           <button
             onClick={() => navigate("/user/announcements")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">ANNOUNCEMENTS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">ANNOUNCEMENTS</p>
             {announcements && announcements.length > 0 && (
-              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{announcements.length} active</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-1.5">{announcements.length} active</p>
             )}
           </button>
           <button
             onClick={() => navigate("/user/messages")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
               {(unreadChatCount ?? 0) > 0 && (
                 <span className="h-2 w-2 rounded-full bg-foreground animate-pulse" />
               )}
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">MESSAGES</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">MESSAGES</p>
             {(unreadChatCount ?? 0) > 0 && (
-              <p className="text-[10px] sm:text-xs text-foreground mt-0.5">{unreadChatCount} unread</p>
+              <p className="text-[10px] sm:text-xs text-foreground mt-1.5">{unreadChatCount} unread</p>
             )}
           </button>
           <button
             onClick={() => navigate("/user/boards")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <LayoutGrid className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">BOARDS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">BOARDS</p>
           </button>
           <button
             onClick={() => navigate("/user/invites")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <Ticket className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">INVITES</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">INVITES</p>
           </button>
           <button
             onClick={() => navigate("/user/settings")}
-            className="text-left p-3 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
           >
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-2.5">
               <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground group-hover:text-foreground" />
             </div>
-            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider">SETTINGS</p>
+            <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed">SETTINGS</p>
           </button>
         </div>
 
