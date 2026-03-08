@@ -214,7 +214,6 @@ export default function UsersPage() {
                 </div>
               ))}
             </div>
-            </div>
           ) : (
             <p className="text-xs text-muted-foreground py-2">NO USERS FOUND</p>
           )}
