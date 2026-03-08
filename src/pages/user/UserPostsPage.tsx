@@ -252,14 +252,22 @@ export default function UserPostsPage() {
 
   return (
     <UserLayout>
-      <PageHeader title="POSTS" description="COMMUNITY POSTS & UPDATES">
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
-        >
-          <Plus className="h-3 w-3" />
-          NEW POST
-        </button>
+      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS ACROSS CATEGORIES" : "COMMUNITY POSTS & UPDATES"}>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSearchParams(isMine ? {} : { mine: "true" })}
+            className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
+          >
+            {isMine ? "[ALL POSTS]" : "[MY POSTS]"}
+          </button>
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
+          >
+            <Plus className="h-3 w-3" />
+            NEW POST
+          </button>
+        </div>
       </PageHeader>
 
       <div className="px-4 py-6">
