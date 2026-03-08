@@ -94,7 +94,7 @@ export default function UserTopicsPage() {
           {TOPIC_CATEGORIES.map((cat) => (
             <button
               key={cat.value}
-              onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+              onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
               className={`text-[9px] px-2 py-1 border transition-none ${
                 categoryFilter === cat.value
                   ? "border-foreground text-foreground bg-foreground/10"
