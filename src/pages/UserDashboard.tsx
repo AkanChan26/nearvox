@@ -194,7 +194,7 @@ export default function UserDashboard() {
             <ProfileAvatar avatarId={(profile as any)?.avatar} size={44} />
             <div className="text-right">
               <p className="text-[9px] text-muted-foreground/50 tracking-[0.2em] mb-0.5">USER</p>
-              <p className="text-sm sm:text-base text-foreground glow-text font-bold tracking-wider truncate max-w-[120px] sm:max-w-none leading-relaxed">
+              <p className="text-[11px] sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[120px] sm:max-w-none leading-relaxed">
                 {profile?.anonymous_name || profile?.username || "..."}
               </p>
               <p className="text-[9px] text-muted-foreground/50 tracking-[0.2em] mt-1.5 mb-0.5">SECTOR</p>
