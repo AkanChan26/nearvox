@@ -560,12 +560,19 @@ export default function UserMessagesPage() {
   };
 
   return (
-    <UserLayout>
-      <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
+    <UserLayout showBack={false}>
+      <div className="fixed inset-0 top-0 z-30 bg-background flex flex-col">
+        {/* Top bar */}
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-border bg-card/90 backdrop-blur-sm shrink-0">
+          <button onClick={() => navigate("/dashboard")} className="text-muted-foreground hover:text-foreground p-1">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div className="h-3 w-px bg-border" />
+          <p className="text-[10px] text-foreground glow-text tracking-[0.2em]">NEARVOX</p>
+          <span className="text-[9px] text-muted-foreground tracking-wider">MESSAGES{totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}</span>
+        </div>
 
-      <div className="px-3 sm:px-6 py-4">
-        <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(85vh, 720px)", minHeight: "450px" }}>
-          {/* Subtle scanline overlay */}
+        <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
           <div className="absolute inset-0 scanline pointer-events-none z-0" />
 
           {/* ── LEFT: Conversation List (30%) ── */}
