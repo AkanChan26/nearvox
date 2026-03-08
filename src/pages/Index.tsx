@@ -313,7 +313,7 @@ const Index = () => {
               <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
               <span className="text-[10px] text-muted-foreground tracking-[0.3em]">SYSTEM STATUS</span>
             </div>
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-1">
               <div className="text-[10px]"><span className="text-muted-foreground">STATUS: </span><span className="text-foreground glow-text">ONLINE</span></div>
               <div className="text-[10px]"><span className="text-muted-foreground">USERS: </span><span className="text-foreground">{profileCount ?? "..."}</span></div>
               <div className="text-[10px]"><span className="text-muted-foreground">TOPICS: </span><span className="text-foreground">{topicCount ?? "..."}</span></div>
