@@ -75,28 +75,69 @@ const Index = () => {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("id, username, created_at")
+        .select("id, username, anonymous_name, created_at, invited_by, location")
+        .order("created_at", { ascending: false })
+        .limit(5);
+      return data || [];
+    },
+  });
+
+  const { data: recentPosts } = useQuery({
+    queryKey: ["recent-activity-posts"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("posts")
+        .select("id, content, created_at, user_id")
         .order("created_at", { ascending: false })
         .limit(3);
       return data || [];
     },
   });
 
+  // Get inviter names
+  const inviterIds = [...new Set(recentProfiles?.map(p => p.invited_by).filter(Boolean) || [])];
+  const postUserIds = [...new Set(recentPosts?.map(p => p.user_id) || [])];
+  const allLookupIds = [...new Set([...inviterIds, ...postUserIds])];
+
+  const { data: lookupProfiles } = useQuery({
+    queryKey: ["lookup-profiles", allLookupIds],
+    queryFn: async () => {
+      if (allLookupIds.length === 0) return [];
+      const { data } = await supabase
+        .from("profiles")
+        .select("user_id, username, anonymous_name, is_admin")
+        .in("user_id", allLookupIds as string[]);
+      return data || [];
+    },
+    enabled: allLookupIds.length > 0,
+  });
+
+  const getLookupName = (userId: string) => {
+    const p = lookupProfiles?.find(p => p.user_id === userId);
+    if (!p) return userId.slice(0, 8);
+    return p.is_admin ? p.username : p.anonymous_name || p.username;
+  };
+
   // Build activity log
   const activityLog = [
     ...(recentProfiles?.map((p) => ({
       time: new Date(p.created_at),
-      text: `User "${p.username}" registered`,
+      text: `User "${p.anonymous_name || p.username}" registered${p.invited_by ? ` (invited by ${getLookupName(p.invited_by)})` : ""} — ${p.location || "Unknown region"}`,
       type: "user" as const,
     })) || []),
     ...(recentTopics?.map((t) => ({
       time: new Date(t.created_at),
-      text: t.is_announcement ? `Admin announcement posted: "${t.title}"` : `New topic: "${t.title}"`,
+      text: t.is_announcement ? `Admin announcement: "${t.title}"` : `New topic: "${t.title}"`,
       type: t.is_announcement ? "admin" as const : "topic" as const,
+    })) || []),
+    ...(recentPosts?.map((p) => ({
+      time: new Date(p.created_at),
+      text: `${getLookupName(p.user_id)} posted: "${p.content.slice(0, 40)}${p.content.length > 40 ? "..." : ""}"`,
+      type: "topic" as const,
     })) || []),
   ]
     .sort((a, b) => b.time.getTime() - a.time.getTime())
-    .slice(0, 6);
+    .slice(0, 8);
 
   const handleLogout = async () => {
     await signOut();
