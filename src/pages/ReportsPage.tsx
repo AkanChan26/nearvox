@@ -18,9 +18,6 @@ export default function ReportsPage() {
       return data;
     },
   });
-      return data;
-    },
-  });
 
   const pendingCount = reports?.filter((r: any) => r.status === "pending").length ?? 0;
 

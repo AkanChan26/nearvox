@@ -66,9 +66,6 @@ const Index = () => {
       return data || [];
     },
   });
-      return data || [];
-    },
-  });
 
   const systemStats = [
     { label: "TOTAL USERS", value: String(profileCount ?? 0) },
