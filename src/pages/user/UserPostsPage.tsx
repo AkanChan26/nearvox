@@ -93,6 +93,15 @@ export default function UserPostsPage() {
 
   const isLoading = postsLoading || topicsLoading;
 
+  // Helper: check if location matches user's region
+  const isNearby = (itemLocation: string | null | undefined): boolean => {
+    if (!userLocation || !itemLocation) return true; // show global posts
+    const norm = (s: string) => s.toLowerCase().trim();
+    const userParts = norm(userLocation).split(/[,\s]+/);
+    const itemParts = norm(itemLocation).split(/[,\s]+/);
+    return userParts.some((part) => itemParts.some((ip) => ip.includes(part) || part.includes(ip)));
+  };
+
   // Merge into unified list
   const unified: UnifiedItem[] = useMemo(() => {
     const postItems: UnifiedItem[] = (posts || []).map((p) => ({
@@ -125,10 +134,17 @@ export default function UserPostsPage() {
       views_count: t.views_count,
       attachments: [],
     }));
-    return [...postItems, ...topicItems].sort(
+    let all = [...postItems, ...topicItems];
+    
+    // Apply region filter when not viewing own posts and filter is on
+    if (!isMine && regionFilter && userLocation) {
+      all = all.filter((item) => isNearby(item.location));
+    }
+    
+    return all.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [posts, topics]);
+  }, [posts, topics, isMine, regionFilter, userLocation]);
 
   // Likes (posts only)
   const { data: myLikes } = useQuery({
