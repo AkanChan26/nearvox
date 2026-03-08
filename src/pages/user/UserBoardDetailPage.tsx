@@ -1,24 +1,31 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
-import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical } from "lucide-react";
+import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical, Paperclip, Image, FileText, X, Eye, ThumbsDown } from "lucide-react";
 import { toast } from "sonner";
 import { ProfileAvatar } from "@/components/Avatars";
 import { formatDistanceToNow } from "date-fns";
+
+const isImage = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
 
 export default function UserBoardDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [postTitle, setPostTitle] = useState("");
   const [newPost, setNewPost] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [commentText, setCommentText] = useState<Record<string, string>>({});
   const [showComments, setShowComments] = useState<Record<string, boolean>>({});
   const [reportPostId, setReportPostId] = useState<string | null>(null);
   const [reportReason, setReportReason] = useState("");
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const { data: board } = useQuery({
     queryKey: ["board", id],
@@ -53,7 +60,6 @@ export default function UserBoardDetailPage() {
         .eq("board_id", id!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      // Fetch profiles for each post
       const userIds = [...new Set((data || []).map((p: any) => p.user_id))];
       const { data: profiles } = await supabase.from("profiles").select("user_id, anonymous_name, username, avatar").in("user_id", userIds);
       const profileMap = Object.fromEntries((profiles || []).map((p: any) => [p.user_id, p]));
@@ -77,18 +83,6 @@ export default function UserBoardDetailPage() {
     enabled: !!user && !!posts,
   });
 
-  const joinBoard = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("board_members").insert({ board_id: id!, user_id: user!.id });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Joined board!");
-      queryClient.invalidateQueries({ queryKey: ["board-membership", id] });
-      queryClient.invalidateQueries({ queryKey: ["board", id] });
-    },
-  });
-
   const { data: profile } = useQuery({
     queryKey: ["my-profile", user?.id],
     queryFn: async () => {
@@ -110,6 +104,18 @@ export default function UserBoardDetailPage() {
     onError: () => toast.error("Failed to delete board"),
   });
 
+  const joinBoard = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("board_members").insert({ board_id: id!, user_id: user!.id });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Joined board!");
+      queryClient.invalidateQueries({ queryKey: ["board-membership", id] });
+      queryClient.invalidateQueries({ queryKey: ["board", id] });
+    },
+  });
+
   const leaveBoard = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("board_members").delete().eq("board_id", id!).eq("user_id", user!.id);
@@ -124,19 +130,35 @@ export default function UserBoardDetailPage() {
 
   const createPost = useMutation({
     mutationFn: async () => {
+      setUploading(selectedFiles.length > 0);
+      let attachmentPaths: string[] = [];
+
+      if (selectedFiles.length > 0) {
+        for (const file of selectedFiles) {
+          const filePath = `board-posts/${id}/${Date.now()}-${file.name}`;
+          const { error } = await supabase.storage.from("post-attachments").upload(filePath, file);
+          if (!error) attachmentPaths.push(filePath);
+        }
+      }
+
       const { error } = await supabase.from("board_posts").insert({
         board_id: id!,
         user_id: user!.id,
+        title: postTitle.trim() || null,
         content: newPost.trim(),
+        attachments: attachmentPaths.length > 0 ? attachmentPaths : [],
       });
       if (error) throw error;
     },
     onSuccess: () => {
+      setPostTitle("");
       setNewPost("");
+      setSelectedFiles([]);
+      setUploading(false);
       queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
       queryClient.invalidateQueries({ queryKey: ["board", id] });
     },
-    onError: () => toast.error("Failed to post"),
+    onError: () => { toast.error("Failed to post"); setUploading(false); },
   });
 
   const toggleLike = useMutation({
@@ -156,6 +178,10 @@ export default function UserBoardDetailPage() {
 
   const deletePost = useMutation({
     mutationFn: async (postId: string) => {
+      const post = posts?.find((p: any) => p.id === postId);
+      if (post?.attachments?.length > 0) {
+        await supabase.storage.from("post-attachments").remove(post.attachments);
+      }
       const { error } = await supabase.from("board_posts").delete().eq("id", postId);
       if (error) throw error;
     },
@@ -183,7 +209,6 @@ export default function UserBoardDetailPage() {
     onError: () => toast.error("Failed to submit report"),
   });
 
-  // Comments query factory - passed to PostCard
   const commentsQueryFn = async (postId: string) => {
     const { data } = await supabase
       .from("board_post_comments")
@@ -224,6 +249,11 @@ export default function UserBoardDetailPage() {
       queryClient.invalidateQueries({ queryKey: ["board-posts", id] });
     },
   });
+
+  const getFileUrl = (path: string) => {
+    const { data } = supabase.storage.from("post-attachments").getPublicUrl(path);
+    return data.publicUrl;
+  };
 
   if (!board) return <UserLayout><div className="p-6 text-muted-foreground text-sm">Loading...</div></UserLayout>;
 
@@ -269,16 +299,58 @@ export default function UserBoardDetailPage() {
       </div>
 
       <div className="px-4 sm:px-6 py-4 space-y-4">
-        {/* New Post */}
+        {/* New Post Form */}
         {isMember && (
-          <div className="border border-border bg-card p-3 sm:p-4">
+          <div className="border border-border bg-card p-3 sm:p-4 space-y-2">
+            <input
+              type="text"
+              value={postTitle}
+              onChange={(e) => setPostTitle(e.target.value)}
+              placeholder="Post title (optional)"
+              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+            />
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
               placeholder="Share something with this board..."
               rows={3}
-              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none mb-2"
+              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none"
             />
+            {/* File attachments */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-1"
+              >
+                <Paperclip className="h-3 w-3" /> ATTACH
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.txt"
+                className="hidden"
+                onChange={(e) => {
+                  const files = Array.from(e.target.files || []);
+                  setSelectedFiles((prev) => [...prev, ...files]);
+                }}
+              />
+              <span className="text-[9px] text-muted-foreground">
+                {selectedFiles.length > 0 ? `${selectedFiles.length} file(s)` : "Images, PDFs, docs"}
+              </span>
+            </div>
+            {selectedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {selectedFiles.map((f, i) => (
+                  <div key={i} className="flex items-center gap-1 text-[10px] text-foreground border border-border px-2 py-0.5">
+                    {f.type.startsWith("image/") ? <Image className="h-2.5 w-2.5" /> : <FileText className="h-2.5 w-2.5" />}
+                    <span className="max-w-[100px] truncate">{f.name}</span>
+                    <button onClick={() => setSelectedFiles((prev) => prev.filter((_, j) => j !== i))} className="text-destructive"><X className="h-2.5 w-2.5" /></button>
+                  </div>
+                ))}
+              </div>
+            )}
             <div className="flex justify-end">
               <button
                 onClick={() => createPost.mutate()}
@@ -286,7 +358,7 @@ export default function UserBoardDetailPage() {
                 className="flex items-center gap-1.5 text-xs text-background bg-foreground px-4 py-2 hover:bg-foreground/90 tracking-wider disabled:opacity-50"
               >
                 <Send className="h-3 w-3" />
-                POST
+                {uploading ? "UPLOADING..." : "POST"}
               </button>
             </div>
           </div>
@@ -319,6 +391,8 @@ export default function UserBoardDetailPage() {
                 commentsQueryFn={commentsQueryFn}
                 onDeleteComment={(commentId: string) => deleteComment.mutate({ commentId, postId: post.id })}
                 currentUserId={user?.id}
+                getFileUrl={getFileUrl}
+                onPreview={(url: string) => setPreviewUrl(url)}
               />
             ))}
           </div>
@@ -346,6 +420,18 @@ export default function UserBoardDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Image Preview */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4" onClick={() => setPreviewUrl(null)}>
+          <div className="relative max-w-3xl max-h-[80vh]">
+            <button onClick={() => setPreviewUrl(null)} className="absolute -top-3 -right-3 text-foreground bg-card border border-border p-1 z-10">
+              <X className="h-4 w-4" />
+            </button>
+            <img src={previewUrl} alt="" className="max-w-full max-h-[80vh] object-contain border border-border" />
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 }
@@ -353,7 +439,7 @@ export default function UserBoardDetailPage() {
 function PostCard({
   post, isLiked, isOwner, isAdmin, onLike, onDelete, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
-  commentsQueryFn, onDeleteComment, currentUserId,
+  commentsQueryFn, onDeleteComment, currentUserId, getFileUrl, onPreview,
 }: any) {
   const { data: comments } = useQuery({
     queryKey: ["board-post-comments", post.id],
@@ -361,6 +447,7 @@ function PostCard({
     enabled: showComments,
   });
   const [showMenu, setShowMenu] = useState(false);
+  const attachments: string[] = post.attachments || [];
 
   return (
     <div className="border border-border bg-card p-4">
@@ -396,8 +483,38 @@ function PostCard({
         </div>
       </div>
 
+      {/* Title */}
+      {post.title && (
+        <h3 className="text-sm sm:text-base text-foreground font-bold tracking-wider mb-2 glow-text">{post.title}</h3>
+      )}
+
       {/* Content */}
       <p className="text-sm text-foreground/90 whitespace-pre-wrap mb-3">{post.content}</p>
+
+      {/* Attachments */}
+      {attachments.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-3">
+          {attachments.map((path: string, i: number) => {
+            const url = getFileUrl(path);
+            if (isImage(path)) {
+              return (
+                <button key={i} onClick={() => onPreview(url)} className="border border-border w-20 h-20 overflow-hidden group relative">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 flex items-center justify-center">
+                    <Eye className="h-3.5 w-3.5 text-foreground" />
+                  </div>
+                </button>
+              );
+            }
+            return (
+              <a key={i} href={url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-foreground">
+                <FileText className="h-3 w-3" />
+                {path.split("/").pop()}
+              </a>
+            );
+          })}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex items-center gap-4 border-t border-border pt-2">
