@@ -52,12 +52,13 @@
     --info: 145 50% 40%;
     --info-foreground: 0 0% 0%;
 
-    /* Admin identity color - distinct purple-blue */
-    --admin: 265 85% 65%;
+    /* Admin identity colors - blue & purple */
+    --admin: 230 85% 65%;
+    --admin-accent: 270 80% 70%;
     --admin-foreground: 0 0% 100%;
-    --admin-bg: 265 60% 6%;
-    --admin-border: 265 70% 25%;
-    --admin-glow: 265 85% 65%;
+    --admin-bg: 240 50% 5%;
+    --admin-border: 250 60% 25%;
+    --admin-glow: 250 85% 65%;
 
     --font-terminal: 'VT323', monospace;
     --font-mono: 'Share Tech Mono', monospace;
