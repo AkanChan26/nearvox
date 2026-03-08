@@ -199,6 +199,27 @@ export default function JoinPage() {
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
+                    <User className="h-2.5 w-2.5" /> CHOOSE AVATAR:
+                  </p>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {USER_AVATARS.map((av) => (
+                      <button
+                        key={av.id}
+                        type="button"
+                        onClick={() => setSelectedAvatar(av.id)}
+                        className={`p-1 border transition-none flex items-center justify-center ${
+                          selectedAvatar === av.id
+                            ? "border-foreground bg-foreground/10"
+                            : "border-border hover:border-foreground/40"
+                        }`}
+                      >
+                        <av.Component size={28} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1.5 tracking-wider flex items-center gap-1">
                     <MapPin className="h-2.5 w-2.5" /> REGION:
                   </p>
                   <input
