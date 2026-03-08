@@ -564,14 +564,22 @@ export default function UserPostsPage() {
                   </div>
 
                   {/* Action bar */}
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border">
-                    {/* Like (posts only) */}
-                    {item.type === "post" && (
+                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border flex-wrap">
+                    {/* Like */}
+                    {item.type === "post" ? (
                       <button
                         onClick={() => handleLike(item.id)}
                         className={`flex items-center gap-0.5 transition-none ${isLiked ? "text-destructive" : "hover:text-foreground"}`}
                       >
                         <Heart className={`h-2.5 w-2.5 ${isLiked ? "fill-current" : ""}`} />
+                        {item.likes_count}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleTopicLike(item.id)}
+                        className={`flex items-center gap-0.5 transition-none ${myTopicLikes?.has(item.id) ? "text-destructive" : "hover:text-foreground"}`}
+                      >
+                        <Heart className={`h-2.5 w-2.5 ${myTopicLikes?.has(item.id) ? "fill-current" : ""}`} />
                         {item.likes_count}
                       </button>
                     )}
@@ -607,8 +615,8 @@ export default function UserPostsPage() {
                       </button>
                     )}
 
-                    {/* Report (not own) */}
-                    {!isOwner && item.type === "post" && (
+                    {/* Report (not own — both posts and topics) */}
+                    {!isOwner && (
                       <button
                         onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
                         className="flex items-center gap-0.5 hover:text-warning"
