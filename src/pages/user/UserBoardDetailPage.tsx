@@ -473,7 +473,7 @@ export default function UserBoardDetailPage() {
 }
 
 function PostCard({
-  post, isLiked, isOwner, isAdmin, onLike, onDelete, onReport,
+  post, isLiked, isOwner, isAdmin, isMember, onLike, onDelete, onEdit, onRepost, onReport,
   showComments, onToggleComments, commentText, onCommentChange, onAddComment,
   commentsQueryFn, onDeleteComment, currentUserId, getFileUrl, onPreview,
 }: any) {
@@ -483,7 +483,16 @@ function PostCard({
     enabled: showComments,
   });
   const [showMenu, setShowMenu] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title || "");
+  const [editContent, setEditContent] = useState(post.content);
   const attachments: string[] = post.attachments || [];
+
+  const handleSaveEdit = () => {
+    if (!editContent.trim()) return;
+    onEdit(editTitle, editContent);
+    setEditing(false);
+  };
 
   return (
     <div className="border border-border bg-card p-4">
@@ -503,7 +512,19 @@ function PostCard({
             <MoreVertical className="h-4 w-4" />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[120px]">
+            <div className="absolute right-0 top-full z-10 border border-border bg-card min-w-[130px]">
+              {isOwner && (
+                <button onClick={() => { setEditing(true); setEditTitle(post.title || ""); setEditContent(post.content); setShowMenu(false); }}
+                  className="w-full text-left text-xs text-foreground px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
+                  <Pencil className="h-3 w-3" /> Edit
+                </button>
+              )}
+              {isMember && (
+                <button onClick={() => { onRepost(); setShowMenu(false); }}
+                  className="w-full text-left text-xs text-foreground px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
+                  <Copy className="h-3 w-3" /> Repost
+                </button>
+              )}
               {(isOwner || isAdmin) && (
                 <button onClick={() => { onDelete(); setShowMenu(false); }} className="w-full text-left text-xs text-destructive px-3 py-2 hover:bg-foreground/5 flex items-center gap-2">
                   <Trash2 className="h-3 w-3" /> Delete
@@ -519,13 +540,35 @@ function PostCard({
         </div>
       </div>
 
-      {/* Title */}
-      {post.title && (
-        <h3 className="text-sm sm:text-base text-foreground font-bold tracking-wider mb-2 glow-text">{post.title}</h3>
+      {editing ? (
+        <div className="space-y-2 mb-3">
+          <input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            placeholder="Title (optional)"
+            className="w-full bg-background border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+          />
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            rows={3}
+            className="w-full bg-background border border-border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none"
+          />
+          <div className="flex gap-2 justify-end">
+            <button onClick={() => setEditing(false)} className="text-[10px] text-muted-foreground border border-border px-3 py-1.5 tracking-wider">CANCEL</button>
+            <button onClick={handleSaveEdit} disabled={!editContent.trim()} className="text-[10px] text-background bg-foreground px-3 py-1.5 tracking-wider disabled:opacity-50">SAVE</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Title */}
+          {post.title && (
+            <h3 className="text-xs sm:text-sm text-foreground font-bold tracking-wider mb-2 glow-text">{post.title}</h3>
+          )}
+          {/* Content */}
+          <p className="text-xs text-foreground/90 whitespace-pre-wrap mb-3">{post.content}</p>
+        </>
       )}
-
-      {/* Content */}
-      <p className="text-sm text-foreground/90 whitespace-pre-wrap mb-3">{post.content}</p>
 
       {/* Attachments */}
       {attachments.length > 0 && (
