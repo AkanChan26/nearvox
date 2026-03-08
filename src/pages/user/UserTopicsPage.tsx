@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,12 +13,34 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function UserTopicsPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAdmin } = useAuth();
-  const [searchParams] = useSearchParams();
+  const { isAdmin, user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const baseTopicsPath = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topics" : "/user/topics";
   const topicPathPrefix = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topic" : "/topic";
   const categoryFilter = searchParams.get("category") || "";
+  const regionFilter = searchParams.get("region") !== "off";
   const [showCreate, setShowCreate] = useState(false);
+
+  // Fetch user profile for region filtering
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile-region", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("location").eq("user_id", user!.id).single();
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  const userLocation = myProfile?.location || "";
+
+  // Helper: check if location matches user's region
+  const isNearby = (itemLocation: string | null | undefined): boolean => {
+    if (!userLocation || !itemLocation) return true;
+    const norm = (s: string) => s.toLowerCase().trim();
+    const userParts = norm(userLocation).split(/[,\s]+/);
+    const itemParts = norm(itemLocation).split(/[,\s]+/);
+    return userParts.some((part) => itemParts.some((ip) => ip.includes(part) || part.includes(ip)));
+  };
 
   const { data: topics, isLoading } = useQuery({
     queryKey: ["user-topics", categoryFilter],
@@ -36,6 +58,12 @@ export default function UserTopicsPage() {
       return data || [];
     },
   });
+
+  const filteredTopics = useMemo(() => {
+    if (!topics) return [];
+    if (!regionFilter || !userLocation) return topics;
+    return topics.filter((t) => isNearby(t.location));
+  }, [topics, regionFilter, userLocation]);
 
   const creatorIds = [...new Set(topics?.map((t) => t.user_id) || [])];
   const { data: creators } = useQuery({
@@ -68,14 +96,33 @@ export default function UserTopicsPage() {
 
   return (
     <UserLayout>
-      <PageHeader title="TOPICS" description={activeCategoryLabel.toUpperCase()}>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
-        >
-          <Plus className="h-3 w-3" />
-          NEW TOPIC
-        </button>
+      <PageHeader title="TOPICS" description={`${activeCategoryLabel.toUpperCase()}${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
+        <div className="flex items-center gap-2">
+          {userLocation && (
+            <button
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                if (regionFilter) newParams.set("region", "off");
+                else newParams.delete("region");
+                setSearchParams(newParams);
+              }}
+              className={`text-[10px] border px-2 py-1 transition-none ${
+                regionFilter
+                  ? "text-foreground border-foreground"
+                  : "text-muted-foreground border-border hover:text-foreground hover:border-foreground"
+              }`}
+            >
+              {regionFilter ? "[📍 NEARBY]" : "[🌐 GLOBAL]"}
+            </button>
+          )}
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
+          >
+            <Plus className="h-3 w-3" />
+            NEW TOPIC
+          </button>
+        </div>
       </PageHeader>
 
       <div className="px-4 py-4">
@@ -107,14 +154,14 @@ export default function UserTopicsPage() {
         </div>
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {topics?.length ?? 0} THREADS
+          {filteredTopics.length} THREADS
         </p>
 
         {isLoading ? (
           <p className="text-xs text-muted-foreground cursor-blink">SCANNING NETWORK</p>
-        ) : topics && topics.length > 0 ? (
+        ) : filteredTopics.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {topics.map((topic, index) => {
+            {filteredTopics.map((topic, index) => {
               const isAdmin = isCreatorAdmin(topic.user_id);
               const isAnnouncement = topic.is_announcement;
               const CatIcon = getCategoryIcon((topic as any).category || "discussions");
