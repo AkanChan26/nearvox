@@ -458,6 +458,12 @@ export default function UserMessagesPage() {
     return null;
   };
 
+  const formatDateSeparator = (date: Date) => {
+    if (isToday(date)) return "TODAY";
+    if (isYesterday(date)) return "YESTERDAY";
+    return format(date, "MMM dd, yyyy").toUpperCase();
+  };
+
   const editMessage = async (msgId: string) => {
     if (!editText.trim()) return;
     const { error } = await supabase
