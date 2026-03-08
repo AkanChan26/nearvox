@@ -11,7 +11,7 @@ import {
   Pencil, Trash2, Ban, SmilePlus, Check, Shield,
   CheckCheck, Reply, CornerDownRight,
 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format, isToday, isYesterday, isSameDay } from "date-fns";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
 import { OnlineIndicator } from "@/components/OnlineIndicator";
 
