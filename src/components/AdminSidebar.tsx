@@ -64,7 +64,7 @@ export function AdminSidebar() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-1.5">
-              <p className="text-xs admin-text glow-admin font-bold">{adminUsername || "ADMIN"}</p>
+              <p className="text-xs admin-text glow-admin font-bold">{adminUsername || "USER"}</p>
               {isAdmin && <span className="admin-badge">ADMIN</span>}
             </div>
             <p className="text-[10px] text-muted-foreground">ROOT ACCESS</p>
