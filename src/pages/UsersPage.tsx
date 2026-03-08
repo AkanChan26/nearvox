@@ -183,92 +183,37 @@ export default function UsersPage() {
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
           ) : users && users.length > 0 ? (
             <div className="space-y-1">
-              {users.map((u) => {
-                const isExpanded = expandedUser === u.user_id;
-                const ticketCode = getTicketUsedBy(u.user_id);
-
-                return (
-                  <div key={u.id} className="border border-border">
-                    {/* Summary row */}
-                    <div className="flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
-                      <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
-                      <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
-                        {u.username}
-                        {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
-                      </span>
-                      <span className="w-20 text-muted-foreground text-[10px]">{u.location || "—"}</span>
-                      <span className={`w-20 text-[10px] ${
-                        u.status === "active" ? "text-foreground" :
-                        u.status === "suspended" ? "text-warning" : "text-destructive"
-                      }`}>{u.status?.toUpperCase()}</span>
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => setExpandedUser(isExpanded ? null : u.user_id)}
-                          className="text-muted-foreground hover:text-foreground p-0.5"
-                        >
-                          {isExpanded ? <ChevronUp className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
-                        </button>
-                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[10px] text-warning hover:underline">[SUS]</button>
-                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[10px] text-destructive hover:underline">[BAN]</button>
-                        {u.status !== "active" && (
-                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[10px] text-foreground hover:underline">[ACTIVATE]</button>
-                        )}
-                      </div>
+              {users.map((u) => (
+                <div key={u.id} className="border border-border">
+                  <div className="flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
+                    <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
+                    <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                      {u.username}
+                      {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
+                    </span>
+                    <span className="w-20 text-muted-foreground text-[10px]">{u.location || "—"}</span>
+                    <span className={`w-20 text-[10px] ${
+                      u.status === "active" ? "text-foreground" :
+                      u.status === "suspended" ? "text-warning" : "text-destructive"
+                    }`}>{u.status?.toUpperCase()}</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => navigate(`/users/${u.user_id}`)}
+                        className="text-muted-foreground hover:text-foreground p-0.5"
+                        title="View profile"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </button>
+                      <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[10px] text-warning hover:underline">[SUS]</button>
+                      <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[10px] text-destructive hover:underline">[BAN]</button>
+                      {u.status !== "active" && (
+                        <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[10px] text-foreground hover:underline">[ACTIVATE]</button>
+                      )}
                     </div>
-
-                    {/* Expanded details */}
-                    {isExpanded && (
-                      <div className="border-t border-border bg-muted/20 px-3 py-2 space-y-1">
-                        <div className="grid grid-cols-2 gap-2 text-[10px]">
-                          <div>
-                            <span className="text-muted-foreground">FULL NAME: </span>
-                            <span className="text-foreground">{u.name || "—"}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">USERNAME: </span>
-                            <span className="text-foreground">@{u.username}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">ANON NAME: </span>
-                            <span className="text-foreground">{u.anonymous_name || "—"}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">REGION: </span>
-                            <span className="text-foreground">{u.location || "—"}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">JOINED: </span>
-                            <span className="text-foreground">{formatDistanceToNow(new Date(u.created_at), { addSuffix: true })}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">INVITED BY: </span>
-                            <span className="text-foreground">{getInviterName(u.invited_by)}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">TICKET USED: </span>
-                            <span className="text-foreground font-mono">{ticketCode || "—"}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">INTERESTS: </span>
-                            <span className="text-foreground">{u.interests?.join(", ") || "—"}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">STATUS: </span>
-                            <span className={
-                              u.status === "active" ? "text-foreground" :
-                              u.status === "suspended" ? "text-warning" : "text-destructive"
-                            }>{u.status?.toUpperCase()}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">USER ID: </span>
-                            <span className="text-foreground font-mono text-[9px]">{u.user_id}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                );
-              })}
+                </div>
+              ))}
+            </div>
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-2">NO USERS FOUND</p>
