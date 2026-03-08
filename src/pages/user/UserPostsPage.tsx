@@ -546,7 +546,8 @@ export default function UserPostsPage() {
                   )}
 
                   {/* Meta */}
-                  <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1">
+                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
+                    <ProfileAvatar avatarId={getCreatorAvatar(item.user_id)} isAdmin={isAdmin} size={18} />
                     <span className={isAdmin ? "admin-text glow-admin" : ""}>
                       {getCreatorName(item.user_id)}
                       {isAdmin && <span className="admin-badge ml-1">ADMIN</span>}
