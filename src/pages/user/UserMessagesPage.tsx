@@ -695,8 +695,18 @@ export default function UserMessagesPage() {
                   <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
-                  {activeConversation.type === "group" ? <Hash className="h-3.5 w-3.5 text-muted-foreground" /> : <User className="h-3.5 w-3.5 text-muted-foreground" />}
+                  {activeConversation.type === "group" ? <Hash className="h-3.5 w-3.5 text-muted-foreground" /> : 
+                    <div className="relative">
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      {otherUserId && <OnlineIndicator isOnline={isOnline(otherUserId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
+                    </div>
+                  }
                   <span className="text-[11px] text-foreground font-mono truncate">{getConvoDisplayName(activeConversation)}</span>
+                  {activeConversation.type === "direct" && otherUserId && (
+                    <span className={`text-[9px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
+                      {isOnline(otherUserId) ? "online" : "offline"}
+                    </span>
+                  )}
                   {activeConversation.type === "group" && (
                     <span className="text-[9px] text-muted-foreground">{activeMembers?.length || 0} members</span>
                   )}
