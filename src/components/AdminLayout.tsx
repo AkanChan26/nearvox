@@ -6,9 +6,11 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       <AdminSidebar />
-      <main className="ml-64 min-h-screen">
+      <main className="ml-56 min-h-screen relative">
+        {/* Scanline overlay */}
+        <div className="fixed inset-0 scanline z-50 pointer-events-none" />
         {children}
       </main>
     </div>

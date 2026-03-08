@@ -7,41 +7,42 @@ import {
   Megaphone,
   BarChart3,
   Settings,
-  Shield,
   LogOut,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 
 const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Users", url: "/users", icon: Users },
-  { title: "Posts", url: "/posts", icon: FileText },
-  { title: "Marketplace", url: "/marketplace", icon: ShoppingBag },
-  { title: "Reports", url: "/reports", icon: AlertTriangle },
-  { title: "Announcements", url: "/announcements", icon: Megaphone },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "DASHBOARD", url: "/", icon: LayoutDashboard, cmd: "01" },
+  { title: "USERS", url: "/users", icon: Users, cmd: "02" },
+  { title: "POSTS", url: "/posts", icon: FileText, cmd: "03" },
+  { title: "MARKETPLACE", url: "/marketplace", icon: ShoppingBag, cmd: "04" },
+  { title: "REPORTS", url: "/reports", icon: AlertTriangle, cmd: "05" },
+  { title: "ANNOUNCEMENTS", url: "/announcements", icon: Megaphone, cmd: "06" },
+  { title: "ANALYTICS", url: "/analytics", icon: BarChart3, cmd: "07" },
+  { title: "SETTINGS", url: "/settings", icon: Settings, cmd: "08" },
 ];
 
 export function AdminSidebar() {
   const location = useLocation();
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 flex flex-col bg-sidebar border-r border-sidebar-border">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 glow-border">
-          <Shield className="h-5 w-5 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-sm font-semibold text-foreground tracking-tight">NearVox</h1>
-          <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest">Admin Panel</p>
-        </div>
+    <aside className="fixed left-0 top-0 z-40 h-screen w-56 flex flex-col bg-sidebar border-r border-sidebar-border">
+      {/* Header */}
+      <div className="px-4 py-4 border-b border-sidebar-border">
+        <p className="text-foreground text-lg glow-text tracking-widest">NEARVOX</p>
+        <p className="text-[10px] text-muted-foreground tracking-[0.4em] mt-0.5">ADMIN TERMINAL v1.0</p>
+      </div>
+
+      {/* System status bar */}
+      <div className="px-4 py-2 border-b border-sidebar-border">
+        <p className="text-[10px] text-muted-foreground">STATUS: <span className="text-foreground">ONLINE</span></p>
+        <p className="text-[10px] text-muted-foreground">SESSION: <span className="text-foreground">ACTIVE</span></p>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 py-3 overflow-y-auto">
+        <p className="px-4 text-[10px] text-muted-foreground tracking-[0.3em] mb-2">COMMAND MENU</p>
         {navItems.map((item) => {
           const isActive = location.pathname === item.url;
           return (
@@ -49,14 +50,12 @@ export function AdminSidebar() {
               key={item.url}
               to={item.url}
               end
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150 ${
-                isActive
-                  ? ""
-                  : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent"
+              className={`flex items-center gap-2 px-4 py-1.5 text-sm transition-none ${
+                isActive ? "" : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent"
               }`}
-              activeClassName="bg-primary/10 text-primary font-medium glow-border"
+              activeClassName="bg-foreground text-primary-foreground"
             >
-              <item.icon className="h-4 w-4 shrink-0" />
+              <span className="text-[10px] opacity-60">[{item.cmd}]</span>
               <span>{item.title}</span>
             </NavLink>
           );
@@ -64,17 +63,14 @@ export function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-sidebar-border px-3 py-4">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
-            <span className="text-xs font-mono font-semibold text-primary">A</span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-foreground truncate">TheCaptain</p>
-            <p className="text-[10px] text-muted-foreground">System Admin</p>
+      <div className="border-t border-sidebar-border px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-xs text-foreground">TheCaptain</p>
+            <p className="text-[10px] text-muted-foreground">ROOT ACCESS</p>
           </div>
           <button className="text-muted-foreground hover:text-destructive transition-colors">
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3 w-3" />
           </button>
         </div>
       </div>

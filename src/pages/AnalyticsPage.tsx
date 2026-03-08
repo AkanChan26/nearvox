@@ -1,75 +1,97 @@
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { StatCard } from "@/components/StatCard";
-import { Users, TrendingUp, MapPin, MessageSquare } from "lucide-react";
-import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 
 const userGrowth = [
-  { month: "Oct", users: 2400 },
-  { month: "Nov", users: 5800 },
-  { month: "Dec", users: 9200 },
-  { month: "Jan", users: 14500 },
-  { month: "Feb", users: 19800 },
-  { month: "Mar", users: 24891 },
+  { month: "OCT", users: 2400 },
+  { month: "NOV", users: 5800 },
+  { month: "DEC", users: 9200 },
+  { month: "JAN", users: 14500 },
+  { month: "FEB", users: 19800 },
+  { month: "MAR", users: 24891 },
 ];
 
 const cityActivity = [
-  { city: "Mumbai", posts: 890, users: 3200 },
-  { city: "Delhi", posts: 720, users: 2800 },
-  { city: "Bangalore", posts: 650, users: 2100 },
-  { city: "Ahmedabad", posts: 380, users: 1400 },
-  { city: "Pune", posts: 290, users: 1100 },
-  { city: "Chennai", posts: 240, users: 900 },
-  { city: "Hyderabad", posts: 310, users: 1050 },
+  { city: "MUM", posts: 890, users: 3200 },
+  { city: "DEL", posts: 720, users: 2800 },
+  { city: "BLR", posts: 650, users: 2100 },
+  { city: "AMD", posts: 380, users: 1400 },
+  { city: "PUN", posts: 290, users: 1100 },
+  { city: "CHE", posts: 240, users: 900 },
+  { city: "HYD", posts: 310, users: 1050 },
 ];
+
+const metrics = [
+  { label: "USER GROWTH RATE", value: "+25.6%" },
+  { label: "ENGAGEMENT INDEX", value: "68%" },
+  { label: "ACTIVE SECTORS", value: "142" },
+  { label: "AVG DAILY MESSAGES", value: "12,847" },
+  { label: "PEAK HOUR", value: "21:00 IST" },
+  { label: "RETENTION RATE", value: "74.2%" },
+];
+
+const tooltipStyle = {
+  background: "#000",
+  border: "1px solid hsl(120, 100%, 12%)",
+  borderRadius: 0,
+  color: "hsl(120, 100%, 50%)",
+  fontFamily: "VT323, monospace",
+  fontSize: 14,
+};
 
 export default function AnalyticsPage() {
   return (
     <AdminLayout>
-      <PageHeader title="Analytics" description="Platform insights and growth metrics" />
+      <PageHeader title="ANALYTICS ENGINE" description="// PLATFORM INTELLIGENCE METRICS" />
 
-      <div className="p-8 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <StatCard title="User Growth" value="+25.6%" change="vs last month" changeType="up" icon={Users} />
-          <StatCard title="Engagement" value="68%" change="+5.1% this month" changeType="up" icon={TrendingUp} />
-          <StatCard title="Active Cities" value="142" change="+12 new cities" changeType="up" icon={MapPin} />
-          <StatCard title="Avg. Messages/Day" value="12.8K" change="-2.3% vs last week" changeType="down" icon={MessageSquare} />
+      <div className="p-6 space-y-6">
+        {/* Key Metrics */}
+        <div className="terminal-box">
+          <div className="terminal-header">KEY METRICS</div>
+          {metrics.map((m) => (
+            <div key={m.label} className="terminal-row">
+              <span className="terminal-label">{m.label}</span>
+              <span className="terminal-dots" />
+              <span className="terminal-value">{m.value}</span>
+            </div>
+          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">User Growth</h3>
-            <ResponsiveContainer width="100%" height={280}>
+          {/* User Growth */}
+          <div className="terminal-box">
+            <div className="terminal-header">USER GROWTH TRAJECTORY</div>
+            <ResponsiveContainer width="100%" height={240}>
               <AreaChart data={userGrowth}>
                 <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(175, 80%, 50%)" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="hsl(175, 80%, 50%)" stopOpacity={0} />
+                  <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(120, 100%, 50%)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(120, 100%, 50%)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 16%)" />
-                <XAxis dataKey="month" stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <YAxis stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "hsl(220, 18%, 10%)", border: "1px solid hsl(220, 16%, 16%)", borderRadius: 8, color: "hsl(210, 20%, 92%)" }} />
-                <Area type="monotone" dataKey="users" stroke="hsl(175, 80%, 50%)" fillOpacity={1} fill="url(#colorUsers)" strokeWidth={2} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(120, 100%, 8%)" />
+                <XAxis dataKey="month" stroke="hsl(120, 30%, 30%)" tick={{ fontFamily: "VT323", fontSize: 14 }} />
+                <YAxis stroke="hsl(120, 30%, 30%)" tick={{ fontFamily: "VT323", fontSize: 14 }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Area type="monotone" dataKey="users" stroke="hsl(120, 100%, 50%)" fillOpacity={1} fill="url(#gGreen)" strokeWidth={1} />
               </AreaChart>
             </ResponsiveContainer>
-          </motion.div>
+          </div>
 
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="glass-card p-5">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Activity by City</h3>
-            <ResponsiveContainer width="100%" height={280}>
+          {/* City Activity */}
+          <div className="terminal-box">
+            <div className="terminal-header">SECTOR ACTIVITY</div>
+            <ResponsiveContainer width="100%" height={240}>
               <BarChart data={cityActivity}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 16%)" />
-                <XAxis dataKey="city" stroke="hsl(215, 15%, 50%)" fontSize={11} />
-                <YAxis stroke="hsl(215, 15%, 50%)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "hsl(220, 18%, 10%)", border: "1px solid hsl(220, 16%, 16%)", borderRadius: 8, color: "hsl(210, 20%, 92%)" }} />
-                <Bar dataKey="posts" fill="hsl(175, 80%, 50%)" radius={[4, 4, 0, 0]} opacity={0.8} />
-                <Bar dataKey="users" fill="hsl(210, 80%, 55%)" radius={[4, 4, 0, 0]} opacity={0.5} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(120, 100%, 8%)" />
+                <XAxis dataKey="city" stroke="hsl(120, 30%, 30%)" tick={{ fontFamily: "VT323", fontSize: 14 }} />
+                <YAxis stroke="hsl(120, 30%, 30%)" tick={{ fontFamily: "VT323", fontSize: 14 }} />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Bar dataKey="posts" fill="hsl(120, 100%, 50%)" opacity={0.7} />
+                <Bar dataKey="users" fill="hsl(120, 100%, 30%)" opacity={0.4} />
               </BarChart>
             </ResponsiveContainer>
-          </motion.div>
+          </div>
         </div>
       </div>
     </AdminLayout>
