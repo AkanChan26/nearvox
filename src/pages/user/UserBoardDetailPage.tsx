@@ -293,16 +293,10 @@ export default function UserBoardDetailPage() {
   if (!board) return <UserLayout><div className="p-6 text-muted-foreground text-sm">Loading...</div></UserLayout>;
 
   return (
-    <UserLayout>
+    <UserLayout secondaryBackPath="/user/boards" secondaryBackLabel="BOARDS">
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-3">
-        <button
-          onClick={() => navigate("/user/boards")}
-          className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider mb-2 flex items-center gap-1"
-        >
-          ← BOARDS
-        </button>
-        <h1 className="text-xs text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
+        <h1 className="text-[11px] text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
         {board.description && (
           <p className="text-[10px] text-muted-foreground mt-1 tracking-wider">{board.description.toUpperCase()}</p>
         )}
@@ -492,6 +486,7 @@ function PostCard({
   });
   const [showMenu, setShowMenu] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [showAllComments, setShowAllComments] = useState(false);
   const [editTitle, setEditTitle] = useState(post.title || "");
   const [editContent, setEditContent] = useState(post.content);
   const attachments: string[] = post.attachments || [];
@@ -502,13 +497,16 @@ function PostCard({
     setEditing(false);
   };
 
+  const commentsToRender = showAllComments ? (comments || []) : (comments || []).slice(0, 3);
+  const hiddenCommentsCount = Math.max((comments?.length || 0) - 3, 0);
+
   return (
     <div className="border border-border p-3">
       {/* Author */}
       <div className="flex items-center gap-2 mb-2">
         <ProfileAvatar avatarId={post.profile?.avatar} size={22} />
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-foreground font-bold tracking-wider truncate">
+          <p className="text-[10px] text-foreground font-bold tracking-wider truncate">
             {post.profile?.anonymous_name || post.profile?.username || "Unknown"}
           </p>
           <p className="text-[9px] text-muted-foreground">
@@ -570,9 +568,9 @@ function PostCard({
       ) : (
         <>
           {post.title && (
-            <h3 className="text-[11px] text-foreground font-bold tracking-wider mb-1 glow-text">{post.title.toUpperCase()}</h3>
+            <h3 className="text-[10px] text-foreground font-bold tracking-wider mb-1 glow-text">{post.title.toUpperCase()}</h3>
           )}
-          <p className="text-[11px] text-foreground/90 whitespace-pre-wrap mb-2">{post.content}</p>
+          <p className="text-[10px] text-foreground/90 whitespace-pre-wrap mb-2">{post.content}</p>
         </>
       )}
 
@@ -616,7 +614,7 @@ function PostCard({
       {/* Comments */}
       {showComments && (
         <div className="mt-2 border-t border-border pt-2 space-y-1.5">
-          {comments && comments.map((c: any) => (
+          {commentsToRender.map((c: any) => (
             <div key={c.id} className="flex gap-1.5">
               <ProfileAvatar avatarId={c.profile?.avatar} size={18} />
               <div className="flex-1 min-w-0">
@@ -633,6 +631,16 @@ function PostCard({
               )}
             </div>
           ))}
+
+          {hiddenCommentsCount > 0 && (
+            <button
+              onClick={() => setShowAllComments((prev) => !prev)}
+              className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider"
+            >
+              {showAllComments ? "SHOW LESS" : `EXPAND COMMENTS (+${hiddenCommentsCount})`}
+            </button>
+          )}
+
           <div className="flex gap-2">
             <input
               type="text"

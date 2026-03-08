@@ -51,6 +51,7 @@ export default function UserPostsPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [expandedComments, setExpandedComments] = useState<string | null>(null);
+  const [expandedCommentThreads, setExpandedCommentThreads] = useState<Record<string, boolean>>({});
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
   const [reportingPost, setReportingPost] = useState<string | null>(null);
@@ -478,6 +479,9 @@ export default function UserPostsPage() {
               const isOwner = item.user_id === user?.id;
               const isLiked = item.type === "post" ? myLikes?.has(item.id) : false;
               const isCommentsOpen = expandedComments === item.id;
+              const commentsExpanded = !!expandedCommentThreads[item.id];
+              const visibleComments = commentsExpanded ? (comments || []) : (comments || []).slice(0, 3);
+              const hiddenCommentsCount = Math.max((comments?.length || 0) - 3, 0);
               const catInfo = getCategoryLabel(item.category);
 
               return (
@@ -520,7 +524,7 @@ export default function UserPostsPage() {
                   {item.title && (
                     <button
                       onClick={() => navigate(`${topicPrefix}/${item.id}`)}
-                      className={`text-sm font-bold mb-1 hover:underline text-left block ${isCreatorAdmin(item.user_id) ? "admin-text glow-admin" : "text-foreground"}`}
+                      className={`text-xs font-bold mb-1 hover:underline text-left block tracking-wider ${isCreatorAdmin(item.user_id) ? "admin-text glow-admin" : "text-foreground"}`}
                     >
                       {item.title}
                     </button>
@@ -712,7 +716,7 @@ export default function UserPostsPage() {
                     <div className="mt-2 pt-2 border-t border-border">
                       {comments && comments.length > 0 ? (
                         <div className="space-y-1.5 mb-2">
-                          {comments.map((c: any) => (
+                          {visibleComments.map((c: any) => (
                             <div key={c.id} className="flex items-start gap-2 text-[11px]">
                               <span className="text-foreground shrink-0 font-bold">{getCommentUserName(c.user_id)}</span>
                               <span className="text-secondary-foreground flex-1">{c.content}</span>
@@ -726,6 +730,14 @@ export default function UserPostsPage() {
                               )}
                             </div>
                           ))}
+                          {hiddenCommentsCount > 0 && (
+                            <button
+                              onClick={() => setExpandedCommentThreads((prev) => ({ ...prev, [item.id]: !prev[item.id] }))}
+                              className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider"
+                            >
+                              {commentsExpanded ? "SHOW LESS" : `EXPAND COMMENTS (+${hiddenCommentsCount})`}
+                            </button>
+                          )}
                         </div>
                       ) : (
                         <p className="text-[10px] text-muted-foreground mb-2">No comments yet</p>

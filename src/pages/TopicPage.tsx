@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -56,8 +56,12 @@ function RichContent({ content }: { content: string }) {
 export default function TopicPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAdmin: currentUserIsAdmin } = useAuth();
   const queryClient = useQueryClient();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const secondaryNavPath = isAdminRoute ? "/admin/topics" : "/user/boards";
+  const secondaryNavLabel = isAdminRoute ? "TOPICS" : "BOARDS";
   const [replyContent, setReplyContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
@@ -292,6 +296,12 @@ export default function TopicPage() {
             <ArrowLeft className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
             <span className="hidden sm:inline">BACK</span>
           </button>
+          <button
+            onClick={() => navigate(secondaryNavPath)}
+            className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider min-h-[36px] px-2 sm:min-h-0 sm:px-0"
+          >
+            {secondaryNavLabel}
+          </button>
           <div className="h-3 w-px bg-border" />
           <p className="text-foreground text-sm glow-text tracking-widest">NEARVOX</p>
         </div>
@@ -301,8 +311,8 @@ export default function TopicPage() {
         {/* Topic */}
         <div className={`p-4 border mb-6 ${topicIsAdmin || topic.is_announcement ? "admin-box border-[hsl(var(--admin-border))]" : "border-border"}`}>
           {topic.is_announcement && <p className="text-[9px] admin-text tracking-[0.3em] mb-2">◆ SYSTEM ANNOUNCEMENT</p>}
-          <h1 className={`text-lg mb-2 ${topicIsAdmin || topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
-          <div className={`text-sm leading-relaxed mb-3 whitespace-pre-wrap ${topicIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>
+          <h1 className={`text-xs mb-2 tracking-wider ${topicIsAdmin || topic.is_announcement ? "admin-text glow-admin" : "text-foreground glow-text"}`}>{topic.title}</h1>
+          <div className={`text-[11px] leading-relaxed mb-3 whitespace-pre-wrap ${topicIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>
             <RichContent content={topic.content} />
           </div>
           <div className="flex items-center gap-3 text-[10px] text-muted-foreground mb-3">
@@ -393,7 +403,7 @@ export default function TopicPage() {
                           value={editContent}
                           onChange={(e) => setEditContent(e.target.value)}
                           rows={2}
-                          className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none"
+                          className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none"
                         />
                         <div className="flex gap-2 justify-end">
                           <button onClick={() => setEditingReplyId(null)} className="text-[10px] text-muted-foreground hover:text-foreground flex items-center gap-1 px-2 py-1 border border-border">
@@ -405,7 +415,7 @@ export default function TopicPage() {
                         </div>
                       </div>
                     ) : (
-                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
+                      <p className={`text-[11px] leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
                     )}
 
                     {/* Reply actions */}
@@ -444,7 +454,7 @@ export default function TopicPage() {
             onChange={(e) => setReplyContent(e.target.value)}
             placeholder="Type your reply..."
             rows={3}
-            className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground"
+            className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground"
           />
           <div className="flex justify-end mt-2">
             <button type="submit" disabled={submitting || !replyContent.trim()} className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-30">
@@ -465,7 +475,7 @@ export default function TopicPage() {
               onChange={(e) => setReportReason(e.target.value)}
               placeholder="Describe why you're reporting this..."
               rows={3}
-              className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground mb-3"
+              className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground resize-none placeholder:text-muted-foreground mb-3"
             />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setReportingId(null)} className="text-[10px] text-muted-foreground border border-border px-3 py-1.5 hover:text-foreground">CANCEL</button>

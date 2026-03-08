@@ -182,7 +182,7 @@ export default function UserTopicsPage() {
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-muted-foreground">[{String(index + 1).padStart(2, "0")}]</span>
                     <CatIcon className="h-3 w-3 text-muted-foreground" />
-                    <span className={`text-sm ${isAnnouncement || isAdmin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                    <span className={`text-xs tracking-wider ${isAnnouncement || isAdmin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
                       {topic.title}
                     </span>
                   </div>
