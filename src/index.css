@@ -52,13 +52,13 @@
     --info: 145 50% 40%;
     --info-foreground: 0 0% 0%;
 
-    /* Admin identity colors - blue & purple */
-    --admin: 230 85% 65%;
-    --admin-accent: 270 80% 70%;
-    --admin-foreground: 0 0% 100%;
-    --admin-bg: 240 50% 5%;
-    --admin-border: 250 60% 25%;
-    --admin-glow: 250 85% 65%;
+    /* Admin identity color - cyber blue */
+    --admin: 199 91% 56%;
+    --admin-accent: 199 70% 70%;
+    --admin-foreground: 0 0% 0%;
+    --admin-bg: 199 80% 4%;
+    --admin-border: 199 91% 20%;
+    --admin-glow: 199 91% 56%;
 
     --font-terminal: 'VT323', monospace;
     --font-mono: 'Share Tech Mono', monospace;
@@ -102,7 +102,7 @@
     text-shadow: 0 0 8px hsl(145 80% 56% / 0.5), 0 0 20px hsl(145 80% 56% / 0.2), 0 0 40px hsl(145 80% 56% / 0.1);
   }
   .glow-admin {
-    text-shadow: 0 0 10px hsl(230 85% 65% / 0.6), 0 0 25px hsl(270 80% 70% / 0.3), 0 0 50px hsl(250 85% 65% / 0.15);
+    text-shadow: 0 0 8px hsl(199 91% 56% / 0.5), 0 0 20px hsl(199 91% 56% / 0.2);
   }
   .scanline {
     background: repeating-linear-gradient(
@@ -139,7 +139,7 @@
   .admin-box {
     background: hsl(var(--admin-bg));
     border: 1px solid hsl(var(--admin-border));
-    box-shadow: 0 0 15px hsl(250 85% 65% / 0.08), inset 0 0 30px hsl(250 85% 65% / 0.03);
+    box-shadow: 0 0 15px hsl(199 91% 56% / 0.08), inset 0 0 30px hsl(199 91% 56% / 0.03);
   }
   .admin-text {
     color: hsl(var(--admin));
@@ -149,7 +149,7 @@
   }
   .admin-badge {
     color: hsl(var(--admin-foreground));
-    background: linear-gradient(135deg, hsl(var(--admin)), hsl(var(--admin-accent)));
+    background: hsl(var(--admin));
     @apply text-[9px] uppercase tracking-[0.2em] font-bold px-1.5 py-0.5;
   }
 }
