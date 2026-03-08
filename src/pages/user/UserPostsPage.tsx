@@ -371,7 +371,23 @@ export default function UserPostsPage() {
                   {post.is_pinned && !post.is_announcement && (
                     <p className="text-[9px] text-foreground tracking-[0.3em] mb-1">📌 PINNED</p>
                   )}
-                  <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{post.content}</p>
+                  {/* Content or Edit form */}
+                  {editingPost === post.id ? (
+                    <div className="mb-2">
+                      <textarea
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        rows={3}
+                        className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none mb-1"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleUpdate(post.id)} disabled={!editContent.trim()} className="text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30">[SAVE]</button>
+                        <button onClick={() => { setEditingPost(null); setEditContent(""); }} className="text-[10px] text-muted-foreground border border-border px-2 py-0.5 hover:text-foreground">[CANCEL]</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-foreground mb-2 whitespace-pre-wrap">{post.content}</p>
+                  )}
 
                   {/* Attachments */}
                   {attachments.length > 0 && (
