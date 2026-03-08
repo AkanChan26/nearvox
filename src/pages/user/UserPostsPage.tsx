@@ -170,6 +170,16 @@ export default function UserPostsPage() {
     enabled: !!user,
   });
 
+  // My pending reports
+  const { data: myReports } = useQuery({
+    queryKey: ["my-reports-posts", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("reports").select("id, reported_post_id, report_type").eq("reporter_id", user!.id).eq("status", "pending");
+      return data || [];
+    },
+    enabled: !!user,
+  });
+
   // Creators
   const creatorIds = [...new Set(unified.map((p) => p.user_id))];
   const { data: creators } = useQuery({
