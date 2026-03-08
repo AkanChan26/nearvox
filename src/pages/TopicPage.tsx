@@ -272,10 +272,11 @@ export default function TopicPage() {
     invalidateAll();
   };
 
-  // Check if user already reported something
-  const getMyReport = (targetUserId: string, type: string) => {
+  // Check if user already reported something - match by specific content ID embedded in reason
+  const getMyReport = (targetId: string, type: string) => {
     const dbType = type === "topic" ? "message" : "comment";
-    return myReports?.find((r) => r.reported_user_id === targetUserId && r.report_type === dbType);
+    const refTag = type === "topic" ? `[topic:${targetId}]` : `[reply:${targetId}]`;
+    return myReports?.find((r) => r.report_type === dbType && r.reason?.includes(refTag));
   };
 
   if (!topic) {
