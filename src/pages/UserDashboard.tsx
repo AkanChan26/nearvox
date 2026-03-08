@@ -121,11 +121,11 @@ export default function UserDashboard() {
               <div className="flex items-center gap-1.5 justify-end">
                 <User className="h-3 w-3 text-foreground" />
                 <p className="text-sm text-foreground glow-text font-bold tracking-wider">
-                  {profile?.anonymous_name || "..."}
+                  {profile?.username || "..."}
                 </p>
               </div>
               <p className="text-[10px] text-muted-foreground tracking-wider">
-                {profile?.location || "UNKNOWN"} SECTOR
+                {profile?.location || "SET REGION IN SETTINGS"}
               </p>
             </div>
             <button
