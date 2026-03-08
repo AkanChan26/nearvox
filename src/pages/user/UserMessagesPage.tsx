@@ -878,7 +878,10 @@ export default function UserMessagesPage() {
                     })
                   ) : (
                     <div className="flex items-center justify-center h-full">
-                      <p className="text-[10px] text-muted-foreground/40">NO MESSAGES YET — START THE CONVERSATION</p>
+                      <div className="text-center space-y-3">
+                        <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto opacity-15" />
+                        <p className="text-[10px] text-muted-foreground/40 tracking-wider leading-relaxed">NO MESSAGES YET — START THE CONVERSATION</p>
+                      </div>
                     </div>
                   )}
                   <div ref={chatEndRef} />
@@ -886,18 +889,18 @@ export default function UserMessagesPage() {
 
                 {/* Context menu */}
                 {contextMenu && (
-                  <div className="fixed border border-border bg-card z-50 min-w-[120px]"
+                  <div className="fixed border border-border bg-card z-50 min-w-[140px] shadow-[0_0_20px_hsl(0_0%_0%/0.5)]"
                     style={{ top: contextMenu.y, left: contextMenu.x }}
                     onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => {
                       const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
                       if (msg) { setEditingMsg(msg.id); setEditText(msg.content); }
                       setContextMenu(null);
-                    }} className="w-full text-left text-[10px] px-3 py-1.5 hover:bg-foreground/5 text-foreground flex items-center gap-2">
+                    }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
                       <Pencil className="h-3 w-3" /> EDIT
                     </button>
                     <button onClick={() => deleteMessage(contextMenu.msgId)}
-                      className="w-full text-left text-[10px] px-3 py-1.5 hover:bg-destructive/10 text-destructive flex items-center gap-2">
+                      className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-destructive/10 text-destructive flex items-center gap-3">
                       <Trash2 className="h-3 w-3" /> DELETE
                     </button>
                   </div>
@@ -905,24 +908,24 @@ export default function UserMessagesPage() {
 
                 {/* Typing indicator */}
                 {typingUsers.length > 0 && (
-                  <div className="px-3 py-1 border-t border-border">
-                    <p className="text-[9px] text-muted-foreground animate-pulse">
+                  <div className="px-5 py-2 border-t border-border">
+                    <p className="text-[9px] text-muted-foreground animate-pulse tracking-wider">
                       {typingUsers.map(getDisplayName).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
                     </p>
                   </div>
                 )}
 
                 {/* Input */}
-                <div className="p-3 border-t border-border flex gap-2">
+                <div className="px-4 py-3.5 border-t border-border flex gap-3 bg-card/80">
                   {otherIsBlocked ? (
-                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-2">UNBLOCK USER TO SEND MESSAGES</p>
+                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-3 tracking-wider">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
                       <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
-                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-3 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
-                        className="text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                        className="text-foreground border border-foreground px-5 py-3 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
                         <Send className="h-4 w-4" />
                       </button>
                     </>
@@ -930,11 +933,14 @@ export default function UserMessagesPage() {
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center">
-                <div className="text-center space-y-3">
-                  <MessageSquare className="h-10 w-10 text-muted-foreground mx-auto opacity-20" />
-                  <p className="text-[11px] text-muted-foreground tracking-wider">SELECT A CONVERSATION</p>
-                  <p className="text-[9px] text-muted-foreground/50">or start a new DM / group</p>
+              <div className="flex-1 flex items-center justify-center terminal-grid">
+                <div className="text-center space-y-4 px-6">
+                  <div className="border border-border/40 p-6 inline-block">
+                    <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto opacity-15" />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground tracking-[0.25em] leading-relaxed">SELECT A CONVERSATION</p>
+                  <p className="text-[9px] text-muted-foreground/40 leading-relaxed">or start a new DM / group</p>
+                  <div className="w-16 border-b border-border/30 mx-auto" />
                 </div>
               </div>
             )}
