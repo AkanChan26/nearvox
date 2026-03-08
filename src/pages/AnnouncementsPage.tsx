@@ -1,16 +1,13 @@
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Send, Trash2 } from "lucide-react";
-import { motion } from "framer-motion";
 import { useState } from "react";
 
-const existingAnnouncements = [
-  { id: 1, title: "Community Guidelines Update", content: "We've updated our community guidelines. Please review the new rules regarding marketplace conduct.", target: "Global", date: "Mar 7, 2026", status: "active" },
-  { id: 2, title: "Maintenance Window", content: "Platform maintenance scheduled for March 10, 2026 from 2:00 AM to 4:00 AM IST.", target: "Global", date: "Mar 6, 2026", status: "active" },
-  { id: 3, title: "Mumbai Meetup Event", content: "Join the first NearVox community meetup in Mumbai! Details coming soon.", target: "Mumbai", date: "Mar 5, 2026", status: "expired" },
+const announcements = [
+  { id: "ANN-003", title: "COMMUNITY GUIDELINES UPDATE", content: "We've updated our community guidelines. Review new rules regarding marketplace conduct.", target: "GLOBAL", date: "2026-03-07", status: "ACTIVE" },
+  { id: "ANN-002", title: "MAINTENANCE WINDOW", content: "Platform maintenance scheduled for March 10, 2026 from 02:00 to 04:00 IST.", target: "GLOBAL", date: "2026-03-06", status: "ACTIVE" },
+  { id: "ANN-001", title: "MUMBAI MEETUP EVENT", content: "Join the first NearVox community meetup in Mumbai! Details coming soon.", target: "MUMBAI", date: "2026-03-05", status: "EXPIRED" },
 ];
 
 export default function AnnouncementsPage() {
@@ -18,57 +15,57 @@ export default function AnnouncementsPage() {
 
   return (
     <AdminLayout>
-      <PageHeader title="Announcements" description="Broadcast messages to the NearVox community">
-        <Button onClick={() => setShowForm(!showForm)} className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm">
-          <Plus className="h-4 w-4 mr-1" /> New Announcement
-        </Button>
+      <PageHeader title="BROADCASTS" description="// SYSTEM ANNOUNCEMENTS CONSOLE">
+        <button onClick={() => setShowForm(!showForm)} className="text-xs text-foreground border border-border px-3 py-1 hover:bg-foreground hover:text-primary-foreground transition-none">
+          [NEW BROADCAST]
+        </button>
       </PageHeader>
 
-      <div className="p-8 space-y-6">
+      <div className="p-6 space-y-6">
         {showForm && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="glass-card p-6 glow-border">
-            <h3 className="text-sm font-semibold text-foreground mb-4">Create Announcement</h3>
-            <div className="space-y-4">
-              <Input placeholder="Announcement title" className="bg-muted border-border" />
-              <Textarea placeholder="Write your announcement..." className="bg-muted border-border min-h-24 resize-none" />
+          <div className="terminal-box border-foreground/30">
+            <div className="terminal-header">COMPOSE BROADCAST</div>
+            <div className="space-y-3">
+              <div>
+                <p className="text-[10px] text-muted-foreground mb-1">&gt; TITLE:</p>
+                <Input className="bg-input border-border text-foreground text-xs" />
+              </div>
+              <div>
+                <p className="text-[10px] text-muted-foreground mb-1">&gt; MESSAGE:</p>
+                <Textarea className="bg-input border-border text-foreground text-xs min-h-20 resize-none" />
+              </div>
               <div className="flex items-center justify-between">
-                <Input placeholder="Target location (or 'Global')" className="bg-muted border-border w-48" />
-                <div className="flex gap-2">
-                  <Button variant="ghost" onClick={() => setShowForm(false)} className="text-sm text-muted-foreground">Cancel</Button>
-                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90 text-sm">
-                    <Send className="h-4 w-4 mr-1" /> Publish
-                  </Button>
+                <div>
+                  <p className="text-[10px] text-muted-foreground mb-1">&gt; TARGET SECTOR:</p>
+                  <Input defaultValue="GLOBAL" className="bg-input border-border text-foreground text-xs w-40" />
+                </div>
+                <div className="space-x-2">
+                  <button onClick={() => setShowForm(false)} className="text-xs text-muted-foreground hover:text-foreground">[CANCEL]</button>
+                  <button className="text-xs text-foreground border border-border px-3 py-1 hover:bg-foreground hover:text-primary-foreground transition-none">[TRANSMIT]</button>
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
-        <div className="space-y-3">
-          {existingAnnouncements.map((ann, i) => (
-            <motion.div
-              key={ann.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="glass-card p-5"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-sm font-medium text-foreground">{ann.title}</h3>
-                    <span className={`text-[10px] uppercase tracking-wider font-mono font-medium px-2 py-0.5 rounded ${
-                      ann.status === "active" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
-                    }`}>{ann.status}</span>
-                  </div>
-                  <p className="text-sm text-secondary-foreground mb-2">{ann.content}</p>
-                  <p className="text-xs text-muted-foreground">Target: {ann.target} • {ann.date}</p>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+        <div className="terminal-box">
+          <div className="terminal-header">BROADCAST HISTORY</div>
+          {announcements.map((ann) => (
+            <div key={ann.id} className="py-3 border-b border-border last:border-0">
+              <div className="flex items-center gap-2 text-[10px] mb-1">
+                <span className="text-muted-foreground">{ann.id}</span>
+                <span className="text-muted-foreground">|</span>
+                <span className={ann.status === "ACTIVE" ? "text-foreground" : "text-muted-foreground"}>{ann.status}</span>
+                <span className="text-muted-foreground">|</span>
+                <span className="text-muted-foreground">TARGET:{ann.target}</span>
+                <span className="ml-auto text-muted-foreground">{ann.date}</span>
               </div>
-            </motion.div>
+              <p className="text-xs text-foreground mb-0.5">{ann.title}</p>
+              <p className="text-xs text-secondary-foreground pl-2 border-l border-border">{ann.content}</p>
+              <div className="text-right mt-1">
+                <button className="text-[10px] text-destructive hover:underline">[REVOKE]</button>
+              </div>
+            </div>
           ))}
         </div>
       </div>

@@ -1,75 +1,53 @@
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, Pin, Trash2, Flag } from "lucide-react";
-import { motion } from "framer-motion";
 
 const posts = [
-  { id: 1, author: "SilentFalcon", content: "Anyone know a good café near Marine Drive? Looking for a quiet workspace.", location: "Mumbai", likes: 24, comments: 8, time: "10 min ago", pinned: false, reported: false },
-  { id: 2, author: "ADMIN", content: "🔔 Welcome to NearVox! Please read the community guidelines before posting.", location: "Global", likes: 342, comments: 56, time: "2 days ago", pinned: true, reported: false },
-  { id: 3, author: "UrbanGhost", content: "Traffic is insane on NH-8 today. Avoid if possible.", location: "Delhi", likes: 89, comments: 34, time: "25 min ago", pinned: false, reported: false },
-  { id: 4, author: "NeonDrifter", content: "Found an amazing street food stall in Koregaon Park!", location: "Pune", likes: 56, comments: 12, time: "1 hr ago", pinned: false, reported: true },
-  { id: 5, author: "CodeWalker", content: "Any developers here looking for freelance work? DM me.", location: "Ahmedabad", likes: 18, comments: 7, time: "3 hr ago", pinned: false, reported: false },
-  { id: 6, author: "VoidEcho", content: "Beautiful sunset at Hussain Sagar today 🌅", location: "Hyderabad", likes: 112, comments: 23, time: "5 hr ago", pinned: false, reported: false },
+  { id: "PST-89204", author: "SilentFalcon", content: "Anyone know a good café near Marine Drive?", location: "MUMBAI", likes: 24, comments: 8, time: "00:10:22", pinned: false, reported: false, admin: false },
+  { id: "PST-89200", author: "ADMIN", content: "🔔 Welcome to NearVox! Read the community guidelines.", location: "GLOBAL", likes: 342, comments: 56, time: "48:00:00", pinned: true, reported: false, admin: true },
+  { id: "PST-89198", author: "UrbanGhost", content: "Traffic is insane on NH-8 today. Avoid if possible.", location: "DELHI", likes: 89, comments: 34, time: "00:25:11", pinned: false, reported: false, admin: false },
+  { id: "PST-89195", author: "NeonDrifter", content: "Found an amazing street food stall in Koregaon Park!", location: "PUNE", likes: 56, comments: 12, time: "01:12:45", pinned: false, reported: true, admin: false },
+  { id: "PST-89190", author: "CodeWalker", content: "Any developers here looking for freelance work?", location: "AHMEDABAD", likes: 18, comments: 7, time: "03:22:08", pinned: false, reported: false, admin: false },
+  { id: "PST-89185", author: "VoidEcho", content: "Beautiful sunset at Hussain Sagar today", location: "HYDERABAD", likes: 112, comments: 23, time: "05:44:30", pinned: false, reported: false, admin: false },
 ];
 
 export default function PostsPage() {
   return (
     <AdminLayout>
-      <PageHeader title="Post Moderation" description="Review, moderate, and manage all platform posts">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search posts..." className="pl-9 w-64 bg-muted border-border" />
-        </div>
+      <PageHeader title="POST MONITOR" description="// CONTENT MODERATION CONSOLE">
+        <Input placeholder="> SEARCH POSTS..." className="w-56 bg-input border-border text-foreground placeholder:text-muted-foreground text-xs" />
       </PageHeader>
 
-      <div className="p-8 space-y-3">
-        {posts.map((post, i) => (
-          <motion.div
-            key={post.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className={`glass-card p-5 ${post.pinned ? "glow-border" : ""} ${post.reported ? "border-warning/30" : ""}`}
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`text-sm font-medium ${post.author === "ADMIN" ? "text-primary" : "text-foreground"}`}>
-                    {post.author}
-                  </span>
-                  {post.author === "ADMIN" && (
-                    <span className="text-[9px] uppercase tracking-wider font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded">Admin</span>
-                  )}
-                  {post.pinned && (
-                    <span className="text-[9px] uppercase tracking-wider font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded">Pinned</span>
-                  )}
-                  {post.reported && (
-                    <span className="text-[9px] uppercase tracking-wider font-mono bg-warning/10 text-warning px-1.5 py-0.5 rounded">Reported</span>
-                  )}
-                  <span className="text-xs text-muted-foreground">• {post.location} • {post.time}</span>
-                </div>
-                <p className="text-sm text-secondary-foreground">{post.content}</p>
-                <div className="flex items-center gap-4 mt-3">
-                  <span className="text-xs text-muted-foreground">{post.likes} likes</span>
-                  <span className="text-xs text-muted-foreground">{post.comments} comments</span>
-                </div>
+      <div className="p-6">
+        <div className="terminal-box">
+          <div className="terminal-header">POST FEED — LATEST ENTRIES</div>
+
+          {posts.map((post) => (
+            <div key={post.id} className={`py-3 border-b border-border last:border-0 ${post.reported ? "bg-warning/5" : ""}`}>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-1">
+                <span>{post.id}</span>
+                <span>|</span>
+                <span className={post.admin ? "text-foreground glow-text" : "text-foreground"}>{post.author}</span>
+                {post.admin && <span className="text-foreground">[ADMIN]</span>}
+                {post.pinned && <span className="text-foreground">[PINNED]</span>}
+                {post.reported && <span className="text-warning">[REPORTED]</span>}
+                <span>|</span>
+                <span>{post.location}</span>
+                <span className="ml-auto">T-{post.time}</span>
               </div>
-              <div className="flex items-center gap-1 ml-4">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary">
-                  <Pin className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-warning">
-                  <Flag className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+              <p className="text-xs text-secondary-foreground mb-1.5 pl-2 border-l border-border">{post.content}</p>
+              <div className="flex items-center gap-4 text-[10px]">
+                <span className="text-muted-foreground">LIKES:{post.likes}</span>
+                <span className="text-muted-foreground">COMMENTS:{post.comments}</span>
+                <span className="ml-auto space-x-2">
+                  <button className="text-foreground hover:underline">[PIN]</button>
+                  <button className="text-warning hover:underline">[FLAG]</button>
+                  <button className="text-destructive hover:underline">[DELETE]</button>
+                </span>
               </div>
             </div>
-          </motion.div>
-        ))}
+          ))}
+        </div>
       </div>
     </AdminLayout>
   );

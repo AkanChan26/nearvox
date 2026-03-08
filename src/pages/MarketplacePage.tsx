@@ -1,58 +1,56 @@
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, CheckCircle, XCircle, Star } from "lucide-react";
-import { motion } from "framer-motion";
 
 const listings = [
-  { id: 1, title: "iPhone 14 Pro - Like New", seller: "CodeWalker", price: "₹52,000", location: "Ahmedabad", status: "active", verified: true },
-  { id: 2, title: "Vintage Record Player", seller: "NeonDrifter", price: "₹8,500", location: "Pune", status: "pending", verified: false },
-  { id: 3, title: "Mountain Bike - Barely Used", seller: "VoidEcho", price: "₹15,000", location: "Hyderabad", status: "active", verified: true },
-  { id: 4, title: "Web Development Services", seller: "GlitchNode", price: "₹500/hr", location: "Jaipur", status: "active", verified: false },
-  { id: 5, title: "Handmade Pottery Set", seller: "SilentFalcon", price: "₹3,200", location: "Mumbai", status: "flagged", verified: false },
-  { id: 6, title: "Guitar Lessons - Beginner", seller: "MidnightVoice", price: "₹800/session", location: "Bangalore", status: "active", verified: true },
+  { id: "MKT-001", title: "iPhone 14 Pro - Like New", seller: "CodeWalker", price: "₹52,000", location: "AHMEDABAD", status: "ACTIVE", verified: true },
+  { id: "MKT-002", title: "Vintage Record Player", seller: "NeonDrifter", price: "₹8,500", location: "PUNE", status: "PENDING", verified: false },
+  { id: "MKT-003", title: "Mountain Bike - Barely Used", seller: "VoidEcho", price: "₹15,000", location: "HYDERABAD", status: "ACTIVE", verified: true },
+  { id: "MKT-004", title: "Web Development Services", seller: "GlitchNode", price: "₹500/hr", location: "JAIPUR", status: "ACTIVE", verified: false },
+  { id: "MKT-005", title: "Handmade Pottery Set", seller: "SilentFalcon", price: "₹3,200", location: "MUMBAI", status: "FLAGGED", verified: false },
+  { id: "MKT-006", title: "Guitar Lessons - Beginner", seller: "MidnightVoice", price: "₹800/ses", location: "BANGALORE", status: "ACTIVE", verified: true },
 ];
 
 export default function MarketplacePage() {
   return (
     <AdminLayout>
-      <PageHeader title="Marketplace" description="Review listings and manage marketplace activity">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search listings..." className="pl-9 w-64 bg-muted border-border" />
-        </div>
+      <PageHeader title="MARKETPLACE MONITOR" description="// LISTING MANAGEMENT CONSOLE">
+        <Input placeholder="> SEARCH LISTINGS..." className="w-56 bg-input border-border text-foreground placeholder:text-muted-foreground text-xs" />
       </PageHeader>
 
-      <div className="p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {listings.map((listing, i) => (
-            <motion.div
-              key={listing.id}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className={`glass-card p-5 hover:glow-border transition-all duration-300 ${listing.status === "flagged" ? "border-warning/30" : ""}`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <span className={`text-[10px] uppercase tracking-wider font-mono font-medium px-2 py-0.5 rounded ${
-                  listing.status === "active" ? "bg-success/10 text-success" :
-                  listing.status === "pending" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive"
-                }`}>{listing.status}</span>
-                {listing.verified && <Star className="h-4 w-4 text-primary fill-primary/20" />}
-              </div>
-              <h3 className="text-sm font-medium text-foreground mb-1">{listing.title}</h3>
-              <p className="text-lg font-mono font-semibold text-primary mb-2">{listing.price}</p>
-              <p className="text-xs text-muted-foreground">by {listing.seller} • {listing.location}</p>
-              <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border">
-                <Button variant="ghost" size="sm" className="h-7 text-xs text-success hover:text-success hover:bg-success/10 flex-1">
-                  <CheckCircle className="h-3 w-3 mr-1" /> Approve
-                </Button>
-                <Button variant="ghost" size="sm" className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 flex-1">
-                  <XCircle className="h-3 w-3 mr-1" /> Remove
-                </Button>
-              </div>
-            </motion.div>
+      <div className="p-6">
+        <div className="terminal-box">
+          <div className="terminal-header">ACTIVE LISTINGS — {listings.length} ITEMS</div>
+
+          <div className="flex items-center text-[10px] text-muted-foreground tracking-wider pb-2 mb-2 border-b border-border">
+            <span className="w-20">ID</span>
+            <span className="flex-1">ITEM</span>
+            <span className="w-28">SELLER</span>
+            <span className="w-24">PRICE</span>
+            <span className="w-24">SECTOR</span>
+            <span className="w-20">STATUS</span>
+            <span className="w-28 text-right">ACTIONS</span>
+          </div>
+
+          {listings.map((listing) => (
+            <div key={listing.id} className={`flex items-center text-xs py-2 border-b border-border last:border-0 ${listing.status === "FLAGGED" ? "bg-warning/5" : ""}`}>
+              <span className="w-20 text-muted-foreground">{listing.id}</span>
+              <span className="flex-1 text-foreground">
+                {listing.title}
+                {listing.verified && <span className="text-foreground ml-1">[✓]</span>}
+              </span>
+              <span className="w-28 text-muted-foreground">{listing.seller}</span>
+              <span className="w-24 text-foreground">{listing.price}</span>
+              <span className="w-24 text-muted-foreground">{listing.location}</span>
+              <span className={`w-20 ${
+                listing.status === "ACTIVE" ? "text-foreground" :
+                listing.status === "PENDING" ? "text-warning" : "text-destructive"
+              }`}>{listing.status}</span>
+              <span className="w-28 text-right space-x-1">
+                <button className="text-foreground hover:underline">[OK]</button>
+                <button className="text-destructive hover:underline">[DEL]</button>
+              </span>
+            </div>
           ))}
         </div>
       </div>

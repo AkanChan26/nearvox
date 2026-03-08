@@ -2,61 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 210 20% 92%;
+    --background: 0 0% 0%;
+    --foreground: 120 100% 50%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 210 20% 92%;
+    --card: 0 0% 3%;
+    --card-foreground: 120 100% 50%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 120 100% 50%;
 
-    --primary: 175 80% 50%;
-    --primary-foreground: 220 20% 7%;
+    --primary: 120 100% 50%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 220 16% 16%;
-    --secondary-foreground: 210 20% 80%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 120 60% 40%;
 
-    --muted: 220 14% 14%;
-    --muted-foreground: 215 15% 50%;
+    --muted: 0 0% 6%;
+    --muted-foreground: 120 30% 30%;
 
-    --accent: 175 60% 40%;
-    --accent-foreground: 210 20% 95%;
+    --accent: 120 100% 50%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 0%;
 
-    --border: 220 16% 16%;
-    --input: 220 16% 18%;
-    --ring: 175 80% 50%;
+    --border: 120 100% 12%;
+    --input: 0 0% 8%;
+    --ring: 120 100% 50%;
 
-    --radius: 0.5rem;
+    --radius: 0px;
 
-    --sidebar-background: 220 20% 5%;
-    --sidebar-foreground: 215 15% 55%;
-    --sidebar-primary: 175 80% 50%;
-    --sidebar-primary-foreground: 220 20% 7%;
-    --sidebar-accent: 220 16% 12%;
-    --sidebar-accent-foreground: 210 20% 92%;
-    --sidebar-border: 220 16% 12%;
-    --sidebar-ring: 175 80% 50%;
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 120 30% 30%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 6%;
+    --sidebar-accent-foreground: 120 100% 50%;
+    --sidebar-border: 120 100% 10%;
+    --sidebar-ring: 120 100% 50%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 220 20% 7%;
-    --success: 142 72% 45%;
-    --success-foreground: 220 20% 7%;
-    --info: 210 80% 55%;
-    --info-foreground: 220 20% 7%;
+    --warning: 45 100% 50%;
+    --warning-foreground: 0 0% 0%;
+    --success: 120 100% 50%;
+    --success-foreground: 0 0% 0%;
+    --info: 120 60% 40%;
+    --info-foreground: 0 0% 0%;
 
-    --glow-primary: 0 0 20px hsl(175 80% 50% / 0.15);
-    --glow-strong: 0 0 30px hsl(175 80% 50% / 0.25);
-
-    --font-display: 'Inter', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
+    --font-terminal: 'VT323', monospace;
+    --font-mono: 'Share Tech Mono', monospace;
   }
 
   * {
@@ -64,24 +61,60 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    font-family: var(--font-display);
+    @apply bg-background text-foreground antialiased;
+    font-family: var(--font-terminal);
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(0 0% 0%);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(120 100% 20%);
   }
 }
 
 @layer utilities {
-  .glass-card {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50 rounded-lg;
+  .terminal-box {
+    @apply border border-border bg-card p-4;
   }
-  .glow-border {
-    box-shadow: var(--glow-primary);
-    @apply border-primary/30;
+  .terminal-header {
+    @apply text-xs uppercase tracking-[0.3em] text-muted-foreground mb-3 pb-2 border-b border-border;
   }
-  .stat-value {
-    @apply text-3xl font-semibold tracking-tight;
+  .terminal-row {
+    @apply flex items-center justify-between py-1 text-sm;
+  }
+  .terminal-label {
+    @apply text-muted-foreground;
+  }
+  .terminal-value {
+    @apply text-foreground font-mono;
     font-family: var(--font-mono);
   }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
+  .terminal-dots {
+    @apply flex-1 mx-2 border-b border-dotted border-border;
+  }
+  .glow-text {
+    text-shadow: 0 0 8px hsl(120 100% 50% / 0.6), 0 0 20px hsl(120 100% 50% / 0.3);
+  }
+  .scanline {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      hsl(120 100% 50% / 0.02) 2px,
+      hsl(120 100% 50% / 0.02) 4px
+    );
+    pointer-events: none;
+  }
+  .cursor-blink::after {
+    content: "█";
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
   }
 }
