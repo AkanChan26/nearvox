@@ -9,7 +9,7 @@ import {
   Send, Users, User, X, Search, ArrowLeft,
   MessageSquare, Hash, UserPlus, MoreVertical,
   Pencil, Trash2, Ban, SmilePlus, Check, Shield,
-  CheckCheck,
+  CheckCheck, Reply, CornerDownRight,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useOnlinePresence } from "@/hooks/useOnlinePresence";
@@ -55,7 +55,7 @@ type Reaction = {
   emoji: string;
 };
 
-const QUICK_EMOJIS = ["❤️", "😂", "😮", "😢", "👍", "🔥"];
+const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "💯", "🤔", "😍", "👎", "😡", "🙏", "💀", "✨"];
 
 export default function UserMessagesPage() {
   const { user } = useAuth();
@@ -76,6 +76,7 @@ export default function UserMessagesPage() {
   const [editingMsg, setEditingMsg] = useState<string | null>(null);
   const [editText, setEditText] = useState("");
   const [showReactions, setShowReactions] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<ChatMessage | null>(null);
   const [showConvoMenu, setShowConvoMenu] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -434,16 +435,26 @@ export default function UserMessagesPage() {
   const sendMessage = async () => {
     if (!user || !activeConvo || !msgText.trim()) return;
     setSending(true);
+    const content = replyTo 
+      ? `[reply:${replyTo.id}:${replyTo.content.slice(0, 50)}] ${msgText.trim()}`
+      : msgText.trim();
     const { error } = await supabase.from("chat_messages").insert({
-      conversation_id: activeConvo, sender_id: user.id, content: msgText.trim(),
+      conversation_id: activeConvo, sender_id: user.id, content,
     });
     if (error) toast.error("Failed to send");
     else {
       setMsgText("");
+      setReplyTo(null);
       markAsRead(activeConvo);
       presenceChannelRef.current?.track({ is_typing: false });
     }
     setSending(false);
+  };
+
+  const parseReply = (content: string): { replyText: string; mainText: string } | null => {
+    const match = content.match(/^\[reply:([^:]+):([^\]]*)\] (.*)$/s);
+    if (match) return { replyText: match[2], mainText: match[3] };
+    return null;
   };
 
   const editMessage = async (msgId: string) => {
@@ -797,67 +808,85 @@ export default function UserMessagesPage() {
                     chatMessages.map((msg) => {
                       const isMine = msg.sender_id === user?.id;
                       const msgReactions = getReactionsForMsg(msg.id);
+                      const isGroup = activeConversation?.type === "group";
+                      const reply = parseReply(msg.content);
+                      const displayContent = reply ? reply.mainText : msg.content;
                       return (
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"} group relative`}>
-                          <div className="relative max-w-[70%]">
+                          <div className="relative max-w-[65%]">
                             {/* Hover actions */}
-                            <div className={`absolute top-0 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1`}>
+                            <div className={`absolute -top-1 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover:opacity-100 flex items-center gap-0.5 px-1 z-20`}>
+                              <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
+                                className="text-muted-foreground hover:text-foreground p-1">
+                                <Reply className="h-3 w-3" />
+                              </button>
                               <button onClick={(e) => { e.stopPropagation(); setShowReactions(showReactions === msg.id ? null : msg.id); }}
-                                className="text-muted-foreground hover:text-foreground p-0.5">
+                                className="text-muted-foreground hover:text-foreground p-1">
                                 <SmilePlus className="h-3 w-3" />
                               </button>
                               {isMine && (
                                 <button onClick={(e) => handleMsgAction(e, msg.id)}
-                                  className="text-muted-foreground hover:text-foreground p-0.5">
+                                  className="text-muted-foreground hover:text-foreground p-1">
                                   <MoreVertical className="h-3 w-3" />
                                 </button>
                               )}
                             </div>
 
-                            {/* Reaction picker */}
+                            {/* Reaction picker - expanded grid */}
                             {showReactions === msg.id && (
-                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card flex gap-0.5 p-1 z-50`}
+                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-1 border border-border bg-card grid grid-cols-8 gap-0.5 p-1.5 z-50 shadow-[0_0_15px_hsl(0_0%_0%/0.4)]`}
                                 onClick={(e) => e.stopPropagation()}>
                                 {QUICK_EMOJIS.map((emoji) => (
                                   <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
-                                    className="hover:bg-foreground/10 px-1 py-0.5 text-sm">
+                                    className="hover:bg-foreground/10 p-1 text-sm leading-none">
                                     {emoji}
                                   </button>
                                 ))}
                               </div>
                             )}
 
-                            {/* Message bubble */}
-                            <div className={`${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/40 border-border"} border px-4 py-3`}>
-                              {!isMine && (
-                                <p className="text-[9px] text-muted-foreground mb-1.5 font-mono tracking-wider">{getDisplayName(msg.sender_id)}</p>
-                              )}
-                              {editingMsg === msg.id ? (
-                                <div className="flex items-center gap-1">
-                                  <input value={editText} onChange={(e) => setEditText(e.target.value)}
-                                    onKeyDown={(e) => { if (e.key === "Enter") editMessage(msg.id); if (e.key === "Escape") { setEditingMsg(null); setEditText(""); } }}
-                                    className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none border-b border-foreground/30" autoFocus />
-                                  <button onClick={() => editMessage(msg.id)} className="text-foreground"><Check className="h-3 w-3" /></button>
-                                  <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3 w-3" /></button>
+                            {/* Message bubble - compact, rounded */}
+                            <div className={`${isMine ? "bg-foreground/8 border-foreground/15" : "bg-muted/30 border-border/60"} border rounded-sm`}>
+                              {/* Reply preview */}
+                              {reply && (
+                                <div className="px-2.5 pt-2 pb-0">
+                                  <div className="border-l-2 border-foreground/30 pl-2 py-0.5">
+                                    <p className="text-[9px] text-muted-foreground truncate leading-normal">{reply.replyText}</p>
+                                  </div>
                                 </div>
-                              ) : (
-                                <p className="text-[11px] text-foreground break-words leading-relaxed">{msg.content}</p>
                               )}
-                              <div className="flex items-center justify-end gap-1 mt-0.5">
-                                {msg.is_edited && <span className="text-[7px] text-muted-foreground/50 italic">edited</span>}
-                                <p className="text-[8px] text-muted-foreground/60">
-                                  {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
-                                </p>
-                                {msg.sender_id === user?.id && (() => {
-                                  const status = getReadStatus(msg);
-                                  return status === "read" ? (
-                                    <CheckCheck className="h-3 w-3 text-primary" />
-                                  ) : status === "delivered" ? (
-                                    <CheckCheck className="h-3 w-3 text-muted-foreground/60" />
-                                  ) : (
-                                    <Check className="h-3 w-3 text-muted-foreground/60" />
-                                  );
-                                })()}
+                              {/* Only show sender name in group chats for other users */}
+                              {isGroup && !isMine && (
+                                <p className="text-[8px] text-muted-foreground/70 px-2.5 pt-1.5 pb-0 tracking-wider">{getDisplayName(msg.sender_id)}</p>
+                              )}
+                              <div className="px-2.5 py-1.5">
+                                {editingMsg === msg.id ? (
+                                  <div className="flex items-center gap-1">
+                                    <input value={editText} onChange={(e) => setEditText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === "Enter") editMessage(msg.id); if (e.key === "Escape") { setEditingMsg(null); setEditText(""); } }}
+                                      className="flex-1 bg-transparent text-[11px] text-foreground focus:outline-none border-b border-foreground/30" autoFocus />
+                                    <button onClick={() => editMessage(msg.id)} className="text-foreground"><Check className="h-3 w-3" /></button>
+                                    <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3 w-3" /></button>
+                                  </div>
+                                ) : (
+                                  <p className="text-[11px] text-foreground break-words leading-relaxed">{displayContent}</p>
+                                )}
+                                <div className="flex items-center justify-end gap-1 mt-0.5">
+                                  {msg.is_edited && <span className="text-[7px] text-muted-foreground/40 italic">edited</span>}
+                                  <p className="text-[8px] text-muted-foreground/50">
+                                    {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
+                                  </p>
+                                  {msg.sender_id === user?.id && (() => {
+                                    const status = getReadStatus(msg);
+                                    return status === "read" ? (
+                                      <CheckCheck className="h-2.5 w-2.5 text-primary" />
+                                    ) : status === "delivered" ? (
+                                      <CheckCheck className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                    ) : (
+                                      <Check className="h-2.5 w-2.5 text-muted-foreground/60" />
+                                    );
+                                  })()}
+                                </div>
                               </div>
                             </div>
 
@@ -866,7 +895,7 @@ export default function UserMessagesPage() {
                               <div className={`flex flex-wrap gap-0.5 mt-0.5 ${isMine ? "justify-end" : "justify-start"}`}>
                                 {msgReactions.map((r) => (
                                   <button key={r.emoji} onClick={() => toggleReaction(msg.id, r.emoji)}
-                                    className={`text-[10px] px-1 py-0 border ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border bg-muted/20"} hover:bg-foreground/10`}>
+                                    className={`text-[10px] px-1 py-0 border rounded-sm ${r.myReaction ? "border-foreground/40 bg-foreground/10" : "border-border bg-muted/20"} hover:bg-foreground/10`}>
                                     {r.emoji} {r.count > 1 && <span className="text-[8px]">{r.count}</span>}
                                   </button>
                                 ))}
@@ -894,6 +923,13 @@ export default function UserMessagesPage() {
                     onClick={(e) => e.stopPropagation()}>
                     <button onClick={() => {
                       const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
+                      if (msg) { setReplyTo(msg); }
+                      setContextMenu(null);
+                    }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
+                      <Reply className="h-3 w-3" /> REPLY
+                    </button>
+                    <button onClick={() => {
+                      const msg = chatMessages?.find((m) => m.id === contextMenu.msgId);
                       if (msg) { setEditingMsg(msg.id); setEditText(msg.content); }
                       setContextMenu(null);
                     }} className="w-full text-left text-[10px] px-4 py-2.5 hover:bg-foreground/5 text-foreground flex items-center gap-3">
@@ -915,17 +951,31 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
+                {/* Reply preview bar */}
+                {replyTo && (
+                  <div className="px-4 py-2 border-t border-border bg-muted/20 flex items-center gap-3">
+                    <CornerDownRight className="h-3 w-3 text-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] text-muted-foreground tracking-wider">{getDisplayName(replyTo.sender_id)}</p>
+                      <p className="text-[10px] text-foreground/60 truncate">{replyTo.content.slice(0, 60)}</p>
+                    </div>
+                    <button onClick={() => setReplyTo(null)} className="text-muted-foreground hover:text-foreground shrink-0">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                )}
+
                 {/* Input */}
-                <div className="px-4 py-3.5 border-t border-border flex gap-3 bg-card/80">
+                <div className="px-4 py-3 border-t border-border flex gap-3 bg-card/80">
                   {otherIsBlocked ? (
                     <p className="flex-1 text-[10px] text-muted-foreground text-center py-3 tracking-wider">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
                       <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
-                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-3 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-4 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground rounded-sm" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
-                        className="text-foreground border border-foreground px-5 py-3 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                        className="text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40 rounded-sm">
                         <Send className="h-4 w-4" />
                       </button>
                     </>
