@@ -28,6 +28,8 @@ import UserInvitesPage from "./pages/user/UserInvitesPage";
 import UserAnnouncementsPage from "./pages/user/UserAnnouncementsPage";
 import UserMessagesPage from "./pages/user/UserMessagesPage";
 import UserNotificationsPage from "./pages/user/UserNotificationsPage";
+import UserBoardsPage from "./pages/user/UserBoardsPage";
+import UserBoardDetailPage from "./pages/user/UserBoardDetailPage";
 import NotFound from "./pages/NotFound";
 import InstallPage from "./pages/InstallPage";
 
