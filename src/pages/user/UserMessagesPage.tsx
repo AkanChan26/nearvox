@@ -563,7 +563,7 @@ export default function UserMessagesPage() {
     <UserLayout>
       <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
-      <div className="px-4 sm:px-8 py-6">
+      <div className="px-3 sm:px-6 py-4">
         <div className="border border-border bg-card flex flex-col md:flex-row shadow-[0_0_30px_hsl(145_80%_56%/0.04)] relative overflow-hidden" style={{ height: "min(85vh, 720px)", minHeight: "450px" }}>
           {/* Subtle scanline overlay */}
           <div className="absolute inset-0 scanline pointer-events-none z-0" />
