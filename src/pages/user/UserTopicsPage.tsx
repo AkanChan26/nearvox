@@ -8,6 +8,7 @@ import { MessageSquare, Eye, Clock, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES, getCategoryLabel, getCategoryIcon } from "@/lib/categories";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserTopicsPage() {
   const navigate = useNavigate();
