@@ -178,7 +178,22 @@ export default function UserDashboard() {
         </div>
 
         {/* Quick Access Row */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-1.5 mb-6">
+          <button
+            onClick={() => navigate("/user/notifications")}
+            className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group relative"
+          >
+            <div className="flex items-center gap-1.5 mb-1">
+              <Bell className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              {(unreadNotifs ?? 0) > 0 && (
+                <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
+              )}
+            </div>
+            <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider">NOTIFICATIONS</p>
+            {(unreadNotifs ?? 0) > 0 && (
+              <p className="text-[9px] text-foreground mt-0.5">{unreadNotifs} unread</p>
+            )}
+          </button>
           <button
             onClick={() => navigate("/user/posts?mine=true")}
             className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
