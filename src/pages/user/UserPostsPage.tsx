@@ -1,9 +1,10 @@
 import { useState, useRef, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
@@ -35,6 +36,8 @@ type UnifiedItem = {
 export default function UserPostsPage() {
   const { user, isAdmin: userIsAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith("/admin");
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const isMine = searchParams.get("mine") === "true";
@@ -331,9 +334,12 @@ export default function UserPostsPage() {
 
   const isImageFile = (path: string) => /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(path);
 
+  const Layout = isAdminRoute ? AdminLayout : UserLayout;
+  const topicPrefix = isAdminRoute ? "/admin/topic" : "/topic";
+
   return (
-    <UserLayout>
-      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
+    <Layout>
+      <PageHeader title={isMine ? "YOUR POSTS" : "ALL POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
         <div className="flex items-center gap-2">
           {!isMine && userLocation && (
             <button
@@ -465,7 +471,7 @@ export default function UserPostsPage() {
                   {/* Title for topics */}
                   {item.title && (
                     <button
-                      onClick={() => navigate(`/topic/${item.id}`)}
+                      onClick={() => navigate(`${topicPrefix}/${item.id}`)}
                       className="text-sm text-foreground font-bold mb-1 hover:underline text-left block"
                     >
                       {item.title}
@@ -560,7 +566,7 @@ export default function UserPostsPage() {
                       </button>
                     ) : (
                       <button
-                        onClick={() => navigate(`/topic/${item.id}`)}
+                        onClick={() => navigate(`${topicPrefix}/${item.id}`)}
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <MessageSquare className="h-2.5 w-2.5" />
@@ -571,7 +577,7 @@ export default function UserPostsPage() {
                     {/* View topic */}
                     {item.type === "topic" && (
                       <button
-                        onClick={() => navigate(`/topic/${item.id}`)}
+                        onClick={() => navigate(`${topicPrefix}/${item.id}`)}
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <Eye className="h-2.5 w-2.5" />
@@ -591,7 +597,7 @@ export default function UserPostsPage() {
                     )}
 
                     {/* Edit (own) */}
-                    {isOwner && (
+                    {(isOwner || userIsAdmin) && (
                       <button
                         onClick={() => { setEditingPost(item.id); setEditContent(item.content); }}
                         className="flex items-center gap-0.5 hover:text-foreground"
@@ -602,7 +608,7 @@ export default function UserPostsPage() {
                     )}
 
                     {/* Delete (own) */}
-                    {isOwner && (
+                    {(isOwner || userIsAdmin) && (
                       <button
                         onClick={() => handleDelete(item)}
                         className="flex items-center gap-0.5 text-destructive hover:underline ml-auto"
@@ -700,6 +706,6 @@ export default function UserPostsPage() {
           </div>
         </div>
       )}
-    </UserLayout>
+    </Layout>
   );
 }
