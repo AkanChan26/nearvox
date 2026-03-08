@@ -108,7 +108,7 @@ export default function TopicPage() {
     queryFn: async () => {
       if (!replyIds.length || !user) return [];
       const { data } = await supabase.from("reply_likes" as any).select("id, reply_id").eq("user_id", user.id).in("reply_id", replyIds);
-      return (data || []) as { id: string; reply_id: string }[];
+      return (data as unknown as { id: string; reply_id: string }[]) || [];
     },
     enabled: replyIds.length > 0 && !!user,
   });
