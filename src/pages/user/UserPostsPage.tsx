@@ -661,7 +661,7 @@ export default function UserPostsPage() {
                           className="flex-1 bg-input border border-border text-foreground text-[11px] px-2 py-1 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
                         />
                         <button
-                          onClick={() => handleReport(item.id)}
+                          onClick={() => handleReport(item.id, item.type)}
                           disabled={!reportReason.trim()}
                           className="text-[10px] text-warning border border-warning px-2 py-0.5 hover:bg-warning hover:text-background disabled:opacity-30"
                         >
