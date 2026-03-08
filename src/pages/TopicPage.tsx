@@ -114,7 +114,7 @@ export default function TopicPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("user_id, anonymous_name, is_admin, username")
+        .select("user_id, anonymous_name, is_admin, username, avatar")
         .in("user_id", uniqueUserIds);
       return data || [];
     },
