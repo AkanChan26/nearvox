@@ -907,17 +907,17 @@ export default function UserMessagesPage() {
                 )}
 
                 {/* Input */}
-                <div className="p-2 border-t border-border flex gap-2">
+                <div className="p-3 border-t border-border flex gap-2">
                   {otherIsBlocked ? (
-                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-1.5">UNBLOCK USER TO SEND MESSAGES</p>
+                    <p className="flex-1 text-[10px] text-muted-foreground text-center py-2">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
                       <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
-                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                        className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
-                        className="text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
-                        <Send className="h-3.5 w-3.5" />
+                        className="text-foreground border border-foreground px-4 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                        <Send className="h-4 w-4" />
                       </button>
                     </>
                   )}
