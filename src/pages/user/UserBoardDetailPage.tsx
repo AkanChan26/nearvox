@@ -307,6 +307,7 @@ export default function UserBoardDetailPage() {
                 post={post}
                 isLiked={myLikes?.has(post.id) || false}
                 isOwner={post.user_id === user?.id}
+                isAdmin={profile?.is_admin || false}
                 onLike={() => toggleLike.mutate(post.id)}
                 onDelete={() => deletePost.mutate(post.id)}
                 onReport={() => setReportPostId(post.id)}
