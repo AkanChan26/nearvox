@@ -59,6 +59,7 @@ const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", 
 
 export default function UserMessagesPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [activeConvo, setActiveConvo] = useState<string | null>(null);
   const [showNewDm, setShowNewDm] = useState(false);
