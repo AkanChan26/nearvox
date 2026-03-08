@@ -642,15 +642,21 @@ export default function UserPostsPage() {
                     )}
 
                     {/* Report (not own — both posts and topics) */}
-                    {!isOwner && (
-                      <button
-                        onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
-                        className="flex items-center gap-0.5 hover:text-warning"
-                      >
-                        <Flag className="h-2.5 w-2.5" />
-                        REPORT
-                      </button>
-                    )}
+                    {!isOwner && (() => {
+                      const existingReport = myReports?.find((r) => r.reported_post_id === item.id || (r.report_type === item.type && r.reported_post_id === item.id));
+                      return existingReport ? (
+                        <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">
+                          <Flag className="h-2.5 w-2.5 fill-current" /> UNDO REPORT
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
+                          className="flex items-center gap-0.5 hover:text-warning"
+                        >
+                          <Flag className="h-2.5 w-2.5" /> REPORT
+                        </button>
+                      );
+                    })()}
 
                     {/* Edit (own) */}
                     {(isOwner || userIsAdmin) && (
