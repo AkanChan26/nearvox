@@ -82,7 +82,7 @@ export default function UserTopicsPage() {
         {/* Category filter tabs */}
         <div className="flex flex-wrap gap-1 mb-4">
           <button
-            onClick={() => navigate("/user/topics")}
+            onClick={() => navigate(baseTopicsPath)}
             className={`text-[9px] px-2 py-1 border transition-none ${
               !categoryFilter
                 ? "border-foreground text-foreground bg-foreground/10"
