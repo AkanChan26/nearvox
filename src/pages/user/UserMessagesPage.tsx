@@ -644,6 +644,7 @@ export default function UserMessagesPage() {
                 conversations.map((convo) => {
                   const isActive = activeConvo === convo.id;
                   const isGroup = convo.type === "group";
+                  const dmOtherId = !isGroup ? getOtherUserId(convo) : null;
                   const lastMsg = lastMessages?.[convo.id];
                   const unread = hasUnread(convo.id);
                   return (
