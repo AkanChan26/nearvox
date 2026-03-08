@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
+import AdminUserProfilePage from "./pages/AdminUserProfilePage";
 
 import UsersPage from "./pages/UsersPage";
 import PostsPage from "./pages/PostsPage";
