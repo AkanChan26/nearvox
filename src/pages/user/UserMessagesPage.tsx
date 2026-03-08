@@ -12,6 +12,8 @@ import {
   CheckCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useOnlinePresence } from "@/hooks/useOnlinePresence";
+import { OnlineIndicator } from "@/components/OnlineIndicator";
 
 type Conversation = {
   id: string;
