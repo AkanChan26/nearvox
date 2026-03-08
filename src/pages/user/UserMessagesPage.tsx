@@ -603,33 +603,33 @@ export default function UserMessagesPage() {
 
             {/* New Group */}
             {showNewGroup && (
-              <div className="p-2 border-b border-border bg-muted/20 space-y-2">
+              <div className="px-4 py-4 border-b border-border bg-muted/30 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-muted-foreground">&gt; CREATE GROUP:</p>
-                  <button onClick={() => { setShowNewGroup(false); setGroupMembers([]); setGroupName(""); }} className="text-muted-foreground hover:text-foreground"><X className="h-3 w-3" /></button>
+                  <p className="text-[10px] text-muted-foreground tracking-wider">&gt; CREATE GROUP:</p>
+                  <button onClick={() => { setShowNewGroup(false); setGroupMembers([]); setGroupName(""); }} className="text-muted-foreground hover:text-foreground"><X className="h-3.5 w-3.5" /></button>
                 </div>
                 <input value={groupName} onChange={(e) => setGroupName(e.target.value)} placeholder="Group name..."
-                  className="w-full bg-input border border-border text-foreground text-[11px] px-2 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                  className="w-full bg-input border border-border text-foreground text-[11px] px-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <input value={groupMemberSearch} onChange={(e) => setGroupMemberSearch(e.target.value)} placeholder="Add members..."
-                    className="w-full bg-input border border-border text-foreground text-[11px] pl-7 pr-2 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
+                    className="w-full bg-input border border-border text-foreground text-[11px] pl-9 pr-3 py-2.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                 </div>
                 {searchResults && searchResults.length > 0 && groupMemberSearch.length >= 2 && (
-                  <div className="border border-border bg-card max-h-24 overflow-y-auto">
+                  <div className="border border-border bg-card max-h-28 overflow-y-auto">
                     {searchResults.filter((r) => !groupMembers.some((gm) => gm.user_id === r.user_id)).map((r) => (
                       <button key={r.user_id} onClick={() => { setGroupMembers((prev) => [...prev, r]); setGroupMemberSearch(""); }}
-                        className="w-full text-left text-[11px] px-2 py-1.5 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-2">
-                        <UserPlus className="h-3 w-3 text-muted-foreground" />
+                        className="w-full text-left text-[11px] px-4 py-2.5 hover:bg-foreground/5 text-foreground transition-none flex items-center gap-3 border-b border-border last:border-0">
+                        <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
                         {r.anonymous_name || r.username}
                       </button>
                     ))}
                   </div>
                 )}
                 {groupMembers.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-2">
                     {groupMembers.map((m) => (
-                      <span key={m.user_id} className="text-[10px] border border-foreground/30 px-1.5 py-0.5 flex items-center gap-1 text-foreground">
+                      <span key={m.user_id} className="text-[10px] border border-foreground/30 px-2.5 py-1 flex items-center gap-1.5 text-foreground">
                         {m.anonymous_name || m.username}
                         <button onClick={() => setGroupMembers((prev) => prev.filter((p) => p.user_id !== m.user_id))} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button>
                       </span>
@@ -637,7 +637,7 @@ export default function UserMessagesPage() {
                   </div>
                 )}
                 <button onClick={createGroup} disabled={!groupName.trim() || groupMembers.length === 0}
-                  className="w-full text-[10px] text-foreground border border-foreground px-2 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40">
+                  className="w-full text-[10px] text-foreground border border-foreground px-3 py-2.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40 tracking-wider">
                   [CREATE GROUP — {groupMembers.length + 1} MEMBERS]
                 </button>
               </div>
