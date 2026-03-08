@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Ticket, Copy, Check, X, ChevronDown, ChevronUp, Eye } from "lucide-react";
+import { Ticket, Copy, Check, X, Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function UsersPage() {
