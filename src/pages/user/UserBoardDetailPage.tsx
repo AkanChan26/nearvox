@@ -293,21 +293,27 @@ export default function UserBoardDetailPage() {
   return (
     <UserLayout>
       {/* Board Header */}
-      <div className="border-b border-border px-4 sm:px-6 py-5">
-        <h1 className="text-base sm:text-lg text-foreground glow-text tracking-wider font-bold">{board.name}</h1>
+      <div className="border-b border-border px-4 sm:px-6 py-3">
+        <button
+          onClick={() => navigate("/user/boards")}
+          className="text-[10px] text-muted-foreground hover:text-foreground tracking-wider mb-2 flex items-center gap-1"
+        >
+          ← BOARDS
+        </button>
+        <h1 className="text-xs text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
         {board.description && (
-          <p className="text-[11px] sm:text-xs text-muted-foreground mt-1">{board.description}</p>
+          <p className="text-[10px] text-muted-foreground mt-1 tracking-wider">{board.description.toUpperCase()}</p>
         )}
-        <div className="flex items-center gap-4 mt-3">
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Users className="h-3.5 w-3.5" /> {board.members_count} members
+        <div className="flex items-center gap-3 mt-2">
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <Users className="h-2.5 w-2.5" /> {board.members_count} members
           </span>
-          <span className="text-xs text-muted-foreground">{board.posts_count} posts</span>
+          <span className="text-[10px] text-muted-foreground">{board.posts_count} posts</span>
           <div className="ml-auto flex items-center gap-2">
             {(board.created_by === user?.id || profile?.is_admin) && (
               <button
                 onClick={() => { if (confirm("Delete this board and all its posts?")) deleteBoard.mutate(); }}
-                className="text-xs text-muted-foreground border border-border px-3 py-1.5 hover:text-destructive hover:border-destructive tracking-wider"
+                className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-destructive hover:border-destructive tracking-wider"
               >
                 DELETE
               </button>
@@ -315,14 +321,14 @@ export default function UserBoardDetailPage() {
             {isMember ? (
               <button
                 onClick={() => leaveBoard.mutate()}
-                className="text-xs text-muted-foreground border border-border px-3 py-1.5 hover:text-destructive hover:border-destructive tracking-wider"
+                className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-destructive hover:border-destructive tracking-wider"
               >
                 LEAVE
               </button>
             ) : (
               <button
                 onClick={() => joinBoard.mutate()}
-                className="text-xs text-background bg-foreground px-4 py-1.5 hover:bg-foreground/90 tracking-wider"
+                className="text-[10px] text-background bg-foreground px-3 py-1 hover:bg-foreground/90 tracking-wider"
               >
                 JOIN
               </button>
@@ -331,32 +337,32 @@ export default function UserBoardDetailPage() {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 py-4 space-y-4">
+      <div className="px-4 sm:px-6 py-3 space-y-3">
         {/* New Post Form */}
         {isMember && (
-          <div className="border border-border bg-card p-3 sm:p-4 space-y-2">
+          <div className="border border-border p-3 space-y-2">
             <input
               type="text"
               value={postTitle}
               onChange={(e) => setPostTitle(e.target.value)}
               placeholder="Post title (optional)"
-              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40"
+              className="w-full bg-background border border-border px-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 tracking-wider"
             />
             <textarea
               value={newPost}
               onChange={(e) => setNewPost(e.target.value)}
               placeholder="Share something with this board..."
               rows={3}
-              className="w-full bg-background border border-border px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none"
+              className="w-full bg-background border border-border px-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 resize-none tracking-wider"
             />
             {/* File attachments */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-1"
+                className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground border border-border px-2 py-0.5"
               >
-                <Paperclip className="h-3 w-3" /> ATTACH
+                <Paperclip className="h-2.5 w-2.5" /> ATTACH
               </button>
               <input
                 ref={fileRef}
@@ -388,9 +394,9 @@ export default function UserBoardDetailPage() {
               <button
                 onClick={() => createPost.mutate()}
                 disabled={!newPost.trim() || createPost.isPending}
-                className="flex items-center gap-1.5 text-xs text-background bg-foreground px-4 py-2 hover:bg-foreground/90 tracking-wider disabled:opacity-50"
+                className="flex items-center gap-1 text-[10px] text-background bg-foreground px-3 py-1 hover:bg-foreground/90 tracking-wider disabled:opacity-50"
               >
-                <Send className="h-3 w-3" />
+                <Send className="h-2.5 w-2.5" />
                 {uploading ? "UPLOADING..." : "POST"}
               </button>
             </div>
