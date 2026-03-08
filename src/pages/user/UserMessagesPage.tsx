@@ -715,6 +715,7 @@ export default function UserMessagesPage() {
           </div>
 
           {/* ── RIGHT: Chat View ── */}
+          {/* ── RIGHT: Chat View (70%) ── */}
           <div className={`flex-1 flex flex-col min-w-0 relative z-10 ${!activeConvo ? "hidden md:flex" : "flex"}`}>
             {activeConvo && activeConversation ? (
               <>
