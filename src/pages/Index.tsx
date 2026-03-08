@@ -1,35 +1,75 @@
 import { AdminLayout } from "@/components/AdminLayout";
-import { PageHeader } from "@/components/PageHeader";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import {
+  LayoutDashboard, Users, FileText, ShoppingBag,
+  AlertTriangle, Megaphone, BarChart3, Settings, LogOut, ChevronRight,
+} from "lucide-react";
+
+const adminSections = [
+  {
+    title: "SYSTEM DASHBOARD",
+    description: "Real-time platform monitoring & system stats",
+    url: "/admin/dashboard",
+    icon: LayoutDashboard,
+    cmd: "01",
+  },
+  {
+    title: "USER REGISTRY",
+    description: "Manage and monitor user accounts",
+    url: "/users",
+    icon: Users,
+    cmd: "02",
+  },
+  {
+    title: "POSTS",
+    description: "Content moderation & post management",
+    url: "/posts",
+    icon: FileText,
+    cmd: "03",
+  },
+  {
+    title: "MARKETPLACE",
+    description: "Listing verification & marketplace oversight",
+    url: "/marketplace",
+    icon: ShoppingBag,
+    cmd: "04",
+  },
+  {
+    title: "REPORTS",
+    description: "User reports, flagged content & investigations",
+    url: "/reports",
+    icon: AlertTriangle,
+    cmd: "05",
+  },
+  {
+    title: "ANNOUNCEMENTS",
+    description: "System announcements & broadcast messages",
+    url: "/announcements",
+    icon: Megaphone,
+    cmd: "06",
+  },
+  {
+    title: "ANALYTICS",
+    description: "Platform metrics & data analysis",
+    url: "/analytics",
+    icon: BarChart3,
+    cmd: "07",
+  },
+  {
+    title: "SETTINGS",
+    description: "System configuration & preferences",
+    url: "/settings",
+    icon: Settings,
+    cmd: "08",
+  },
+];
 
 const Index = () => {
-  const { adminUsername } = useAuth();
-
-  const { data: profileCount } = useQuery({
-    queryKey: ["profiles-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true });
-      return count || 0;
-    },
-  });
-
-  const { data: postCount } = useQuery({
-    queryKey: ["posts-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("posts").select("*", { count: "exact", head: true });
-      return count || 0;
-    },
-  });
-
-  const { data: reportCount } = useQuery({
-    queryKey: ["reports-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("reports").select("*", { count: "exact", head: true });
-      return count || 0;
-    },
-  });
+  const { adminUsername, isAdmin, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const { data: pendingReports } = useQuery({
     queryKey: ["pending-reports"],
@@ -39,94 +79,77 @@ const Index = () => {
     },
   });
 
-  const { data: listingCount } = useQuery({
-    queryKey: ["listings-count"],
+  const { data: profileCount } = useQuery({
+    queryKey: ["profiles-count"],
     queryFn: async () => {
-      const { count } = await supabase.from("marketplace_listings").select("*", { count: "exact", head: true });
+      const { count } = await supabase.from("profiles").select("*", { count: "exact", head: true });
       return count || 0;
     },
   });
 
-  const { data: announcementCount } = useQuery({
-    queryKey: ["announcements-count"],
-    queryFn: async () => {
-      const { count } = await supabase.from("announcements").select("*", { count: "exact", head: true }).eq("is_active", true);
-      return count || 0;
-    },
-  });
-
-  const { data: recentReports } = useQuery({
-    queryKey: ["recent-reports"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("reports")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(5);
-      return data || [];
-    },
-  });
-
-  const systemStats = [
-    { label: "TOTAL USERS", value: String(profileCount ?? 0) },
-    { label: "TOTAL POSTS", value: String(postCount ?? 0) },
-    { label: "TOTAL REPORTS", value: String(reportCount ?? 0) },
-    { label: "PENDING REPORTS", value: String(pendingReports ?? 0) },
-    { label: "MARKETPLACE LISTINGS", value: String(listingCount ?? 0) },
-    { label: "ACTIVE ANNOUNCEMENTS", value: String(announcementCount ?? 0) },
-  ];
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
-    <AdminLayout>
-      <PageHeader title="SYSTEM DASHBOARD" description="// REAL-TIME PLATFORM MONITORING" />
-
-      <div className="p-6 space-y-6">
-        {/* Admin Identity Banner */}
-        <div className="admin-box px-4 py-3">
-          <div className="flex items-center gap-2 text-[10px] mb-1">
-            <span className="admin-text glow-admin font-bold text-sm">{adminUsername || "ADMIN"}</span>
-            <span className="admin-badge">ADMIN</span>
-            <span className="text-muted-foreground ml-2">LOGGED IN — ROOT ACCESS</span>
-            <span className="ml-auto text-muted-foreground">SESSION: ACTIVE</span>
+    <AdminLayout showBack={false}>
+      <div className="px-4 py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <p className="text-foreground text-lg glow-text tracking-widest">NEARVOX</p>
+            <p className="text-[10px] text-muted-foreground tracking-[0.4em]">ADMIN TERMINAL v1.0</p>
           </div>
-          <p className="text-[10px] text-muted-foreground">// All admin actions will be attributed to this identity</p>
-        </div>
-
-        {/* System Status Block */}
-        <div className="terminal-box">
-          <div className="terminal-header">SYSTEM STATUS</div>
-          {systemStats.map((stat) => (
-            <div key={stat.label} className="terminal-row">
-              <span className="terminal-label">{stat.label}</span>
-              <span className="terminal-dots" />
-              <span className="terminal-value">{stat.value}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Reports */}
-        <div className="terminal-box">
-          <div className="terminal-header">RECENT REPORTS</div>
-          {recentReports && recentReports.length > 0 ? (
-            recentReports.map((report: any) => (
-              <div key={report.id} className="py-2 border-b border-border last:border-0">
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="text-muted-foreground">{report.id.slice(0, 8)}</span>
-                  <span className="text-foreground">[{report.report_type?.toUpperCase()}]</span>
-                  <span className={`ml-auto ${
-                    report.status === "pending" ? "text-warning" :
-                    report.status === "reviewing" ? "text-foreground" : "text-muted-foreground"
-                  }`}>{report.status?.toUpperCase()}</span>
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5">
-                  {report.reason} — by {report.reporter?.username || "Unknown"}
-                </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="flex items-center gap-1.5 justify-end">
+                <p className="text-xs admin-text glow-admin font-bold">{adminUsername || "USER"}</p>
+                {isAdmin && <span className="admin-badge">ADMIN</span>}
               </div>
-            ))
-          ) : (
-            <p className="text-xs text-muted-foreground">NO REPORTS FOUND</p>
+              <p className="text-[10px] text-muted-foreground">ROOT ACCESS</p>
+            </div>
+            <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors">
+              <LogOut className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Status bar */}
+        <div className="border border-border p-2 mb-6 flex items-center gap-4 text-[10px] text-muted-foreground">
+          <span>STATUS: <span className="text-foreground">ONLINE</span></span>
+          <span>SESSION: <span className="text-foreground">ACTIVE</span></span>
+          <span>USERS: <span className="text-foreground">{profileCount ?? "..."}</span></span>
+          {(pendingReports ?? 0) > 0 && (
+            <span className="text-warning">⚠ {pendingReports} PENDING REPORTS</span>
           )}
         </div>
+
+        {/* Command menu as topic list */}
+        <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-3">COMMAND MENU</p>
+
+        <div className="space-y-1">
+          {adminSections.map((section) => {
+            const Icon = section.icon;
+            return (
+              <button
+                key={section.url}
+                onClick={() => navigate(section.url)}
+                className="w-full text-left p-3 border border-border hover:border-foreground/30 hover:bg-muted/30 transition-none group flex items-center gap-3"
+              >
+                <span className="text-[10px] text-muted-foreground">[{section.cmd}]</span>
+                <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-foreground">{section.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{section.description}</p>
+                </div>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 shrink-0" />
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="text-[10px] text-muted-foreground mt-6">// Select a command to proceed</p>
       </div>
     </AdminLayout>
   );
