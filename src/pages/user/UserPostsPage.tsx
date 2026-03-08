@@ -238,6 +238,18 @@ export default function UserPostsPage() {
     queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] });
   };
 
+  const handleTopicLike = async (topicId: string) => {
+    if (!user) return;
+    const isLiked = myTopicLikes?.has(topicId);
+    if (isLiked) {
+      await supabase.from("topic_likes").delete().eq("topic_id", topicId).eq("user_id", user.id);
+    } else {
+      await supabase.from("topic_likes").insert({ topic_id: topicId, user_id: user.id });
+    }
+    queryClient.invalidateQueries({ queryKey: ["my-topic-likes"] });
+    queryClient.invalidateQueries({ queryKey: ["user-topics-feed"] });
+  };
+
   const handleDelete = async (item: UnifiedItem) => {
     if (item.type === "post") {
       if (item.attachments.length > 0) {
