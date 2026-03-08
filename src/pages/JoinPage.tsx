@@ -27,6 +27,7 @@ export default function JoinPage() {
   const [name, setName] = useState("");
   const [anonymousName, setAnonymousName] = useState("");
   const [region, setRegion] = useState("");
+  const [selectedAvatar, setSelectedAvatar] = useState("user-1");
   const [code, setCode] = useState(inviteCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
