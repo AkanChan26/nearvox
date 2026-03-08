@@ -280,12 +280,12 @@ export default function UserPostsPage() {
     setEditContent("");
   };
 
-  const handleReport = async (postId: string) => {
+  const handleReport = async (itemId: string, itemType: "post" | "topic" = "post") => {
     if (!user || !reportReason.trim()) return;
     const { error } = await supabase.from("reports").insert({
       reporter_id: user.id,
-      reported_post_id: postId,
-      report_type: "post",
+      reported_post_id: itemType === "post" ? itemId : null,
+      report_type: itemType,
       reason: reportReason.trim(),
     });
     if (error) toast.error("Failed to report");
