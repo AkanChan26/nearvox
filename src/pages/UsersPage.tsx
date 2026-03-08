@@ -6,9 +6,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { Ticket, Copy, Check } from "lucide-react";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
@@ -19,7 +22,6 @@ export default function UsersPage() {
       if (search) {
         query = query.ilike("username", `%${search}%`);
       }
-      // Exclude the current admin from the list
       if (user?.id) {
         query = query.neq("user_id", user.id);
       }
@@ -27,6 +29,21 @@ export default function UsersPage() {
       if (error) throw error;
       return data;
     },
+  });
+
+  // Admin's tickets
+  const { data: tickets, refetch: refetchTickets } = useQuery({
+    queryKey: ["admin-tickets", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("invite_tickets")
+        .select("*")
+        .eq("owner_id", user!.id)
+        .eq("is_used", false)
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!user,
   });
 
   const handleStatusChange = async (userId: string, newStatus: "suspended" | "banned") => {
@@ -37,6 +54,31 @@ export default function UsersPage() {
       toast.success(`User ${newStatus}`);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     }
+  };
+
+  const generateTicket = async () => {
+    if (!user) return;
+    setGenerating(true);
+    const { data, error } = await supabase
+      .from("invite_tickets")
+      .insert({ owner_id: user.id })
+      .select()
+      .single();
+    if (error) {
+      toast.error("Failed to generate ticket");
+    } else {
+      toast.success("Invite ticket generated");
+      refetchTickets();
+    }
+    setGenerating(false);
+  };
+
+  const copyTicketLink = (code: string) => {
+    const link = `${window.location.origin}/join?code=${code}`;
+    navigator.clipboard.writeText(link);
+    setCopiedCode(code);
+    toast.success("Invite link copied!");
+    setTimeout(() => setCopiedCode(null), 2000);
   };
 
   return (
@@ -50,14 +92,49 @@ export default function UsersPage() {
         />
       </PageHeader>
 
-      <div className="p-6">
+      <div className="p-6 space-y-6">
+        {/* Invite Ticket Generator */}
+        <div className="terminal-box">
+          <div className="terminal-header flex items-center justify-between">
+            <span>INVITE TICKETS — {tickets?.length ?? 0} AVAILABLE</span>
+            <button
+              onClick={generateTicket}
+              disabled={generating}
+              className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50 tracking-normal"
+            >
+              <Ticket className="h-3 w-3" />
+              {generating ? "GENERATING..." : "[+ GENERATE TICKET]"}
+            </button>
+          </div>
+
+          {tickets && tickets.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {tickets.map((ticket) => (
+                <div key={ticket.id} className="flex items-center justify-between border border-border p-2">
+                  <span className="text-xs text-foreground font-mono tracking-wider">{ticket.invite_code}</span>
+                  <button
+                    onClick={() => copyTicketLink(ticket.invite_code)}
+                    className="text-muted-foreground hover:text-foreground ml-2"
+                  >
+                    {copiedCode === ticket.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">NO UNUSED TICKETS — GENERATE ONE ABOVE</p>
+          )}
+        </div>
+
+        {/* User List */}
         <div className="terminal-box">
           <div className="terminal-header">REGISTERED USERS — {users?.length ?? 0} RECORDS</div>
 
           <div className="flex items-center text-[10px] text-muted-foreground tracking-wider pb-2 mb-2 border-b border-border">
             <span className="w-24">ID</span>
+            <span className="w-28">NAME</span>
             <span className="flex-1">HANDLE</span>
-            <span className="w-28">SECTOR</span>
+            <span className="w-28">REGION</span>
             <span className="w-24">STATUS</span>
             <span className="w-32 text-right">ACTIONS</span>
           </div>
@@ -65,22 +142,23 @@ export default function UsersPage() {
           {isLoading ? (
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
           ) : users && users.length > 0 ? (
-            users.map((user) => (
-              <div key={user.id} className="flex items-center text-xs py-2 border-b border-border last:border-0 hover:bg-muted/50 transition-none">
-                <span className="w-24 text-muted-foreground">{user.id.slice(0, 8)}</span>
-                <span className={`flex-1 ${user.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
-                  {user.username}
-                  {user.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
+            users.map((u) => (
+              <div key={u.id} className="flex items-center text-xs py-2 border-b border-border last:border-0 hover:bg-muted/50 transition-none">
+                <span className="w-24 text-muted-foreground">{u.id.slice(0, 8)}</span>
+                <span className="w-28 text-muted-foreground">{(u as any).name || "—"}</span>
+                <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                  {u.username}
+                  {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
                 </span>
-                <span className="w-28 text-muted-foreground">{user.location || "—"}</span>
+                <span className="w-28 text-muted-foreground">{u.location || "—"}</span>
                 <span className={`w-24 ${
-                  user.status === "active" ? "text-foreground" :
-                  user.status === "suspended" ? "text-warning" : "text-destructive"
-                }`}>{user.status?.toUpperCase()}</span>
+                  u.status === "active" ? "text-foreground" :
+                  u.status === "suspended" ? "text-warning" : "text-destructive"
+                }`}>{u.status?.toUpperCase()}</span>
                 <span className="w-32 text-right space-x-2">
                   <button className="text-foreground hover:underline">[VIEW]</button>
-                  <button onClick={() => handleStatusChange(user.user_id, "suspended")} className="text-warning hover:underline">[SUS]</button>
-                  <button onClick={() => handleStatusChange(user.user_id, "banned")} className="text-destructive hover:underline">[BAN]</button>
+                  <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-warning hover:underline">[SUS]</button>
+                  <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-destructive hover:underline">[BAN]</button>
                 </span>
               </div>
             ))

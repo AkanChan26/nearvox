@@ -10,6 +10,9 @@ export default function JoinPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [region, setRegion] = useState("");
   const [code, setCode] = useState(inviteCode);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -40,11 +43,23 @@ export default function JoinPage() {
       return;
     }
 
+    if (!name.trim() || !username.trim() || !region.trim()) {
+      setError("ALL FIELDS ARE REQUIRED");
+      return;
+    }
+
     setLoading(true);
 
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          name: name.trim(),
+          username: username.trim(),
+          region: region.trim(),
+        },
+      },
     });
 
     if (signUpError) {
@@ -62,7 +77,6 @@ export default function JoinPage() {
     }
 
     setLoading(false);
-    // Redirect to login
     navigate("/login?joined=true");
   };
 
@@ -82,9 +96,9 @@ export default function JoinPage() {
         <div className="terminal-box">
           <div className="terminal-header">JOIN THE NETWORK</div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <p className="text-[10px] text-muted-foreground mb-1">&gt; INVITE CODE:</p>
+              <p className="text-[10px] text-muted-foreground mb-1">&gt; INVITE TICKET:</p>
               <div className="relative">
                 <input
                   type="text"
@@ -103,6 +117,42 @@ export default function JoinPage() {
             </div>
 
             <div>
+              <p className="text-[10px] text-muted-foreground mb-1">&gt; NAME:</p>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your full name"
+                className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">&gt; USERNAME:</p>
+              <input
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Choose a handle"
+                className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+
+            <div>
+              <p className="text-[10px] text-muted-foreground mb-1">&gt; REGION:</p>
+              <input
+                type="text"
+                value={region}
+                onChange={(e) => setRegion(e.target.value)}
+                placeholder="e.g. Mumbai, Pune, Ahmedabad..."
+                className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+
+            <div>
               <p className="text-[10px] text-muted-foreground mb-1">&gt; EMAIL:</p>
               <input
                 type="email"
@@ -112,8 +162,9 @@ export default function JoinPage() {
                 required
               />
             </div>
+
             <div>
-              <p className="text-[10px] text-muted-foreground mb-1">&gt; PASSWORD:</p>
+              <p className="text-[10px] text-muted-foreground mb-1">&gt; CREATE PASSWORD:</p>
               <input
                 type="password"
                 value={password}
@@ -144,7 +195,7 @@ export default function JoinPage() {
             </button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground mt-3">// Access requires a valid invitation</p>
+          <p className="text-[10px] text-muted-foreground mt-3">// Access requires a valid invitation ticket</p>
         </div>
       </div>
     </div>
