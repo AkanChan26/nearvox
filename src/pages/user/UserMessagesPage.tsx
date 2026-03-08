@@ -9,6 +9,7 @@ import {
   Send, Users, User, X, Search, ArrowLeft,
   MessageSquare, Hash, UserPlus, MoreVertical,
   Pencil, Trash2, Ban, SmilePlus, Check, Shield,
+  CheckCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -74,6 +75,9 @@ export default function UserMessagesPage() {
   const [editText, setEditText] = useState("");
   const [showReactions, setShowReactions] = useState<string | null>(null);
   const [showConvoMenu, setShowConvoMenu] = useState(false);
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const presenceChannelRef = useRef<any>(null);
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({
@@ -259,6 +263,63 @@ export default function UserMessagesPage() {
     return () => { supabase.removeChannel(channel); };
   }, [user, activeConvo]);
 
+  // ── TYPING PRESENCE ──
+  useEffect(() => {
+    if (!user || !activeConvo) {
+      setTypingUsers([]);
+      return;
+    }
+    const channel = supabase.channel(`typing:${activeConvo}`, {
+      config: { presence: { key: user.id } },
+    });
+    channel.on("presence", { event: "sync" }, () => {
+      const state = channel.presenceState();
+      const typers: string[] = [];
+      for (const [uid, entries] of Object.entries(state)) {
+        if (uid !== user.id && Array.isArray(entries) && entries.some((e: any) => e.is_typing)) {
+          typers.push(uid);
+        }
+      }
+      setTypingUsers(typers);
+    });
+    channel.subscribe(async (status) => {
+      if (status === "SUBSCRIBED") {
+        await channel.track({ is_typing: false });
+      }
+    });
+    presenceChannelRef.current = channel;
+    return () => {
+      supabase.removeChannel(channel);
+      presenceChannelRef.current = null;
+    };
+  }, [user, activeConvo]);
+
+  const broadcastTyping = useCallback(() => {
+    const ch = presenceChannelRef.current;
+    if (!ch) return;
+    ch.track({ is_typing: true });
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      ch.track({ is_typing: false });
+    }, 2000);
+  }, []);
+
+  // ── READ RECEIPT HELPERS ──
+  const getReadStatus = (msg: ChatMessage): "sent" | "delivered" | "read" => {
+    if (msg.sender_id !== user?.id) return "sent";
+    if (!allMembers || !activeConvo) return "sent";
+    const otherMembers = allMembers.filter(
+      (m) => m.conversation_id === activeConvo && m.user_id !== user?.id
+    );
+    if (otherMembers.length === 0) return "sent";
+    const allRead = otherMembers.every((m) => {
+      const readAt = m.last_read_at ? new Date(m.last_read_at).getTime() : 0;
+      return readAt >= new Date(msg.created_at).getTime();
+    });
+    if (allRead) return "read";
+    return "delivered";
+  };
+
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
   useEffect(() => { if (activeConvo && user) markAsRead(activeConvo); }, [activeConvo, user]);
 
@@ -374,7 +435,11 @@ export default function UserMessagesPage() {
       conversation_id: activeConvo, sender_id: user.id, content: msgText.trim(),
     });
     if (error) toast.error("Failed to send");
-    else { setMsgText(""); markAsRead(activeConvo); }
+    else {
+      setMsgText("");
+      markAsRead(activeConvo);
+      presenceChannelRef.current?.track({ is_typing: false });
+    }
     setSending(false);
   };
 
@@ -735,6 +800,16 @@ export default function UserMessagesPage() {
                                 <p className="text-[8px] text-muted-foreground/60">
                                   {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
                                 </p>
+                                {msg.sender_id === user?.id && (() => {
+                                  const status = getReadStatus(msg);
+                                  return status === "read" ? (
+                                    <CheckCheck className="h-3 w-3 text-primary" />
+                                  ) : status === "delivered" ? (
+                                    <CheckCheck className="h-3 w-3 text-muted-foreground/60" />
+                                  ) : (
+                                    <Check className="h-3 w-3 text-muted-foreground/60" />
+                                  );
+                                })()}
                               </div>
                             </div>
 
@@ -780,13 +855,22 @@ export default function UserMessagesPage() {
                   </div>
                 )}
 
+                {/* Typing indicator */}
+                {typingUsers.length > 0 && (
+                  <div className="px-3 py-1 border-t border-border">
+                    <p className="text-[9px] text-muted-foreground animate-pulse">
+                      {typingUsers.map(getDisplayName).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing...
+                    </p>
+                  </div>
+                )}
+
                 {/* Input */}
                 <div className="p-2 border-t border-border flex gap-2">
                   {otherIsBlocked ? (
                     <p className="flex-1 text-[10px] text-muted-foreground text-center py-1.5">UNBLOCK USER TO SEND MESSAGES</p>
                   ) : (
                     <>
-                      <input value={msgText} onChange={(e) => setMsgText(e.target.value)} onKeyDown={handleKeyDown}
+                      <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
                         placeholder="Type a message..."
                         className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground" />
                       <button onClick={sendMessage} disabled={sending || !msgText.trim()}
