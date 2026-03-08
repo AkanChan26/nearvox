@@ -6,50 +6,50 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 120 100% 50%;
+    --background: 0 0% 2%;
+    --foreground: 120 60% 42%;
 
-    --card: 0 0% 3%;
-    --card-foreground: 120 100% 50%;
+    --card: 0 0% 4%;
+    --card-foreground: 120 60% 42%;
 
-    --popover: 0 0% 3%;
-    --popover-foreground: 120 100% 50%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 120 60% 42%;
 
-    --primary: 120 100% 50%;
+    --primary: 120 60% 42%;
     --primary-foreground: 0 0% 0%;
 
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 120 60% 40%;
+    --secondary: 0 0% 7%;
+    --secondary-foreground: 120 40% 35%;
 
     --muted: 0 0% 6%;
-    --muted-foreground: 120 30% 30%;
+    --muted-foreground: 120 20% 28%;
 
-    --accent: 120 100% 50%;
+    --accent: 120 60% 42%;
     --accent-foreground: 0 0% 0%;
 
-    --destructive: 0 100% 50%;
+    --destructive: 0 80% 45%;
     --destructive-foreground: 0 0% 0%;
 
-    --border: 120 100% 12%;
-    --input: 0 0% 8%;
-    --ring: 120 100% 50%;
+    --border: 120 40% 10%;
+    --input: 0 0% 6%;
+    --ring: 120 60% 42%;
 
     --radius: 0px;
 
-    --sidebar-background: 0 0% 0%;
-    --sidebar-foreground: 120 30% 30%;
-    --sidebar-primary: 120 100% 50%;
+    --sidebar-background: 0 0% 2%;
+    --sidebar-foreground: 120 20% 28%;
+    --sidebar-primary: 120 60% 42%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 6%;
-    --sidebar-accent-foreground: 120 100% 50%;
-    --sidebar-border: 120 100% 10%;
-    --sidebar-ring: 120 100% 50%;
+    --sidebar-accent: 0 0% 5%;
+    --sidebar-accent-foreground: 120 60% 42%;
+    --sidebar-border: 120 40% 8%;
+    --sidebar-ring: 120 60% 42%;
 
-    --warning: 45 100% 50%;
+    --warning: 45 80% 45%;
     --warning-foreground: 0 0% 0%;
-    --success: 120 100% 50%;
+    --success: 120 60% 42%;
     --success-foreground: 0 0% 0%;
-    --info: 120 60% 40%;
+    --info: 120 40% 35%;
     --info-foreground: 0 0% 0%;
 
     /* Admin identity color - cyber blue */
@@ -72,8 +72,8 @@
   }
 
   ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: hsl(0 0% 0%); }
-  ::-webkit-scrollbar-thumb { background: hsl(120 100% 20%); }
+  ::-webkit-scrollbar-track { background: hsl(0 0% 2%); }
+  ::-webkit-scrollbar-thumb { background: hsl(120 40% 15%); }
 }
 
 @layer utilities {
@@ -97,15 +97,15 @@
     @apply flex-1 mx-2 border-b border-dotted border-border;
   }
   .glow-text {
-    text-shadow: 0 0 8px hsl(120 100% 50% / 0.6), 0 0 20px hsl(120 100% 50% / 0.3);
+    text-shadow: 0 0 6px hsl(120 60% 42% / 0.4), 0 0 15px hsl(120 60% 42% / 0.15);
   }
   .glow-admin {
-    text-shadow: 0 0 8px hsl(199 91% 56% / 0.6), 0 0 20px hsl(199 91% 56% / 0.3);
+    text-shadow: 0 0 6px hsl(199 91% 56% / 0.4), 0 0 15px hsl(199 91% 56% / 0.15);
   }
   .scanline {
     background: repeating-linear-gradient(
       0deg, transparent, transparent 2px,
-      hsl(120 100% 50% / 0.02) 2px, hsl(120 100% 50% / 0.02) 4px
+      hsl(120 60% 42% / 0.015) 2px, hsl(120 60% 42% / 0.015) 4px
     );
     pointer-events: none;
   }
