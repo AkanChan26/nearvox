@@ -27,6 +27,7 @@ import UserSettingsPage from "./pages/user/UserSettingsPage";
 import UserInvitesPage from "./pages/user/UserInvitesPage";
 import UserAnnouncementsPage from "./pages/user/UserAnnouncementsPage";
 import UserMessagesPage from "./pages/user/UserMessagesPage";
+import UserNotificationsPage from "./pages/user/UserNotificationsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
