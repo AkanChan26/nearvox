@@ -178,6 +178,9 @@ export default function UserDashboard() {
           </div>
         </div>
 
+        {/* Network Node Map */}
+        <NetworkNodeMap />
+
         {/* Quick Access Row */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-1.5 mb-6">
           <button
