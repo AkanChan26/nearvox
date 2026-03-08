@@ -157,6 +157,17 @@ export function InviteTicketPanel({ onClose, embedded = false }: Props) {
         <p className="text-[10px] text-muted-foreground mt-4">
           // Share your invite link to bring someone into the network
         </p>
+      </>
+  );
+
+  if (embedded) {
+    return <div className="border border-border bg-card p-4">{content}</div>;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80">
+      <div className="w-full max-w-md border border-border bg-card p-4">
+        {content}
       </div>
     </div>
   );
