@@ -157,7 +157,7 @@ export default function UserDashboard() {
             &gt; NAVIGATE — SELECT MODULE
           </p>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-1.5">
-            {TOPIC_CATEGORIES.map((cat) => {
+            {TOPIC_CATEGORIES.filter((cat) => cat.value !== "random").map((cat) => {
               const Icon = cat.icon;
               return (
                 <button
@@ -175,6 +175,18 @@ export default function UserDashboard() {
                 </button>
               );
             })}
+            <button
+              onClick={() => navigate("/user/posts")}
+              className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[9px] text-muted-foreground font-mono">[10]</span>
+                <MessageSquare className="h-3 w-3 text-muted-foreground group-hover:text-foreground" />
+              </div>
+              <p className="text-[10px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                ALL POSTS
+              </p>
+            </button>
           </div>
         </div>
 
