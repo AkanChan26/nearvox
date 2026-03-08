@@ -650,15 +650,15 @@ export default function UserMessagesPage() {
                   return (
                     <button key={convo.id} onClick={() => setActiveConvo(convo.id)}
                       className={`w-full text-left p-3 border-b border-border transition-none ${isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"}`}>
-                      <div className="flex items-center gap-2">
-                        {unread && <span className="h-2 w-2 rounded-full bg-primary shrink-0" />}
-                        {!unread && (isGroup ? <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : 
+                      <div className="flex items-center gap-2.5">
+                        {unread && <span className="h-2.5 w-2.5 rounded-full bg-primary shrink-0" />}
+                        {!unread && (isGroup ? <Hash className="h-4 w-4 text-muted-foreground shrink-0" /> : 
                           <div className="relative shrink-0">
-                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            <User className="h-4 w-4 text-muted-foreground" />
                             {dmOtherId && <OnlineIndicator isOnline={isOnline(dmOtherId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                           </div>
                         )}
-                        <span className={`text-[11px] font-mono truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
+                        <span className={`text-[11px] truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
                         {!isGroup && dmOtherId && isOnline(dmOtherId) && (
