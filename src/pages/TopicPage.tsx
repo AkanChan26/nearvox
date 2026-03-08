@@ -176,6 +176,7 @@ export default function TopicPage() {
     queryClient.invalidateQueries({ queryKey: ["my-topic-like", id] });
     queryClient.invalidateQueries({ queryKey: ["my-reply-likes"] });
     queryClient.invalidateQueries({ queryKey: ["reply-like-counts"] });
+    queryClient.invalidateQueries({ queryKey: ["my-reports-topic"] });
   };
 
   // --- Topic Like ---
