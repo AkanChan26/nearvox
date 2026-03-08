@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   MessageSquare, LogOut, ChevronRight,
   Terminal, User, TrendingUp, Hash, Plus,
-  Megaphone, Mail, Settings, Ticket,
+  Megaphone, Mail, Settings, Ticket, FileText,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
