@@ -444,7 +444,7 @@ const Index = () => {
             ))}
           </div>
 
-          {/* ── SYSTEM STATUS ── */
+          {/* ── SYSTEM STATUS ── */}
           <div className="border border-border bg-card p-3">
             <div className="flex items-center gap-2 mb-2">
               <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
