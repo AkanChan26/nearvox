@@ -47,6 +47,36 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          invite_code: string
+          is_used: boolean
+          owner_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_used?: boolean
+          owner_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invite_code?: string
+          is_used?: boolean
+          owner_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       marketplace_listings: {
         Row: {
           created_at: string
@@ -127,9 +157,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          anonymous_name: string | null
           created_at: string
           id: string
           interests: string[] | null
+          invited_by: string | null
           is_admin: boolean
           location: string | null
           status: Database["public"]["Enums"]["content_status"]
@@ -138,9 +170,11 @@ export type Database = {
           username: string
         }
         Insert: {
+          anonymous_name?: string | null
           created_at?: string
           id?: string
           interests?: string[] | null
+          invited_by?: string | null
           is_admin?: boolean
           location?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -149,9 +183,11 @@ export type Database = {
           username: string
         }
         Update: {
+          anonymous_name?: string | null
           created_at?: string
           id?: string
           interests?: string[] | null
+          invited_by?: string | null
           is_admin?: boolean
           location?: string | null
           status?: Database["public"]["Enums"]["content_status"]
@@ -160,6 +196,38 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          topic_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          topic_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          topic_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "replies_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reports: {
         Row: {
@@ -211,6 +279,51 @@ export type Database = {
           },
         ]
       }
+      topics: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_announcement: boolean
+          is_pinned: boolean
+          last_activity_at: string
+          location: string | null
+          replies_count: number
+          title: string
+          updated_at: string
+          user_id: string
+          views_count: number
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_announcement?: boolean
+          is_pinned?: boolean
+          last_activity_at?: string
+          location?: string | null
+          replies_count?: number
+          title: string
+          updated_at?: string
+          user_id: string
+          views_count?: number
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_announcement?: boolean
+          is_pinned?: boolean
+          last_activity_at?: string
+          location?: string | null
+          replies_count?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -234,6 +347,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_anonymous_name: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
