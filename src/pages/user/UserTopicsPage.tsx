@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
@@ -8,10 +8,15 @@ import { MessageSquare, Eye, Clock, Plus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES, getCategoryLabel, getCategoryIcon } from "@/lib/categories";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UserTopicsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isAdmin } = useAuth();
   const [searchParams] = useSearchParams();
+  const baseTopicsPath = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topics" : "/user/topics";
+  const topicPathPrefix = isAdmin && location.pathname.startsWith("/admin") ? "/admin/topic" : "/topic";
   const categoryFilter = searchParams.get("category") || "";
   const [showCreate, setShowCreate] = useState(false);
 
@@ -77,7 +82,7 @@ export default function UserTopicsPage() {
         {/* Category filter tabs */}
         <div className="flex flex-wrap gap-1 mb-4">
           <button
-            onClick={() => navigate("/user/topics")}
+            onClick={() => navigate(baseTopicsPath)}
             className={`text-[9px] px-2 py-1 border transition-none ${
               !categoryFilter
                 ? "border-foreground text-foreground bg-foreground/10"
@@ -89,7 +94,7 @@ export default function UserTopicsPage() {
           {TOPIC_CATEGORIES.map((cat) => (
             <button
               key={cat.value}
-              onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+              onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
               className={`text-[9px] px-2 py-1 border transition-none ${
                 categoryFilter === cat.value
                   ? "border-foreground text-foreground bg-foreground/10"
@@ -117,7 +122,7 @@ export default function UserTopicsPage() {
               return (
                 <button
                   key={topic.id}
-                  onClick={() => navigate(`/topic/${topic.id}`)}
+                  onClick={() => navigate(`${topicPathPrefix}/${topic.id}`)}
                   className={`text-left p-3 border transition-none group flex flex-col gap-1.5 ${
                     isAnnouncement
                       ? "admin-box border-[hsl(var(--admin-border))] col-span-1 md:col-span-2"

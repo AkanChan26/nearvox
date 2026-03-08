@@ -47,6 +47,8 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
             <Route path="/topic/:id" element={<ProtectedRoute><TopicPage /></ProtectedRoute>} />
             <Route path="/user/topics" element={<ProtectedRoute><UserTopicsPage /></ProtectedRoute>} />
+            <Route path="/admin/topic/:id" element={<AdminRoute><TopicPage /></AdminRoute>} />
+            <Route path="/admin/topics" element={<AdminRoute><UserTopicsPage /></AdminRoute>} />
             <Route path="/user/posts" element={<ProtectedRoute><UserPostsPage /></ProtectedRoute>} />
             <Route path="/user/marketplace" element={<ProtectedRoute><UserMarketplacePage /></ProtectedRoute>} />
             <Route path="/user/settings" element={<ProtectedRoute><UserSettingsPage /></ProtectedRoute>} />

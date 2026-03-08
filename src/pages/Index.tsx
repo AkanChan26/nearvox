@@ -222,7 +222,7 @@ const Index = () => {
                 return (
                   <button
                     key={cat.value}
-                    onClick={() => navigate(`/user/topics?category=${cat.value}`)}
+                    onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
                     className="text-left p-3 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 transition-none group"
                   >
                     <div className="flex items-center gap-1.5 mb-1">
@@ -321,7 +321,7 @@ const Index = () => {
                 {recentTopics.map((topic: any) => (
                   <button
                     key={topic.id}
-                    onClick={() => navigate(`/topic/${topic.id}`)}
+                    onClick={() => navigate(`/admin/topic/${topic.id}`)}
                     className="w-full text-left text-[11px] flex items-center gap-2 hover:bg-foreground/5 px-1 py-1 transition-none group"
                   >
                     <Hash className="h-2.5 w-2.5 text-foreground shrink-0" />
