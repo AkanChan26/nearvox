@@ -908,7 +908,7 @@ export default function UserMessagesPage() {
                                     <button onClick={() => { setEditingMsg(null); setEditText(""); }} className="text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
                                   </div>
                                 ) : (
-                                  <p className="text-[13px] text-foreground break-words leading-relaxed whitespace-pre-wrap">{displayContent}</p>
+                                  <p className="text-[12px] text-foreground break-words leading-snug whitespace-pre-wrap inline">{displayContent}</p>
                                 )}
                                 <div className="flex items-center justify-end gap-1.5 mt-1">
                                   {msg.is_edited && <span className="text-[9px] text-muted-foreground/40 italic">edited</span>}
