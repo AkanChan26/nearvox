@@ -701,17 +701,17 @@ export default function UserMessagesPage() {
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="p-2 border-b border-border flex items-center gap-2">
-                  <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground">
+                <div className="p-3 border-b border-border flex items-center gap-2.5">
+                  <button onClick={() => { setActiveConvo(null); setShowConvoMenu(false); }} className="md:hidden text-muted-foreground hover:text-foreground p-1">
                     <ArrowLeft className="h-4 w-4" />
                   </button>
-                  {activeConversation.type === "group" ? <Hash className="h-3.5 w-3.5 text-muted-foreground" /> : 
+                  {activeConversation.type === "group" ? <Hash className="h-4 w-4 text-muted-foreground" /> : 
                     <div className="relative">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                      <User className="h-4 w-4 text-muted-foreground" />
                       {otherUserId && <OnlineIndicator isOnline={isOnline(otherUserId)} size="sm" className="absolute -bottom-0.5 -right-0.5" />}
                     </div>
                   }
-                  <span className="text-[11px] text-foreground font-mono truncate">{getConvoDisplayName(activeConversation)}</span>
+                  <span className="text-[11px] text-foreground truncate">{getConvoDisplayName(activeConversation)}</span>
                   {activeConversation.type === "direct" && otherUserId && (
                     <span className={`text-[9px] ${isOnline(otherUserId) ? "text-foreground" : "text-muted-foreground"}`}>
                       {isOnline(otherUserId) ? "online" : "offline"}
