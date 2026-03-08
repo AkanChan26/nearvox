@@ -687,9 +687,10 @@ export default function UserMessagesPage() {
                   );
                 })
               ) : (
-                <div className="p-4 text-center">
-                  <MessageSquare className="h-6 w-6 text-muted-foreground mx-auto mb-2 opacity-40" />
+                <div className="p-6 text-center">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground mx-auto mb-3 opacity-40" />
                   <p className="text-[10px] text-muted-foreground">NO CONVERSATIONS YET</p>
+                  <p className="text-[9px] text-muted-foreground/50 mt-1">Start a DM or create a group above</p>
                 </div>
               )}
             </div>
