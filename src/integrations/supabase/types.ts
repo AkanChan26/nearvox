@@ -140,6 +140,33 @@ export type Database = {
         }
         Relationships: []
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_system: boolean
+          recipient_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          recipient_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          recipient_id?: string | null
+          sender_id?: string
+        }
+        Relationships: []
+      }
       post_likes: {
         Row: {
           created_at: string
