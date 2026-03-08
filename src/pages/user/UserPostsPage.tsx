@@ -471,7 +471,7 @@ export default function UserPostsPage() {
                   {/* Title for topics */}
                   {item.title && (
                     <button
-                      onClick={() => navigate(`/topic/${item.id}`)}
+                      onClick={() => navigate(`${topicPrefix}/${item.id}`)}
                       className="text-sm text-foreground font-bold mb-1 hover:underline text-left block"
                     >
                       {item.title}
