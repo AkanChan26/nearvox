@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,7 +6,7 @@ import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { toast } from "sonner";
 import {
-  Send, Users, User, X, Plus, Search, ArrowLeft,
+  Send, Users, User, X, Search, ArrowLeft,
   MessageSquare, Hash, UserPlus,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -36,6 +36,12 @@ type MemberProfile = {
   avatar: string | null;
 };
 
+type ConvoMember = {
+  conversation_id: string;
+  user_id: string;
+  last_read_at: string | null;
+};
+
 export default function UserMessagesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -54,7 +60,6 @@ export default function UserMessagesPage() {
 
   // ── QUERIES ──
 
-  // My conversations
   const { data: conversations, isLoading: convosLoading } = useQuery({
     queryKey: ["my-conversations", user?.id],
     queryFn: async () => {
@@ -74,23 +79,22 @@ export default function UserMessagesPage() {
     enabled: !!user,
   });
 
-  // Members of all my conversations (for display names)
   const convoIds = conversations?.map((c) => c.id) || [];
+
   const { data: allMembers } = useQuery({
     queryKey: ["convo-members", convoIds],
     queryFn: async () => {
       if (convoIds.length === 0) return [];
       const { data } = await supabase
         .from("conversation_members")
-        .select("conversation_id, user_id")
+        .select("conversation_id, user_id, last_read_at")
         .in("conversation_id", convoIds);
-      return data || [];
+      return (data || []) as ConvoMember[];
     },
     enabled: convoIds.length > 0,
   });
 
-  // Profiles for members
-  const allMemberUserIds = [...new Set(allMembers?.map((m: any) => m.user_id) || [])];
+  const allMemberUserIds = [...new Set(allMembers?.map((m) => m.user_id) || [])];
   const { data: memberProfiles } = useQuery({
     queryKey: ["member-profiles", allMemberUserIds],
     queryFn: async () => {
@@ -104,7 +108,6 @@ export default function UserMessagesPage() {
     enabled: allMemberUserIds.length > 0,
   });
 
-  // Active conversation messages
   const { data: chatMessages } = useQuery({
     queryKey: ["chat-messages", activeConvo],
     queryFn: async () => {
@@ -118,7 +121,6 @@ export default function UserMessagesPage() {
     enabled: !!activeConvo,
   });
 
-  // Active conversation members
   const { data: activeMembers } = useQuery({
     queryKey: ["active-convo-members", activeConvo],
     queryFn: async () => {
@@ -131,7 +133,6 @@ export default function UserMessagesPage() {
     enabled: !!activeConvo,
   });
 
-  // Search users for DM / group
   const searchTerm = showNewDm ? dmSearch : showNewGroup ? groupMemberSearch : showAddMember ? addMemberSearch : "";
   const { data: searchResults } = useQuery({
     queryKey: ["search-users-chat", searchTerm],
@@ -148,12 +149,10 @@ export default function UserMessagesPage() {
     enabled: searchTerm.length >= 2,
   });
 
-  // Last message per conversation (for preview)
   const { data: lastMessages } = useQuery({
     queryKey: ["last-messages", convoIds],
     queryFn: async () => {
       if (convoIds.length === 0) return {};
-      // Fetch last message for each conversation
       const results: Record<string, ChatMessage> = {};
       for (const cid of convoIds) {
         const { data } = await supabase
@@ -169,32 +168,72 @@ export default function UserMessagesPage() {
     enabled: convoIds.length > 0,
   });
 
+  // ── UNREAD CHECK ──
+  const hasUnread = (convoId: string): boolean => {
+    if (!user || !allMembers || !lastMessages) return false;
+    const myMembership = allMembers.find(
+      (m) => m.conversation_id === convoId && m.user_id === user.id
+    );
+    const lastMsg = lastMessages[convoId];
+    if (!myMembership || !lastMsg) return false;
+    // If sender is me, not unread
+    if (lastMsg.sender_id === user.id) return false;
+    const readAt = myMembership.last_read_at ? new Date(myMembership.last_read_at).getTime() : 0;
+    const msgAt = new Date(lastMsg.created_at).getTime();
+    return msgAt > readAt;
+  };
+
+  // Mark conversation as read
+  const markAsRead = async (convoId: string) => {
+    if (!user) return;
+    await supabase
+      .from("conversation_members")
+      .update({ last_read_at: new Date().toISOString() })
+      .eq("conversation_id", convoId)
+      .eq("user_id", user.id);
+    queryClient.invalidateQueries({ queryKey: ["convo-members"] });
+  };
+
   // ── REALTIME ──
   useEffect(() => {
-    if (!activeConvo) return;
+    if (!user) return;
+    // Listen for new messages across ALL my conversations
     const channel = supabase
-      .channel(`chat-${activeConvo}`)
+      .channel("chat-global")
       .on("postgres_changes", {
         event: "INSERT",
         schema: "public",
         table: "chat_messages",
-        filter: `conversation_id=eq.${activeConvo}`,
-      }, () => {
-        queryClient.invalidateQueries({ queryKey: ["chat-messages", activeConvo] });
+      }, (payload: any) => {
+        const newMsg = payload.new;
         queryClient.invalidateQueries({ queryKey: ["last-messages"] });
         queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
+        queryClient.invalidateQueries({ queryKey: ["convo-members"] });
+        // If this message is for the active conversation, refresh messages and mark read
+        if (newMsg.conversation_id === activeConvo) {
+          queryClient.invalidateQueries({ queryKey: ["chat-messages", activeConvo] });
+          if (newMsg.sender_id !== user.id) {
+            markAsRead(activeConvo);
+          }
+        }
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [activeConvo]);
+  }, [user, activeConvo]);
 
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatMessages]);
 
-  // ── HELPERS ──
+  // Mark as read when opening a conversation
+  useEffect(() => {
+    if (activeConvo && user) {
+      markAsRead(activeConvo);
+    }
+  }, [activeConvo, user]);
 
+  // ── HELPERS ──
   const getProfile = (userId: string): MemberProfile | undefined =>
     memberProfiles?.find((p) => p.user_id === userId);
 
@@ -207,27 +246,23 @@ export default function UserMessagesPage() {
 
   const getConvoDisplayName = (convo: Conversation) => {
     if (convo.type === "group") return convo.name || "Unnamed Group";
-    // For DM, show the other person's name
-    const members = allMembers?.filter((m: any) => m.conversation_id === convo.id) || [];
-    const otherMember = members.find((m: any) => m.user_id !== user?.id);
+    const members = allMembers?.filter((m) => m.conversation_id === convo.id) || [];
+    const otherMember = members.find((m) => m.user_id !== user?.id);
     if (otherMember) return getDisplayName(otherMember.user_id);
     return "Direct Message";
   };
 
   const getConvoMemberCount = (convoId: string) => {
-    return allMembers?.filter((m: any) => m.conversation_id === convoId).length || 0;
+    return allMembers?.filter((m) => m.conversation_id === convoId).length || 0;
   };
 
   // ── ACTIONS ──
-
   const startDm = async (targetUser: MemberProfile) => {
     if (!user) return;
-    // Check if DM already exists between these two users
-    const myConvoIds = conversations?.map((c) => c.id) || [];
     for (const c of conversations || []) {
       if (c.type !== "direct") continue;
-      const members = allMembers?.filter((m: any) => m.conversation_id === c.id) || [];
-      const memberIds = members.map((m: any) => m.user_id);
+      const members = allMembers?.filter((m) => m.conversation_id === c.id) || [];
+      const memberIds = members.map((m) => m.user_id);
       if (memberIds.includes(targetUser.user_id) && memberIds.includes(user.id) && memberIds.length === 2) {
         setActiveConvo(c.id);
         setShowNewDm(false);
@@ -235,18 +270,16 @@ export default function UserMessagesPage() {
         return;
       }
     }
-    // Create new DM - generate ID client-side to avoid SELECT-after-INSERT RLS issue
     const convoId = crypto.randomUUID();
     const { error: convoErr } = await supabase
       .from("conversations")
       .insert({ id: convoId, type: "direct", created_by: user.id });
-    if (convoErr) { toast.error("Failed to start chat"); console.error("convo insert error:", convoErr); return; }
-    // Add both members
+    if (convoErr) { toast.error("Failed to start chat"); console.error(convoErr); return; }
     const { error: memErr } = await supabase.from("conversation_members").insert([
       { conversation_id: convoId, user_id: user.id },
       { conversation_id: convoId, user_id: targetUser.user_id },
     ]);
-    if (memErr) { toast.error("Failed to add members"); console.error("member insert error:", memErr); return; }
+    if (memErr) { toast.error("Failed to add members"); console.error(memErr); return; }
     await queryClient.invalidateQueries({ queryKey: ["my-conversations"] });
     await queryClient.invalidateQueries({ queryKey: ["convo-members"] });
     await queryClient.invalidateQueries({ queryKey: ["member-profiles"] });
@@ -261,7 +294,7 @@ export default function UserMessagesPage() {
     const { error: convoErr } = await supabase
       .from("conversations")
       .insert({ id: convoId, type: "group", name: groupName.trim(), created_by: user.id });
-    if (convoErr) { toast.error("Failed to create group"); console.error("group create error:", convoErr); return; }
+    if (convoErr) { toast.error("Failed to create group"); console.error(convoErr); return; }
     const membersToAdd = [
       { conversation_id: convoId, user_id: user.id },
       ...groupMembers.map((m) => ({ conversation_id: convoId, user_id: m.user_id })),
@@ -301,7 +334,10 @@ export default function UserMessagesPage() {
       content: msgText.trim(),
     });
     if (error) toast.error("Failed to send");
-    else setMsgText("");
+    else {
+      setMsgText("");
+      markAsRead(activeConvo);
+    }
     setSending(false);
   };
 
@@ -313,17 +349,17 @@ export default function UserMessagesPage() {
   };
 
   const activeConversation = conversations?.find((c) => c.id === activeConvo);
+  const totalUnread = conversations?.filter((c) => hasUnread(c.id)).length || 0;
 
   // ── RENDER ──
-
   return (
     <UserLayout>
-      <PageHeader title="MESSAGES" description="DIRECT & GROUP CHATS" />
+      <PageHeader title="MESSAGES" description={`DIRECT & GROUP CHATS${totalUnread > 0 ? ` • ${totalUnread} UNREAD` : ""}`} />
 
       <div className="px-4 py-4">
-        <div className="border border-border flex flex-col md:flex-row" style={{ height: "calc(100vh - 200px)", minHeight: "400px" }}>
+        <div className="border border-border flex flex-col md:flex-row" style={{ height: "min(70vh, 520px)", minHeight: "360px" }}>
           {/* ── LEFT: Conversation List ── */}
-          <div className={`w-full md:w-80 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
+          <div className={`w-full md:w-72 border-r border-border flex flex-col shrink-0 ${activeConvo ? "hidden md:flex" : "flex"}`}>
             {/* Actions */}
             <div className="p-2 border-b border-border flex gap-1.5">
               <button
@@ -447,21 +483,25 @@ export default function UserMessagesPage() {
                   const isActive = activeConvo === convo.id;
                   const isGroup = convo.type === "group";
                   const lastMsg = lastMessages?.[convo.id];
+                  const unread = hasUnread(convo.id);
                   return (
                     <button
                       key={convo.id}
                       onClick={() => setActiveConvo(convo.id)}
                       className={`w-full text-left p-2.5 border-b border-border transition-none ${
-                        isActive ? "bg-foreground/10" : "hover:bg-muted/30"
+                        isActive ? "bg-foreground/10" : unread ? "bg-foreground/5" : "hover:bg-muted/30"
                       }`}
                     >
                       <div className="flex items-center gap-2">
-                        {isGroup ? (
+                        {unread && (
+                          <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                        )}
+                        {!unread && (isGroup ? (
                           <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                         ) : (
                           <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        )}
-                        <span className="text-[11px] text-foreground font-mono truncate">
+                        ))}
+                        <span className={`text-[11px] font-mono truncate ${unread ? "text-foreground font-bold" : "text-foreground"}`}>
                           {getConvoDisplayName(convo)}
                         </span>
                         {isGroup && (
@@ -471,11 +511,11 @@ export default function UserMessagesPage() {
                         )}
                       </div>
                       {lastMsg && (
-                        <p className="text-[10px] text-muted-foreground truncate mt-0.5 ml-5.5">
+                        <p className={`text-[10px] truncate mt-0.5 ml-5 ${unread ? "text-foreground/80" : "text-muted-foreground"}`}>
                           {getDisplayName(lastMsg.sender_id)}: {lastMsg.content.slice(0, 40)}
                         </p>
                       )}
-                      <p className="text-[9px] text-muted-foreground/60 ml-5.5 mt-0.5">
+                      <p className="text-[9px] text-muted-foreground/60 ml-5 mt-0.5">
                         {formatDistanceToNow(new Date(convo.updated_at), { addSuffix: true })}
                       </p>
                     </button>
@@ -496,7 +536,7 @@ export default function UserMessagesPage() {
             {activeConvo && activeConversation ? (
               <>
                 {/* Chat header */}
-                <div className="p-2.5 border-b border-border flex items-center gap-2">
+                <div className="p-2 border-b border-border flex items-center gap-2">
                   <button
                     onClick={() => setActiveConvo(null)}
                     className="md:hidden text-muted-foreground hover:text-foreground"
@@ -560,20 +600,20 @@ export default function UserMessagesPage() {
                 )}
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
                   {chatMessages && chatMessages.length > 0 ? (
                     chatMessages.map((msg) => {
                       const isMine = msg.sender_id === user?.id;
                       return (
                         <div key={msg.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
-                          <div className={`max-w-[75%] ${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/30 border-border"} border px-2.5 py-1.5`}>
+                          <div className={`max-w-[70%] ${isMine ? "bg-foreground/10 border-foreground/20" : "bg-muted/30 border-border"} border px-2 py-1`}>
                             {!isMine && (
                               <p className="text-[9px] text-muted-foreground mb-0.5 font-mono">
                                 {getDisplayName(msg.sender_id)}
                               </p>
                             )}
-                            <p className="text-[11px] text-foreground break-words">{msg.content}</p>
-                            <p className="text-[8px] text-muted-foreground/60 mt-0.5 text-right">
+                            <p className="text-[11px] text-foreground break-words leading-tight">{msg.content}</p>
+                            <p className="text-[8px] text-muted-foreground/60 text-right">
                               {new Date(msg.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
                             </p>
                           </div>
@@ -595,12 +635,12 @@ export default function UserMessagesPage() {
                     onChange={(e) => setMsgText(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Type a message..."
-                    className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-2 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
+                    className="flex-1 bg-input border border-border text-foreground text-[11px] px-3 py-1.5 focus:outline-none focus:border-foreground placeholder:text-muted-foreground"
                   />
                   <button
                     onClick={sendMessage}
                     disabled={sending || !msgText.trim()}
-                    className="text-foreground border border-foreground px-3 py-2 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40"
+                    className="text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-40"
                   >
                     <Send className="h-3.5 w-3.5" />
                   </button>
