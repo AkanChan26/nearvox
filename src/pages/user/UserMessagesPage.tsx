@@ -435,16 +435,26 @@ export default function UserMessagesPage() {
   const sendMessage = async () => {
     if (!user || !activeConvo || !msgText.trim()) return;
     setSending(true);
+    const content = replyTo 
+      ? `[reply:${replyTo.id}:${replyTo.content.slice(0, 50)}] ${msgText.trim()}`
+      : msgText.trim();
     const { error } = await supabase.from("chat_messages").insert({
-      conversation_id: activeConvo, sender_id: user.id, content: msgText.trim(),
+      conversation_id: activeConvo, sender_id: user.id, content,
     });
     if (error) toast.error("Failed to send");
     else {
       setMsgText("");
+      setReplyTo(null);
       markAsRead(activeConvo);
       presenceChannelRef.current?.track({ is_typing: false });
     }
     setSending(false);
+  };
+
+  const parseReply = (content: string): { replyText: string; mainText: string } | null => {
+    const match = content.match(/^\[reply:([^:]+):([^\]]*)\] (.*)$/s);
+    if (match) return { replyText: match[2], mainText: match[3] };
+    return null;
   };
 
   const editMessage = async (msgId: string) => {
