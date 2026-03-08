@@ -435,7 +435,11 @@ export default function UserMessagesPage() {
       conversation_id: activeConvo, sender_id: user.id, content: msgText.trim(),
     });
     if (error) toast.error("Failed to send");
-    else { setMsgText(""); markAsRead(activeConvo); }
+    else {
+      setMsgText("");
+      markAsRead(activeConvo);
+      presenceChannelRef.current?.track({ is_typing: false });
+    }
     setSending(false);
   };
 
