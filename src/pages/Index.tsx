@@ -57,6 +57,20 @@ const Index = () => {
     },
   });
 
+  // Category breakdown
+  const { data: categoryBreakdown } = useQuery({
+    queryKey: ["category-breakdown"],
+    queryFn: async () => {
+      const { data } = await supabase.from("topics").select("category");
+      const counts: Record<string, number> = {};
+      data?.forEach((t: any) => {
+        const cat = t.category || "discussions";
+        counts[cat] = (counts[cat] || 0) + 1;
+      });
+      return counts;
+    },
+  });
+
   // Recent activity log
   const { data: recentTopics } = useQuery({
     queryKey: ["recent-activity-topics"],
