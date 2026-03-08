@@ -112,12 +112,24 @@ export default function UsersPage() {
               {tickets.map((ticket) => (
                 <div key={ticket.id} className="flex items-center justify-between border border-border p-2">
                   <span className="text-xs text-foreground font-mono tracking-wider">{ticket.invite_code}</span>
-                  <button
-                    onClick={() => copyTicketLink(ticket.invite_code)}
-                    className="text-muted-foreground hover:text-foreground ml-2"
-                  >
-                    {copiedCode === ticket.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
-                  </button>
+                  <div className="flex items-center gap-1 ml-2">
+                    <button
+                      onClick={() => copyTicketLink(ticket.invite_code)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      {copiedCode === ticket.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const { error } = await supabase.from("invite_tickets").delete().eq("id", ticket.id);
+                        if (error) toast.error("Failed to delete ticket");
+                        else { toast.success("Ticket deleted"); refetchTickets(); }
+                      }}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
