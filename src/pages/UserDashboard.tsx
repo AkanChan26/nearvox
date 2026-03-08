@@ -175,7 +175,7 @@ export default function UserDashboard() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Terminal className="h-5 w-5 sm:h-7 sm:w-7 text-foreground" />
-              <h1 className="text-2xl sm:text-4xl text-foreground glow-text tracking-[0.35em] font-bold">NEARVOX</h1>
+              <h1 className="text-lg sm:text-2xl text-foreground glow-text tracking-[0.35em] font-bold">NEARVOX</h1>
             </div>
             <p className="text-[9px] sm:text-[11px] text-muted-foreground tracking-[0.6em] ml-8 sm:ml-10">ANONYMOUS NETWORK</p>
             {/* Status line */}
@@ -194,7 +194,7 @@ export default function UserDashboard() {
             <ProfileAvatar avatarId={(profile as any)?.avatar} size={44} />
             <div className="text-right">
               <p className="text-[9px] text-muted-foreground/50 tracking-[0.2em] mb-0.5">USER</p>
-              <p className="text-sm sm:text-base text-foreground glow-text font-bold tracking-wider truncate max-w-[120px] sm:max-w-none leading-relaxed">
+              <p className="text-[11px] sm:text-sm text-foreground glow-text font-bold tracking-wider truncate max-w-[120px] sm:max-w-none leading-relaxed">
                 {profile?.anonymous_name || profile?.username || "..."}
               </p>
               <p className="text-[9px] text-muted-foreground/50 tracking-[0.2em] mt-1.5 mb-0.5">SECTOR</p>
@@ -223,16 +223,16 @@ export default function UserDashboard() {
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/user/topics?category=${cat.value}`)}
-                  className="text-left p-5 sm:p-6 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
+                  className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="text-[10px] text-muted-foreground/60 font-mono">[{cat.cmd}]</span>
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[9px] text-muted-foreground/60 font-mono">[{cat.cmd}]</span>
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
-                  <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-2">
+                  <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1">
                     {cat.label.toUpperCase()}
                   </p>
-                  <p className="text-[9px] sm:text-[10px] text-muted-foreground/50 leading-relaxed tracking-wide">
+                  <p className="text-[8px] sm:text-[9px] text-muted-foreground/50 leading-relaxed tracking-wide">
                     {MODULE_DESCRIPTIONS[cat.value]}
                   </p>
                 </button>
@@ -253,16 +253,16 @@ export default function UserDashboard() {
                 <button
                   key={cat.value}
                   onClick={() => navigate(`/user/topics?category=${cat.value}`)}
-                  className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
+                  className="text-left p-3 sm:p-3.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
                 >
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <span className="text-[10px] text-muted-foreground/60 font-mono">[{cat.cmd}]</span>
-                    <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[9px] text-muted-foreground/60 font-mono">[{cat.cmd}]</span>
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </div>
-                  <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1.5">
+                  <p className="text-[9px] sm:text-[10px] text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1">
                     {cat.label.toUpperCase()}
                   </p>
-                  <p className="text-[9px] text-muted-foreground/50 leading-relaxed tracking-wide">
+                  <p className="text-[8px] text-muted-foreground/50 leading-relaxed tracking-wide">
                     {MODULE_DESCRIPTIONS[cat.value]}
                   </p>
                 </button>
@@ -270,16 +270,16 @@ export default function UserDashboard() {
             })}
             <button
               onClick={() => navigate("/user/posts")}
-              className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
+              className="text-left p-3 sm:p-3.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_20px_hsl(145_80%_56%/0.06)] transition-all duration-150 group"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <span className="text-[10px] text-muted-foreground/60 font-mono">[10]</span>
-                <MessageSquare className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-[9px] text-muted-foreground/60 font-mono">[10]</span>
+                <MessageSquare className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </div>
-              <p className="text-xs sm:text-sm text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1.5">
+              <p className="text-[9px] sm:text-[10px] text-foreground group-hover:glow-text tracking-wider leading-relaxed mb-1">
                 ALL POSTS
               </p>
-              <p className="text-[9px] text-muted-foreground/50 leading-relaxed tracking-wide">
+              <p className="text-[8px] text-muted-foreground/50 leading-relaxed tracking-wide">
                 Browse everything
               </p>
             </button>
@@ -306,15 +306,15 @@ export default function UserDashboard() {
                 <button
                   key={item.label}
                   onClick={() => navigate(item.path)}
-                  className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_15px_hsl(145_80%_56%/0.05)] transition-all duration-150 group relative"
+                  className="text-left p-3 sm:p-3.5 border border-border bg-card hover:border-foreground/40 hover:bg-foreground/5 hover:shadow-[0_0_15px_hsl(145_80%_56%/0.05)] transition-all duration-150 group relative"
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     {item.pulse && (
-                      <span className="h-2 w-2 rounded-full bg-foreground animate-pulse shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse shadow-[0_0_6px_hsl(145_80%_56%/0.5)]" />
                     )}
                   </div>
-                  <p className="text-[10px] sm:text-xs text-foreground group-hover:glow-text tracking-wider leading-relaxed">
+                  <p className="text-[8px] sm:text-[9px] text-foreground group-hover:glow-text tracking-wider leading-relaxed">
                     {item.label}
                   </p>
                   {item.badge && (
