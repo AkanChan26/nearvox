@@ -5,10 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["admin-users", search],
@@ -16,6 +18,10 @@ export default function UsersPage() {
       let query = supabase.from("profiles").select("*").order("created_at", { ascending: false });
       if (search) {
         query = query.ilike("username", `%${search}%`);
+      }
+      // Exclude the current admin from the list
+      if (user?.id) {
+        query = query.neq("user_id", user.id);
       }
       const { data, error } = await query;
       if (error) throw error;
