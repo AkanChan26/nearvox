@@ -333,8 +333,25 @@ export default function UserPostsPage() {
 
   return (
     <UserLayout>
-      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : "COMMUNITY POSTS & TOPICS"}>
+      <PageHeader title={isMine ? "YOUR POSTS" : "POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
         <div className="flex items-center gap-2">
+          {!isMine && userLocation && (
+            <button
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                if (regionFilter) newParams.set("region", "off");
+                else newParams.delete("region");
+                setSearchParams(newParams);
+              }}
+              className={`text-[10px] border px-2 py-1 transition-none ${
+                regionFilter
+                  ? "text-foreground border-foreground"
+                  : "text-muted-foreground border-border hover:text-foreground hover:border-foreground"
+              }`}
+            >
+              {regionFilter ? "[📍 NEARBY]" : "[🌐 GLOBAL]"}
+            </button>
+          )}
           <button
             onClick={() => setSearchParams(isMine ? {} : { mine: "true" })}
             className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
