@@ -74,8 +74,12 @@
     font-family: 'Share Tech Mono', monospace;
   }
 
-  h1, h2, h3 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: 'Press Start 2P', cursive;
+  }
+
+  button, input, textarea, select, label, span, p, a, div, li, td, th {
+    font-family: 'Share Tech Mono', monospace;
   }
 
   ::-webkit-scrollbar { width: 4px; }
