@@ -96,14 +96,33 @@ export default function UserTopicsPage() {
 
   return (
     <UserLayout>
-      <PageHeader title="TOPICS" description={activeCategoryLabel.toUpperCase()}>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
-        >
-          <Plus className="h-3 w-3" />
-          NEW TOPIC
-        </button>
+      <PageHeader title="TOPICS" description={`${activeCategoryLabel.toUpperCase()}${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
+        <div className="flex items-center gap-2">
+          {userLocation && (
+            <button
+              onClick={() => {
+                const newParams = new URLSearchParams(searchParams);
+                if (regionFilter) newParams.set("region", "off");
+                else newParams.delete("region");
+                setSearchParams(newParams);
+              }}
+              className={`text-[10px] border px-2 py-1 transition-none ${
+                regionFilter
+                  ? "text-foreground border-foreground"
+                  : "text-muted-foreground border-border hover:text-foreground hover:border-foreground"
+              }`}
+            >
+              {regionFilter ? "[📍 NEARBY]" : "[🌐 GLOBAL]"}
+            </button>
+          )}
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
+          >
+            <Plus className="h-3 w-3" />
+            NEW TOPIC
+          </button>
+        </div>
       </PageHeader>
 
       <div className="px-4 py-4">
