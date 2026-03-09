@@ -294,10 +294,13 @@ export default function UserBoardDetailPage() {
     return data.publicUrl;
   };
 
-  if (!board) return <UserLayout><div className="p-6 text-muted-foreground text-sm">Loading...</div></UserLayout>;
+  if (!board) {
+    const LoadingWrapper = isAdminRoute ? AdminLayout : UserLayout;
+    return <LoadingWrapper><div className="p-6 text-muted-foreground text-sm">Loading...</div></LoadingWrapper>;
+  }
 
-  return (
-    <UserLayout secondaryBackPath="/user/boards" secondaryBackLabel="BOARDS">
+  const boardContent = (
+    <>
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-3">
         <h1 className="text-[11px] text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
