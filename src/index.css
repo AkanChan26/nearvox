@@ -87,8 +87,8 @@ body {
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Press Start 2P', cursive;
-    font-size: 10px;
-    line-height: 2;
+    font-size: 11px;
+    line-height: 1.9;
     letter-spacing: 0.02em;
     word-spacing: 0.1em;
   }
@@ -99,28 +99,30 @@ body {
   }
 
   /* Mobile-responsive base sizes */
-  h1 { font-size: 0.8rem; line-height: 1.8; margin-bottom: 0.5em; }
-  h2 { font-size: 0.7rem; line-height: 1.8; margin-bottom: 0.4em; }
-  h3 { font-size: 0.6rem; line-height: 1.8; margin-bottom: 0.3em; }
-  p { line-height: 2; margin-bottom: 0.4em; }
-  span, a, button, label, li, td, th, div { font-size: inherit; }
-  input, textarea, select { font-size: 11px; line-height: 1.8; padding: 0.6em 0.8em; }
-  button { padding: 0.5em 0.8em; }
+  h1 { font-size: 0.85rem; line-height: 1.7; margin-bottom: 0.5em; }
+  h2 { font-size: 0.75rem; line-height: 1.7; margin-bottom: 0.4em; }
+  h3 { font-size: 0.65rem; line-height: 1.7; margin-bottom: 0.3em; }
+  p { font-size: 11px; line-height: 1.9; margin-bottom: 0.4em; }
+  span, a, label, li, td, th, div { font-size: inherit; }
+  button { font-size: 11px; padding: 0.5em 0.8em; }
+  input, textarea, select { font-size: 14px; line-height: 1.8; padding: 0.6em 0.8em; }
 
   @media (min-width: 640px) {
     body { font-size: 11px; }
-    h1 { font-size: 0.95rem; }
-    h2 { font-size: 0.8rem; }
-    h3 { font-size: 0.7rem; }
-    input, textarea, select { font-size: 12px; }
+    h1 { font-size: 1rem; }
+    h2 { font-size: 0.85rem; }
+    h3 { font-size: 0.72rem; }
+    p, button { font-size: 11px; }
+    input, textarea, select { font-size: 14px; }
   }
 
   @media (min-width: 1024px) {
     body { font-size: 12px; }
     h1 { font-size: 1.1rem; }
     h2 { font-size: 0.9rem; }
-    h3 { font-size: 0.75rem; }
-    input, textarea, select { font-size: 13px; }
+    h3 { font-size: 0.78rem; }
+    p, button { font-size: 12px; }
+    input, textarea, select { font-size: 14px; }
   }
 
   ::-webkit-scrollbar { width: 4px; }
