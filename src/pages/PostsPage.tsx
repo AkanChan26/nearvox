@@ -4,8 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { Image, FileText, Eye, Heart, Pencil, Check, X, MessageSquare, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { Image, FileText, Eye, Heart, Pencil, Check, X, MessageSquare, ChevronDown, ChevronUp, Trash2, Search } from "lucide-react";
+import { useState, useMemo } from "react";
 
 export default function PostsPage() {
   const { user } = useAuth();
