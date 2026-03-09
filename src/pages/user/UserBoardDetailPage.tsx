@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical, Paperclip, Image, FileText, X, Eye, ThumbsDown, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { ProfileAvatar } from "@/components/Avatars";
