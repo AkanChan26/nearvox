@@ -12,7 +12,7 @@ import {
   Settings, TrendingUp, Hash, MessageSquare,
   Activity, Wifi, LayoutGrid,
 } from "lucide-react";
-import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { TOPIC_CATEGORIES, getCategoryColor } from "@/lib/categories";
 
 const MODULE_DESCRIPTIONS: Record<string, string> = {
   job_hunting: "Find work or hire locally",
