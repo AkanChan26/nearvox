@@ -438,7 +438,7 @@ export default function UserPostsPage() {
   return (
     <Layout>
       <PageHeader title={isMine ? "YOUR POSTS" : "ALL POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {!isMine && userLocation && (
             <button
               onClick={() => {
