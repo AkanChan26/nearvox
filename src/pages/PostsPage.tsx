@@ -15,6 +15,7 @@ export default function PostsPage() {
   const [editContent, setEditContent] = useState("");
   const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<string | null>(null);
   const [expandedCommentThreads, setExpandedCommentThreads] = useState<Record<string, boolean>>({});
+  const [search, setSearch] = useState("");
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["admin-posts"],
