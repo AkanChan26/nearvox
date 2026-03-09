@@ -196,7 +196,7 @@ export default function UserDashboard() {
           <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4 flex items-center gap-1.5">
             <span className="text-foreground">&gt;</span> PERSONAL
           </p>
-          <div className="grid grid-cols-4 sm:grid-cols-7 gap-2 sm:gap-3">
+           <div className="grid grid-cols-4 gap-2 sm:grid-cols-7 sm:gap-3">
             {personalModules.map((item) => {
               const Icon = item.icon;
               return (
@@ -206,20 +206,24 @@ export default function UserDashboard() {
                   className="text-left p-2.5 sm:p-3 h-[65px] sm:h-[75px] border border-border bg-card hover:border-foreground/30 hover:bg-foreground/[0.03] hover:shadow-[0_0_10px_hsl(var(--foreground)/0.04)] transition-all duration-150 group relative flex flex-col justify-between"
                 >
                   <div className="flex items-center gap-1">
-                    <Icon className="h-3 w-3 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
                     {item.pulse && (
                       <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
                     )}
                     {item.badge && (
-                      <span className="text-[7px] text-foreground/60 ml-auto">{item.badge}</span>
+                      <span className="text-[10px] text-foreground/60 ml-auto">{item.badge}</span>
                     )}
                   </div>
-                  <p className="text-[7px] sm:text-[8px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                  <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight">
                     {item.label}
                   </p>
                 </button>
               );
             })}
+            {/* Fill empty grid cells so last row aligns */}
+            {personalModules.length % 4 !== 0 && Array.from({ length: 4 - (personalModules.length % 4) }).map((_, i) => (
+              <div key={`spacer-${i}`} className="h-[65px] sm:hidden" />
+            ))}
           </div>
         </section>
 
