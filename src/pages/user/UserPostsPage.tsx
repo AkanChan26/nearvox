@@ -598,7 +598,7 @@ export default function UserPostsPage() {
                   </div>
 
                   {/* Action bar */}
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1 border-t border-border flex-wrap">
+                  <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-muted-foreground pt-1 border-t border-border flex-wrap">
                     {/* Like */}
                     {item.type === "post" ? (
                       <button
