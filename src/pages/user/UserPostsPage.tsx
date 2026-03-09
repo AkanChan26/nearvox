@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp, Edit2, Hash, Tag, Search,
+  ChevronDown, ChevronUp, Edit2, Hash, Tag, Search, CheckCheck,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -209,6 +209,32 @@ export default function UserPostsPage() {
     },
     enabled: !!user,
   });
+
+  // Read posts tracking
+  const { data: readPosts } = useQuery({
+    queryKey: ["read-posts", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("read_posts").select("item_id").eq("user_id", user!.id);
+      return new Set((data || []).map((r: any) => r.item_id));
+    },
+    enabled: !!user,
+  });
+
+  const markAsRead = async (itemId: string, itemType: string) => {
+    if (!user || readPosts?.has(itemId)) return;
+    await supabase.from("read_posts").insert({ user_id: user.id, item_id: itemId, item_type: itemType }).select();
+    queryClient.invalidateQueries({ queryKey: ["read-posts"] });
+  };
+
+  const markAllPostsRead = async () => {
+    if (!user || !unified.length) return;
+    const unread = unified.filter((item) => !readPosts?.has(item.id));
+    if (unread.length === 0) { toast.info("All caught up!"); return; }
+    const rows = unread.map((item) => ({ user_id: user.id, item_id: item.id, item_type: item.type }));
+    const { error } = await supabase.from("read_posts").upsert(rows, { onConflict: "user_id,item_id" });
+    if (error) toast.error("Failed");
+    else { toast.success("All marked as read"); queryClient.invalidateQueries({ queryKey: ["read-posts"] }); }
+  };
 
   // My pending reports
   const { data: myReports } = useQuery({
@@ -412,7 +438,7 @@ export default function UserPostsPage() {
   return (
     <Layout>
       <PageHeader title={isMine ? "YOUR POSTS" : "ALL POSTS"} description={isMine ? "ALL YOUR POSTS & TOPICS" : `COMMUNITY FEED${regionFilter && userLocation ? ` — NEAR ${userLocation.toUpperCase()}` : " — GLOBAL"}`}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
           {!isMine && userLocation && (
             <button
               onClick={() => {
@@ -421,7 +447,7 @@ export default function UserPostsPage() {
                 else newParams.delete("region");
                 setSearchParams(newParams);
               }}
-              className={`text-[10px] border px-2 py-1 transition-none ${
+              className={`text-[9px] sm:text-[10px] border px-1.5 sm:px-2 py-1 transition-none ${
                 regionFilter
                   ? "text-foreground border-foreground"
                   : "text-muted-foreground border-border hover:text-foreground hover:border-foreground"
@@ -432,23 +458,31 @@ export default function UserPostsPage() {
           )}
           <button
             onClick={() => setSearchParams(isMine ? {} : { mine: "true" })}
-            className="text-[10px] text-muted-foreground border border-border px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
+            className="text-[9px] sm:text-[10px] text-muted-foreground border border-border px-1.5 sm:px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
           >
-            {isMine ? "[ALL POSTS]" : "[MY POSTS]"}
+            {isMine ? "[ALL]" : "[MINE]"}
+          </button>
+          <button
+            onClick={markAllPostsRead}
+            className="flex items-center gap-1 text-[9px] sm:text-[10px] text-muted-foreground border border-border px-1.5 sm:px-2 py-1 hover:text-foreground hover:border-foreground transition-none"
+          >
+            <CheckCheck className="h-3 w-3" />
+            <span className="hidden sm:inline">MARK READ</span>
           </button>
           <button
             onClick={() => setShowCreate(!showCreate)}
-            className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
+            className="flex items-center gap-1 text-[9px] sm:text-[10px] text-foreground border border-foreground px-1.5 sm:px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none"
           >
             <Plus className="h-3 w-3" />
-            NEW POST
+            <span className="hidden sm:inline">NEW POST</span>
+            <span className="sm:hidden">NEW</span>
           </button>
         </div>
       </PageHeader>
 
-      <div className="px-4 py-4">
+      <div className="px-3 sm:px-4 py-4">
         {/* Search */}
-        <div className="relative mb-4">
+        <div className="relative mb-3 sm:mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
@@ -501,7 +535,7 @@ export default function UserPostsPage() {
         )}
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {unified.length} ITEMS
+          {unified.length} ITEMS{(() => { const unread = unified.filter((i) => !readPosts?.has(i.id) && i.user_id !== user?.id).length; return unread > 0 ? ` · ${unread} UNREAD` : ""; })()}
         </p>
 
         {isLoading ? (
@@ -512,6 +546,7 @@ export default function UserPostsPage() {
               const isAdmin = isCreatorAdmin(item.user_id);
               const isOwner = item.user_id === user?.id;
               const isLiked = item.type === "post" ? myLikes?.has(item.id) : false;
+              const isUnread = !isOwner && !readPosts?.has(item.id);
               const isCommentsOpen = expandedComments === item.id;
               const commentsExpanded = !!expandedCommentThreads[item.id];
               const visibleComments = commentsExpanded ? (comments || []) : (comments || []).slice(0, 3);
@@ -521,16 +556,22 @@ export default function UserPostsPage() {
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className={`p-3 border transition-none ${
+                  onClick={() => isUnread && markAsRead(item.id, item.type)}
+                  className={`p-2.5 sm:p-3 border transition-none relative ${
                     item.is_announcement || isCreatorAdmin(item.user_id)
                       ? "admin-box border-[hsl(var(--admin-border))]"
                       : item.is_pinned
                       ? "border-foreground/20 bg-foreground/5"
+                      : isUnread
+                      ? "border-foreground/30 bg-foreground/5"
                       : "border-border"
                   }`}
                 >
+                  {isUnread && (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-foreground animate-pulse" title="Unread" />
+                  )}
                   {/* Type badge */}
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
                     {item.type === "topic" ? (
                       <span className="text-[9px] text-muted-foreground tracking-wider flex items-center gap-1">
                         <Hash className="h-2.5 w-2.5" /> TOPIC
@@ -608,7 +649,7 @@ export default function UserPostsPage() {
                   )}
 
                   {/* Meta */}
-                  <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground mb-1">
+                  <div className="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-muted-foreground mb-1 flex-wrap">
                     <ProfileAvatar avatarId={getCreatorAvatar(item.user_id)} isAdmin={isAdmin} size={18} />
                     <span className={isAdmin ? "admin-text glow-admin" : ""}>
                       {getCreatorName(item.user_id)}
