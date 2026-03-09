@@ -706,7 +706,7 @@ export default function UserPostsPage() {
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <MessageSquare className="h-2.5 w-2.5" />
-                        {item.replies_count ?? 0} replies
+                        {item.replies_count ?? 0}
                       </button>
                     )}
 
