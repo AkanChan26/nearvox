@@ -146,7 +146,8 @@ export default function UsersPage() {
             <div className="space-y-1">
               {users.map((u) => (
                 <div key={u.id} className="border border-border">
-                  <div className="flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
+                  {/* Desktop row */}
+                  <div className="hidden sm:flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
                     <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
                     <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
                       {u.username}
@@ -158,11 +159,7 @@ export default function UsersPage() {
                       u.status === "suspended" ? "text-warning" : "text-destructive"
                     }`}>{u.status?.toUpperCase()}</span>
                     <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => navigate(`/users/${u.user_id}`)}
-                        className="text-muted-foreground hover:text-foreground p-0.5"
-                        title="View profile"
-                      >
+                      <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground p-0.5" title="View profile">
                         <Eye className="h-3 w-3" />
                       </button>
                       <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[10px] text-warning hover:underline">[SUS]</button>
@@ -170,6 +167,32 @@ export default function UsersPage() {
                       {u.status !== "active" && (
                         <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[10px] text-foreground hover:underline">[ACTIVATE]</button>
                       )}
+                    </div>
+                  </div>
+                  {/* Mobile stacked */}
+                  <div className="sm:hidden px-2 py-2 hover:bg-muted/50 transition-none space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                        {u.username}
+                        {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
+                      </span>
+                      <span className={`text-[9px] ${
+                        u.status === "active" ? "text-foreground" :
+                        u.status === "suspended" ? "text-warning" : "text-destructive"
+                      }`}>{u.status?.toUpperCase()}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[9px] text-muted-foreground">
+                      <span>{u.location || "—"}</span>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground" title="View">
+                          <Eye className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-warning hover:underline">SUS</button>
+                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-destructive hover:underline">BAN</button>
+                        {u.status !== "active" && (
+                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-foreground hover:underline">ACT</button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -246,7 +246,7 @@ export default function PostsPage() {
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 text-[10px]">
+                  <div className="flex items-center gap-2 sm:gap-4 text-[9px] sm:text-[10px] flex-wrap">
                     <button
                       onClick={() => handleLike(post.id)}
                       className={`flex items-center gap-1 transition-none ${isLiked ? "text-destructive" : "text-muted-foreground hover:text-foreground"}`}
@@ -263,14 +263,16 @@ export default function PostsPage() {
                       {isCommentsOpen ? <ChevronUp className="h-2.5 w-2.5" /> : <ChevronDown className="h-2.5 w-2.5" />}
                     </button>
                     {attachments.length > 0 && <span className="text-muted-foreground">FILES:{attachments.length}</span>}
-                    <span className="ml-auto space-x-2">
+                    <span className="ml-auto flex items-center gap-1 sm:gap-2">
                       <button onClick={() => { setEditingId(post.id); setEditContent(post.content); }} className={`hover:underline ${isAdmin ? "admin-text" : "text-foreground"}`}>
-                        [EDIT]
+                        <span className="hidden sm:inline">[EDIT]</span><Pencil className="h-2.5 w-2.5 sm:hidden" />
                       </button>
                       <button onClick={() => handlePin(post.id, post.is_pinned)} className={`hover:underline ${isAdmin ? "admin-text" : "text-foreground"}`}>
-                        [{post.is_pinned ? "UNPIN" : "PIN"}]
+                        <span className="hidden sm:inline">[{post.is_pinned ? "UNPIN" : "PIN"}]</span><span className="sm:hidden">{post.is_pinned ? "⊘" : "📌"}</span>
                       </button>
-                      <button onClick={() => handleDelete(post.id, attachments)} className="text-destructive hover:underline">[DELETE]</button>
+                      <button onClick={() => handleDelete(post.id, attachments)} className="text-destructive hover:underline">
+                        <span className="hidden sm:inline">[DELETE]</span><Trash2 className="h-2.5 w-2.5 sm:hidden" />
+                      </button>
                     </span>
                   </div>
 

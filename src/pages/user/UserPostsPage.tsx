@@ -675,9 +675,10 @@ export default function UserPostsPage() {
                       <button
                         onClick={() => { setEditingPost(item.id); setEditContent(item.content); }}
                         className="flex items-center gap-0.5 hover:text-foreground"
+                        title="Edit"
                       >
                         <Edit2 className="h-2.5 w-2.5" />
-                        EDIT
+                        <span className="hidden sm:inline">EDIT</span>
                       </button>
                     )}
 
@@ -686,9 +687,10 @@ export default function UserPostsPage() {
                       <button
                         onClick={() => handleDelete(item)}
                         className="flex items-center gap-0.5 text-destructive hover:underline ml-auto"
+                        title="Delete"
                       >
                         <Trash2 className="h-2.5 w-2.5" />
-                        DELETE
+                        <span className="hidden sm:inline">DELETE</span>
                       </button>
                     )}
                   </div>
