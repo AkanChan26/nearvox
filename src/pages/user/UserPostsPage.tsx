@@ -656,15 +656,16 @@ export default function UserPostsPage() {
                         return r.report_type === "message" && r.reason?.includes(`[topic:${item.id}]`);
                       });
                       return existingReport ? (
-                        <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning">
-                          <Flag className="h-2.5 w-2.5 fill-current" /> UNDO REPORT
+                        <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning" title="Undo Report">
+                          <Flag className="h-2.5 w-2.5 fill-current" /> <span className="hidden sm:inline">UNDO</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
                           className="flex items-center gap-0.5 hover:text-warning"
+                          title="Report"
                         >
-                          <Flag className="h-2.5 w-2.5" /> REPORT
+                          <Flag className="h-2.5 w-2.5" /> <span className="hidden sm:inline">REPORT</span>
                         </button>
                       );
                     })()}
