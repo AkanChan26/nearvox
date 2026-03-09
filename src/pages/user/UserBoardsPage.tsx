@@ -97,9 +97,12 @@ export default function UserBoardsPage() {
     onError: () => toast.error("Failed to delete board"),
   });
 
-  const filtered = boards?.filter((b: any) =>
-    b.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = boards?.filter((b: any) => {
+    const q = search.toLowerCase();
+    const matchesSearch = b.name.toLowerCase().includes(q) || (b.description || "").toLowerCase().includes(q);
+    const matchesFilter = filter === "all" || myMemberships?.has(b.id);
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <UserLayout>
