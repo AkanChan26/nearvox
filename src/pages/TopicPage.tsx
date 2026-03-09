@@ -422,21 +422,21 @@ export default function TopicPage() {
                       <p className={`text-[11px] leading-relaxed whitespace-pre-wrap ${replyIsAdmin ? "admin-text-accent" : "text-foreground/80"}`}>{reply.content}</p>
                     )}
 
-                    {/* Reply actions */}
-                    <div className="flex items-center gap-3 mt-2 pt-1.5 border-t border-border/50">
-                      <button onClick={() => handleReplyLike(reply.id)} className={`flex items-center gap-1 text-[10px] transition-none ${liked ? "text-red-500" : "text-muted-foreground hover:text-foreground"}`}>
+                    {/* Reply actions - compact */}
+                    <div className="flex items-center gap-2 sm:gap-3 mt-2 pt-1.5 border-t border-border/50">
+                      <button onClick={() => handleReplyLike(reply.id)} className={`flex items-center gap-1 text-[10px] transition-none min-h-[32px] sm:min-h-0 px-1 ${liked ? "text-red-500" : "text-muted-foreground hover:text-foreground"}`}>
                         <Heart className={`h-3 w-3 ${liked ? "fill-red-500" : ""}`} />
                         {likeCount}
                       </button>
                       {(() => {
                         const existingReport = getMyReport(reply.id, "reply");
                         return existingReport ? (
-                          <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none">
-                            <Flag className="h-3 w-3 fill-warning" /> UNDO REPORT
+                          <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-1 text-[10px] text-warning transition-none min-h-[32px] sm:min-h-0 px-1">
+                            <Flag className="h-3 w-3 fill-warning" /><span className="hidden sm:inline">UNDO</span>
                           </button>
                         ) : (
-                          <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none">
-                            <Flag className="h-3 w-3" /> REPORT
+                          <button onClick={() => { setReportingId(reply.id); setReportType("reply"); }} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-destructive transition-none min-h-[32px] sm:min-h-0 px-1">
+                            <Flag className="h-3 w-3" /><span className="hidden sm:inline">REPORT</span>
                           </button>
                         );
                       })()}
