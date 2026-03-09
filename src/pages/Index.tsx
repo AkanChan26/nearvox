@@ -272,17 +272,30 @@ const Index = () => {
               {primaryCategories.map((cat) => {
                 const Icon = cat.icon;
                 const count = categoryBreakdown?.[cat.value] || 0;
+                const clr = getCategoryColor(cat.value);
                 return (
                   <button
                     key={cat.value}
                     onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
-                    className="text-left p-4 sm:p-5 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_15px_hsl(var(--foreground)/0.08)] transition-all duration-200 group"
+                    className="text-left p-4 sm:p-5 border bg-card transition-all duration-200 group"
+                    style={{
+                      borderColor: `hsl(${clr} / 0.2)`,
+                      boxShadow: `inset 0 0 30px hsl(${clr} / 0.03)`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = `hsl(${clr} / 0.5)`;
+                      e.currentTarget.style.boxShadow = `0 0 20px hsl(${clr} / 0.12), inset 0 0 30px hsl(${clr} / 0.05)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = `hsl(${clr} / 0.2)`;
+                      e.currentTarget.style.boxShadow = `inset 0 0 30px hsl(${clr} / 0.03)`;
+                    }}
                   >
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
-                      <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <Icon className="h-4 w-4 transition-colors" style={{ color: `hsl(${clr})` }} />
                     </div>
-                    <p className="text-[11px] sm:text-xs text-foreground group-hover:glow-text tracking-wider leading-tight mb-1.5">
+                    <p className="text-[11px] sm:text-xs tracking-wider leading-tight mb-1.5" style={{ color: `hsl(${clr})`, textShadow: `0 0 10px hsl(${clr} / 0.4)` }}>
                       {cat.label.toUpperCase()}
                     </p>
                     <p className="text-[9px] text-muted-foreground leading-relaxed mb-2">
