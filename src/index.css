@@ -191,7 +191,7 @@ body {
   .admin-box {
     background: hsl(var(--admin-bg));
     border: 1px solid hsl(var(--admin-border));
-    box-shadow: 0 0 15px hsl(199 91% 56% / 0.08), inset 0 0 30px hsl(199 91% 56% / 0.03);
+    box-shadow: 0 0 20px hsl(199 91% 56% / 0.1), inset 0 0 30px hsl(199 91% 56% / 0.04);
   }
   .admin-text {
     color: hsl(var(--admin));
