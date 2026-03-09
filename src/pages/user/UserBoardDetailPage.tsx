@@ -16,7 +16,10 @@ export default function UserBoardDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const boardsPath = isAdminRoute ? "/admin/boards" : "/user/boards";
   const [postTitle, setPostTitle] = useState("");
   const [newPost, setNewPost] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
