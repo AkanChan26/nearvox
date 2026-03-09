@@ -77,8 +77,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['"Press Start 2P"', 'cursive'],
-        mono: ['"Press Start 2P"', 'cursive'],
+        sans: ['"VT323"', 'monospace'],
+        mono: ['"VT323"', 'monospace'],
         pixel: ['"Press Start 2P"', 'cursive'],
         terminal: ['"VT323"', 'monospace'],
       },
