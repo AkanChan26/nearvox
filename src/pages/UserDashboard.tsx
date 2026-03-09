@@ -10,7 +10,7 @@ import {
   Activity, Wifi,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
-import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { TOPIC_CATEGORIES, getCategoryColor } from "@/lib/categories";
 import { ProfileAvatar } from "@/components/Avatars";
 
 export default function UserDashboard() {
