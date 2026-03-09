@@ -106,9 +106,9 @@ export default function ReportsPage() {
         <span className="text-xs text-warning">PENDING: {pendingCount}</span>
       </PageHeader>
 
-      <div className="p-6">
+      <div className="p-3 sm:p-6">
         <div className="terminal-box">
-          <div className="terminal-header">REPORT QUEUE — {reports?.length ?? 0} ENTRIES</div>
+          <div className="terminal-header text-[10px] sm:text-xs">REPORT QUEUE — {reports?.length ?? 0} ENTRIES</div>
 
           {isLoading ? (
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
@@ -116,10 +116,11 @@ export default function ReportsPage() {
             reports.map((report: any) => {
               const postPreview = getPostPreview(report.reported_post_id);
               return (
-                <div key={report.id} className={`py-3 border-b border-border last:border-0 ${report.severity === "critical" ? "bg-destructive/5" : ""}`}>
-                  <div className="flex items-center gap-2 text-[10px] mb-1">
-                    <span className="text-muted-foreground">{report.id.slice(0, 8)}</span>
-                    <span className="text-muted-foreground">|</span>
+                <div key={report.id} className={`py-3 px-1 sm:px-0 border-b border-border last:border-0 ${report.severity === "critical" ? "bg-destructive/5" : ""}`}>
+                  {/* Row 1: type + severity + status */}
+                  <div className="flex items-center flex-wrap gap-x-2 gap-y-0.5 text-[9px] sm:text-[10px] mb-1.5">
+                    <span className="text-muted-foreground hidden sm:inline">{report.id.slice(0, 8)}</span>
+                    <span className="text-muted-foreground hidden sm:inline">|</span>
                     <span className="text-foreground">[{report.report_type?.toUpperCase()}]</span>
                     <span className={`${
                       report.severity === "critical" ? "text-destructive" :
@@ -131,25 +132,35 @@ export default function ReportsPage() {
                       report.status === "reviewing" ? "text-foreground" : "text-muted-foreground"
                     }`}>{report.status?.toUpperCase()}</span>
                   </div>
-                  <p className="text-xs text-secondary-foreground mb-1 pl-2 border-l border-border">{cleanReason(report.reason)}</p>
+
+                  {/* Row 2: reason */}
+                  <p className="text-[11px] sm:text-xs text-secondary-foreground mb-1.5 pl-2 border-l-2 border-border leading-relaxed break-words">{cleanReason(report.reason)}</p>
+
+                  {/* Row 3: post preview */}
                   {postPreview && (
-                    <p className="text-[10px] text-muted-foreground mb-1 pl-2 border-l border-foreground/20 italic">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-1.5 pl-2 border-l-2 border-foreground/20 italic break-words">
                       POST: "{postPreview}"
                     </p>
                   )}
-                  <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-[10px] text-muted-foreground">
-                    <span>REPORTER: <span className="text-foreground">{getName(report.reporter_id)}</span></span>
-                    <span>→</span>
-                    <span>AGAINST: <span className="text-foreground">{getName(report.reported_user_id)}</span></span>
-                    <span className="ml-auto">{timeSince(report.created_at)}</span>
-                    {report.status !== "resolved" && report.status !== "dismissed" && (
-                      <span className="ml-4 space-x-2">
-                        <button onClick={() => handleStatusUpdate(report.id, "reviewing")} className="text-foreground hover:underline">[REVIEW]</button>
-                        <button onClick={() => handleStatusUpdate(report.id, "dismissed")} className="text-foreground hover:underline">[DISMISS]</button>
-                        <button onClick={() => handleStatusUpdate(report.id, "resolved")} className="text-foreground hover:underline">[RESOLVE]</button>
-                      </span>
-                    )}
+
+                  {/* Row 4: reporter + against */}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-x-2 text-[9px] sm:text-[10px] text-muted-foreground mb-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>FROM: <span className="text-foreground">{getName(report.reporter_id)}</span></span>
+                      <span className="hidden sm:inline">→</span>
+                      <span>AGAINST: <span className="text-foreground">{getName(report.reported_user_id)}</span></span>
+                    </div>
+                    <span className="sm:ml-auto text-muted-foreground">{timeSince(report.created_at)}</span>
                   </div>
+
+                  {/* Row 5: actions */}
+                  {report.status !== "resolved" && report.status !== "dismissed" && (
+                    <div className="flex items-center gap-1 sm:gap-2 pt-1.5 border-t border-border/50">
+                      <button onClick={() => handleStatusUpdate(report.id, "reviewing")} className="text-[9px] sm:text-[10px] text-foreground hover:underline px-1.5 py-1 border border-border">REVIEW</button>
+                      <button onClick={() => handleStatusUpdate(report.id, "dismissed")} className="text-[9px] sm:text-[10px] text-foreground hover:underline px-1.5 py-1 border border-border">DISMISS</button>
+                      <button onClick={() => handleStatusUpdate(report.id, "resolved")} className="text-[9px] sm:text-[10px] text-foreground hover:underline px-1.5 py-1 border border-border">RESOLVE</button>
+                    </div>
+                  )}
                 </div>
               );
             })
