@@ -236,12 +236,7 @@ export default function UserPostsPage() {
     enabled: commentUserIds.length > 0,
   });
 
-  const getCreatorName = (userId: string) => {
-    const creator = creators?.find((c) => c.user_id === userId);
-    if (!creator) return "Unknown";
-    if (creator.is_admin) return creator.username || "ADMIN";
-    return creator.anonymous_name || "Anonymous";
-  };
+  // getCreatorName already defined above as useCallback
 
   const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
   const getCreatorAvatar = (userId: string) => (creators?.find((c) => c.user_id === userId) as any)?.avatar || "user-1";
