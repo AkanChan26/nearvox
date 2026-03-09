@@ -10,7 +10,7 @@ import {
   Ticket, Copy, Check, X,
   Users, AlertTriangle, Megaphone, BarChart3,
   Settings, TrendingUp, Hash, MessageSquare,
-  Activity, Wifi,
+  Activity, Wifi, LayoutGrid,
 } from "lucide-react";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 
