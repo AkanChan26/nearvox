@@ -446,9 +446,9 @@ export default function UserPostsPage() {
         </div>
       </PageHeader>
 
-      <div className="px-4 py-4">
+      <div className="px-3 sm:px-4 py-4">
         {/* Search */}
-        <div className="relative mb-4">
+        <div className="relative mb-3 sm:mb-4">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
