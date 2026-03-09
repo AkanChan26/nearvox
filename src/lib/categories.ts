@@ -1,6 +1,6 @@
 import {
   Briefcase, Megaphone, MessageSquare, Heart, HandHelping,
-  ShoppingBag, CalendarDays, AlertTriangle, Lightbulb, Shuffle,
+  ShoppingBag, CalendarDays, AlertTriangle, Lightbulb,
 } from "lucide-react";
 
 export const TOPIC_CATEGORIES = [
