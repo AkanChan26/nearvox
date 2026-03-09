@@ -556,16 +556,22 @@ export default function UserPostsPage() {
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className={`p-3 border transition-none ${
+                  onClick={() => isUnread && markAsRead(item.id, item.type)}
+                  className={`p-2.5 sm:p-3 border transition-none relative ${
                     item.is_announcement || isCreatorAdmin(item.user_id)
                       ? "admin-box border-[hsl(var(--admin-border))]"
                       : item.is_pinned
                       ? "border-foreground/20 bg-foreground/5"
+                      : isUnread
+                      ? "border-foreground/30 bg-foreground/5"
                       : "border-border"
                   }`}
                 >
+                  {isUnread && (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-foreground animate-pulse" title="Unread" />
+                  )}
                   {/* Type badge */}
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mb-1 flex-wrap">
                     {item.type === "topic" ? (
                       <span className="text-[9px] text-muted-foreground tracking-wider flex items-center gap-1">
                         <Hash className="h-2.5 w-2.5" /> TOPIC
