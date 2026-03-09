@@ -151,10 +151,10 @@ body {
     @apply flex-1 mx-2 border-b border-dotted border-border;
   }
   .glow-text {
-    text-shadow: 0 0 8px hsl(145 80% 56% / 0.5), 0 0 20px hsl(145 80% 56% / 0.2), 0 0 40px hsl(145 80% 56% / 0.1);
+    text-shadow: 0 0 10px hsl(145 80% 56% / 0.6), 0 0 25px hsl(145 80% 56% / 0.3), 0 0 50px hsl(145 80% 56% / 0.15);
   }
   .glow-admin {
-    text-shadow: 0 0 8px hsl(199 91% 56% / 0.5), 0 0 20px hsl(199 91% 56% / 0.2);
+    text-shadow: 0 0 10px hsl(199 91% 56% / 0.6), 0 0 25px hsl(199 91% 56% / 0.3), 0 0 50px hsl(199 91% 56% / 0.15);
   }
   .scanline {
     background: repeating-linear-gradient(
