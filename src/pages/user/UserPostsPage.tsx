@@ -210,6 +210,32 @@ export default function UserPostsPage() {
     enabled: !!user,
   });
 
+  // Read posts tracking
+  const { data: readPosts } = useQuery({
+    queryKey: ["read-posts", user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from("read_posts").select("item_id").eq("user_id", user!.id);
+      return new Set((data || []).map((r: any) => r.item_id));
+    },
+    enabled: !!user,
+  });
+
+  const markAsRead = async (itemId: string, itemType: string) => {
+    if (!user || readPosts?.has(itemId)) return;
+    await supabase.from("read_posts").insert({ user_id: user.id, item_id: itemId, item_type: itemType }).select();
+    queryClient.invalidateQueries({ queryKey: ["read-posts"] });
+  };
+
+  const markAllPostsRead = async () => {
+    if (!user || !unified.length) return;
+    const unread = unified.filter((item) => !readPosts?.has(item.id));
+    if (unread.length === 0) { toast.info("All caught up!"); return; }
+    const rows = unread.map((item) => ({ user_id: user.id, item_id: item.id, item_type: item.type }));
+    const { error } = await supabase.from("read_posts").upsert(rows, { onConflict: "user_id,item_id" });
+    if (error) toast.error("Failed");
+    else { toast.success("All marked as read"); queryClient.invalidateQueries({ queryKey: ["read-posts"] }); }
+  };
+
   // My pending reports
   const { data: myReports } = useQuery({
     queryKey: ["my-reports-posts", user?.id],
