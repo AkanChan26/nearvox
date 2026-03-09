@@ -477,6 +477,16 @@ export default function UserBoardDetailPage() {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (isAdminRoute) {
+    return <AdminLayout>{boardContent}</AdminLayout>;
+  }
+
+  return (
+    <UserLayout secondaryBackPath={boardsPath} secondaryBackLabel="BOARDS">
+      {boardContent}
     </UserLayout>
   );
 }
