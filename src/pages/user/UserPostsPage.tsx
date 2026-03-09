@@ -447,7 +447,7 @@ export default function UserPostsPage() {
                 else newParams.delete("region");
                 setSearchParams(newParams);
               }}
-              className={`text-[10px] border px-2 py-1 transition-none ${
+              className={`text-[9px] sm:text-[10px] border px-1.5 sm:px-2 py-1 transition-none ${
                 regionFilter
                   ? "text-foreground border-foreground"
                   : "text-muted-foreground border-border hover:text-foreground hover:border-foreground"
