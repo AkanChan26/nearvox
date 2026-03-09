@@ -44,6 +44,7 @@ export default function UserPostsPage() {
   const isMine = searchParams.get("mine") === "true";
   const regionFilter = searchParams.get("region") !== "off"; // default ON
   const [showCreate, setShowCreate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [uploading, setUploading] = useState(false);
