@@ -1,6 +1,6 @@
 import {
   Briefcase, Megaphone, MessageSquare, Heart, HandHelping,
-  ShoppingBag, CalendarDays, AlertTriangle, Lightbulb, Shuffle,
+  ShoppingBag, CalendarDays, AlertTriangle, Lightbulb,
 } from "lucide-react";
 
 export const TOPIC_CATEGORIES = [
@@ -13,7 +13,6 @@ export const TOPIC_CATEGORIES = [
   { value: "events", label: "Events & Meetups", icon: CalendarDays, cmd: "07", color: "170 70% 50%" },
   { value: "alerts", label: "Alerts & Warnings", icon: AlertTriangle, cmd: "08", color: "0 85% 55%" },
   { value: "ideas", label: "Ideas & Startups", icon: Lightbulb, cmd: "09", color: "55 85% 55%" },
-  { value: "random", label: "Random", icon: Shuffle, cmd: "10", color: "145 50% 40%" },
 ] as const;
 
 export type TopicCategoryValue = typeof TOPIC_CATEGORIES[number]["value"];

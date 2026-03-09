@@ -107,7 +107,7 @@ export default function UserDashboard() {
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
   const allCommunityModules = [
-    ...TOPIC_CATEGORIES.filter(c => c.value !== "random").map(c => ({
+    ...TOPIC_CATEGORIES.map(c => ({
       cmd: c.cmd, label: c.label.toUpperCase(), icon: c.icon,
       path: `/user/topics?category=${c.value}`,
     })),
