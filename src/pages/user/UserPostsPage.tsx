@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp, Edit2, Hash, Tag,
+  ChevronDown, ChevronUp, Edit2, Hash, Tag, Search,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
