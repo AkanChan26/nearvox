@@ -317,17 +317,30 @@ const Index = () => {
               {secondaryCategories.map((cat) => {
                 const Icon = cat.icon;
                 const count = categoryBreakdown?.[cat.value] || 0;
+                const clr = getCategoryColor(cat.value);
                 return (
                   <button
                     key={cat.value}
                     onClick={() => navigate(`/admin/topics?category=${cat.value}`)}
-                    className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
+                    className="text-left p-3.5 sm:p-4 border bg-card transition-all duration-200 group"
+                    style={{
+                      borderColor: `hsl(${clr} / 0.2)`,
+                      boxShadow: `inset 0 0 20px hsl(${clr} / 0.03)`,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.borderColor = `hsl(${clr} / 0.5)`;
+                      e.currentTarget.style.boxShadow = `0 0 15px hsl(${clr} / 0.1), inset 0 0 20px hsl(${clr} / 0.05)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.borderColor = `hsl(${clr} / 0.2)`;
+                      e.currentTarget.style.boxShadow = `inset 0 0 20px hsl(${clr} / 0.03)`;
+                    }}
                   >
                     <div className="flex items-center gap-1.5 mb-1.5">
                       <span className="text-[9px] text-muted-foreground font-mono">[{cat.cmd}]</span>
-                      <Icon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <Icon className="h-3.5 w-3.5 transition-colors" style={{ color: `hsl(${clr})` }} />
                     </div>
-                    <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
+                    <p className="text-[10px] sm:text-[11px] tracking-wider leading-tight mb-1" style={{ color: `hsl(${clr})`, textShadow: `0 0 8px hsl(${clr} / 0.35)` }}>
                       {cat.label.toUpperCase()}
                     </p>
                     <p className="text-[9px] text-muted-foreground">{count} topics</p>
@@ -336,26 +349,32 @@ const Index = () => {
               })}
               <button
                 onClick={() => navigate("/admin/all-posts")}
-                className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
+                className="text-left p-3.5 sm:p-4 border bg-card transition-all duration-200 group"
+                style={{ borderColor: `hsl(145 80% 56% / 0.2)`, boxShadow: `inset 0 0 20px hsl(145 80% 56% / 0.03)` }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `hsl(145 80% 56% / 0.5)`; e.currentTarget.style.boxShadow = `0 0 15px hsl(145 80% 56% / 0.1)`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `hsl(145 80% 56% / 0.2)`; e.currentTarget.style.boxShadow = `inset 0 0 20px hsl(145 80% 56% / 0.03)`; }}
               >
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="text-[9px] text-muted-foreground font-mono">[10]</span>
-                  <MessageSquare className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <MessageSquare className="h-3.5 w-3.5 text-foreground" />
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
+                <p className="text-[10px] sm:text-[11px] text-foreground glow-text tracking-wider leading-tight mb-1">
                   ALL POSTS
                 </p>
                 <p className="text-[9px] text-muted-foreground">{(postCount ?? 0) + (topicCount ?? 0)} total</p>
               </button>
               <button
                 onClick={() => navigate("/admin/boards")}
-                className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
+                className="text-left p-3.5 sm:p-4 border bg-card transition-all duration-200 group"
+                style={{ borderColor: `hsl(199 91% 56% / 0.2)`, boxShadow: `inset 0 0 20px hsl(199 91% 56% / 0.03)` }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = `hsl(199 91% 56% / 0.5)`; e.currentTarget.style.boxShadow = `0 0 15px hsl(199 91% 56% / 0.1)`; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = `hsl(199 91% 56% / 0.2)`; e.currentTarget.style.boxShadow = `inset 0 0 20px hsl(199 91% 56% / 0.03)`; }}
               >
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <span className="text-[9px] text-muted-foreground font-mono">[11]</span>
-                  <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  <LayoutGrid className="h-3.5 w-3.5" style={{ color: `hsl(199 91% 56%)` }} />
                 </div>
-                <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
+                <p className="text-[10px] sm:text-[11px] tracking-wider leading-tight mb-1" style={{ color: `hsl(199 91% 56%)`, textShadow: `0 0 8px hsl(199 91% 56% / 0.35)` }}>
                   BOARDS
                 </p>
                 <p className="text-[9px] text-muted-foreground">community boards</p>
