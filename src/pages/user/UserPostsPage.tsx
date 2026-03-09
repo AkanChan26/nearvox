@@ -546,6 +546,7 @@ export default function UserPostsPage() {
               const isAdmin = isCreatorAdmin(item.user_id);
               const isOwner = item.user_id === user?.id;
               const isLiked = item.type === "post" ? myLikes?.has(item.id) : false;
+              const isUnread = !isOwner && !readPosts?.has(item.id);
               const isCommentsOpen = expandedComments === item.id;
               const commentsExpanded = !!expandedCommentThreads[item.id];
               const visibleComments = commentsExpanded ? (comments || []) : (comments || []).slice(0, 3);
