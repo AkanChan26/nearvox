@@ -16,6 +16,7 @@ export default function UserBoardsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "joined">("all");
 
   const { data: boards, isLoading } = useQuery({
     queryKey: ["boards"],
