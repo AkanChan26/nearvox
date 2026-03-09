@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Plus, Users, FileText, Search, Trash2, Hash } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +12,11 @@ import { toast } from "sonner";
 export default function UserBoardsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const boardBasePath = isAdminRoute ? "/admin/boards" : "/user/boards";
+
   const [showCreate, setShowCreate] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -104,8 +109,8 @@ export default function UserBoardsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  return (
-    <UserLayout>
+  const content = (
+    <>
       <PageHeader title="BOARDS" description="Community boards for specific topics">
         <button
           onClick={() => setShowCreate(true)}
@@ -164,11 +169,11 @@ export default function UserBoardsPage() {
               return (
                 <button
                   key={board.id}
-                  onClick={() => navigate(`/user/boards/${board.id}`)}
-                  className="w-full text-left border border-border p-3 hover:border-foreground/40 transition-none group"
+                  onClick={() => navigate(`${boardBasePath}/${board.id}`)}
+                  className="w-full text-left border border-border p-3 hover:border-foreground/40 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all group"
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Hash className="h-3 w-3 text-muted-foreground" />
+                    <Hash className="h-3 w-3 text-foreground/60" />
                     <span className="text-xs text-foreground tracking-wider font-bold group-hover:glow-text">
                       {board.name.toUpperCase()}
                     </span>
@@ -259,6 +264,12 @@ export default function UserBoardsPage() {
           </div>
         </div>
       )}
-    </UserLayout>
+    </>
   );
+
+  if (isAdminRoute) {
+    return <AdminLayout>{content}</AdminLayout>;
+  }
+
+  return <UserLayout>{content}</UserLayout>;
 }
