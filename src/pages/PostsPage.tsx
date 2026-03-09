@@ -154,18 +154,42 @@ export default function PostsPage() {
     return `${Math.floor(seconds / 86400)}d ago`;
   };
 
+  const filteredPosts = useMemo(() => {
+    if (!posts || !search.trim()) return posts;
+    const q = search.toLowerCase();
+    return posts.filter((post: any) => {
+      const { name } = getCreatorInfo(post.user_id);
+      return (
+        post.content.toLowerCase().includes(q) ||
+        name.toLowerCase().includes(q) ||
+        (post.location || "").toLowerCase().includes(q)
+      );
+    });
+  }, [posts, search, creators]);
+
   return (
     <AdminLayout>
       <PageHeader title="POST MONITOR" description="// CONTENT MODERATION CONSOLE" />
 
       <div className="p-6">
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by content, username, or location..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-card border border-border pl-8 pr-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 tracking-wider"
+          />
+        </div>
+
         <div className="terminal-box">
-          <div className="terminal-header">POST FEED — {posts?.length ?? 0} ENTRIES</div>
+          <div className="terminal-header">POST FEED — {filteredPosts?.length ?? 0} ENTRIES</div>
 
           {isLoading ? (
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
-          ) : posts && posts.length > 0 ? (
-            posts.map((post: any) => {
+          ) : filteredPosts && filteredPosts.length > 0 ? (
+            filteredPosts.map((post: any) => {
               const { name, isAdmin } = getCreatorInfo(post.user_id);
               const attachments = post.attachments as string[] || [];
               const isLiked = myLikes?.has(post.id);

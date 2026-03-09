@@ -446,7 +446,18 @@ export default function UserPostsPage() {
         </div>
       </PageHeader>
 
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by title, username, or content..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-card border border-border pl-8 pr-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 tracking-wider"
+          />
+        </div>
         {/* Create Post Form */}
         {showCreate && (
           <div className="terminal-box mb-4">
