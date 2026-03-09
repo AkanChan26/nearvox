@@ -16,6 +16,7 @@ export default function UserBoardsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "joined">("all");
 
   const { data: boards, isLoading } = useQuery({
     queryKey: ["boards"],
@@ -96,9 +97,12 @@ export default function UserBoardsPage() {
     onError: () => toast.error("Failed to delete board"),
   });
 
-  const filtered = boards?.filter((b: any) =>
-    b.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = boards?.filter((b: any) => {
+    const q = search.toLowerCase();
+    const matchesSearch = b.name.toLowerCase().includes(q) || (b.description || "").toLowerCase().includes(q);
+    const matchesFilter = filter === "all" || myMemberships?.has(b.id);
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <UserLayout>
@@ -113,12 +117,32 @@ export default function UserBoardsPage() {
       </PageHeader>
 
       <div className="px-4 sm:px-6 py-4 space-y-3">
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setFilter("all")}
+            className={`text-[10px] px-2.5 py-1 border tracking-wider transition-none ${
+              filter === "all" ? "border-foreground text-foreground bg-foreground/10" : "border-border text-muted-foreground hover:border-foreground/30"
+            }`}
+          >
+            ALL BOARDS
+          </button>
+          <button
+            onClick={() => setFilter("joined")}
+            className={`text-[10px] px-2.5 py-1 border tracking-wider transition-none ${
+              filter === "joined" ? "border-foreground text-foreground bg-foreground/10" : "border-border text-muted-foreground hover:border-foreground/30"
+            }`}
+          >
+            JOINED
+          </button>
+        </div>
+
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search boards..."
+            placeholder="Search boards by name or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-card border border-border pl-8 pr-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 tracking-wider"

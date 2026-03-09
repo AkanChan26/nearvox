@@ -10,7 +10,7 @@ import {
   Ticket, Copy, Check, X,
   Users, AlertTriangle, Megaphone, BarChart3,
   Settings, TrendingUp, Hash, MessageSquare,
-  Activity, Wifi,
+  Activity, Wifi, LayoutGrid,
 } from "lucide-react";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 
@@ -333,6 +333,19 @@ const Index = () => {
                   ALL POSTS
                 </p>
                 <p className="text-[9px] text-muted-foreground">{(postCount ?? 0) + (topicCount ?? 0)} total</p>
+              </button>
+              <button
+                onClick={() => navigate("/admin/boards")}
+                className="text-left p-3.5 sm:p-4 border border-border bg-card hover:border-foreground/30 hover:shadow-[0_0_12px_hsl(var(--foreground)/0.06)] transition-all duration-200 group"
+              >
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-[9px] text-muted-foreground font-mono">[11]</span>
+                  <LayoutGrid className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-foreground group-hover:glow-text tracking-wider leading-tight mb-1">
+                  BOARDS
+                </p>
+                <p className="text-[9px] text-muted-foreground">community boards</p>
               </button>
             </div>
           </section>

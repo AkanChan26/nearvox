@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/PageHeader";
 import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
-  ChevronDown, ChevronUp, Edit2, Hash, Tag,
+  ChevronDown, ChevronUp, Edit2, Hash, Tag, Search,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -44,6 +44,7 @@ export default function UserPostsPage() {
   const isMine = searchParams.get("mine") === "true";
   const regionFilter = searchParams.get("region") !== "off"; // default ON
   const [showCreate, setShowCreate] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newLocation, setNewLocation] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -100,12 +101,36 @@ export default function UserPostsPage() {
 
   // Helper: check if location matches user's region
   const isNearby = (itemLocation: string | null | undefined): boolean => {
-    if (!userLocation || !itemLocation) return true; // show global posts
+    if (!userLocation || !itemLocation) return true;
     const norm = (s: string) => s.toLowerCase().trim();
     const userParts = norm(userLocation).split(/[,\s]+/);
     const itemParts = norm(itemLocation).split(/[,\s]+/);
     return userParts.some((part) => itemParts.some((ip) => ip.includes(part) || part.includes(ip)));
   };
+
+  // Creators - fetch based on raw posts/topics user_ids
+  const creatorIds = useMemo(() => {
+    const postIds = (posts || []).map((p) => p.user_id);
+    const topicIds = (topics || []).map((t) => t.user_id);
+    return [...new Set([...postIds, ...topicIds])];
+  }, [posts, topics]);
+
+  const { data: creators } = useQuery({
+    queryKey: ["post-creators", creatorIds],
+    queryFn: async () => {
+      if (creatorIds.length === 0) return [];
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
+      return data || [];
+    },
+    enabled: creatorIds.length > 0,
+  });
+
+  const getCreatorName = useCallback((userId: string) => {
+    const creator = creators?.find((c) => c.user_id === userId);
+    if (!creator) return "Unknown";
+    if (creator.is_admin) return creator.username || "ADMIN";
+    return creator.anonymous_name || "Anonymous";
+  }, [creators]);
 
   // Merge into unified list
   const unified: UnifiedItem[] = useMemo(() => {
@@ -146,10 +171,24 @@ export default function UserPostsPage() {
       all = all.filter((item) => isNearby(item.location));
     }
     
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      all = all.filter((item) => {
+        const creatorName = getCreatorName(item.user_id).toLowerCase();
+        return (
+          item.content.toLowerCase().includes(q) ||
+          (item.title || "").toLowerCase().includes(q) ||
+          creatorName.includes(q) ||
+          (item.location || "").toLowerCase().includes(q)
+        );
+      });
+    }
+
     return all.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [posts, topics, isMine, regionFilter, userLocation]);
+  }, [posts, topics, isMine, regionFilter, userLocation, searchQuery, getCreatorName]);
 
   // Likes (posts)
   const { data: myLikes } = useQuery({
@@ -181,18 +220,6 @@ export default function UserPostsPage() {
     enabled: !!user,
   });
 
-  // Creators
-  const creatorIds = [...new Set(unified.map((p) => p.user_id))];
-  const { data: creators } = useQuery({
-    queryKey: ["post-creators", creatorIds],
-    queryFn: async () => {
-      if (creatorIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
-      return data || [];
-    },
-    enabled: creatorIds.length > 0,
-  });
-
   // Comments for expanded post
   const { data: comments } = useQuery({
     queryKey: ["post-comments", expandedComments],
@@ -214,13 +241,6 @@ export default function UserPostsPage() {
     },
     enabled: commentUserIds.length > 0,
   });
-
-  const getCreatorName = (userId: string) => {
-    const creator = creators?.find((c) => c.user_id === userId);
-    if (!creator) return "Unknown";
-    if (creator.is_admin) return creator.username || "ADMIN";
-    return creator.anonymous_name || "Anonymous";
-  };
 
   const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
   const getCreatorAvatar = (userId: string) => (creators?.find((c) => c.user_id === userId) as any)?.avatar || "user-1";
@@ -426,7 +446,18 @@ export default function UserPostsPage() {
         </div>
       </PageHeader>
 
-      <div className="px-4 py-6">
+      <div className="px-4 py-4">
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search by title, username, or content..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-card border border-border pl-8 pr-3 py-2 text-[11px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground/40 tracking-wider"
+          />
+        </div>
         {/* Create Post Form */}
         {showCreate && (
           <div className="terminal-box mb-4">
