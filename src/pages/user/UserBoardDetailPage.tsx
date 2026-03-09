@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserLayout } from "@/components/UserLayout";
+import { AdminLayout } from "@/components/AdminLayout";
 import { Users, Heart, MessageSquare, Send, Trash2, Flag, MoreVertical, Paperclip, Image, FileText, X, Eye, ThumbsDown, Pencil, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { ProfileAvatar } from "@/components/Avatars";
@@ -15,7 +16,10 @@ export default function UserBoardDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
+  const isAdminRoute = location.pathname.startsWith("/admin");
+  const boardsPath = isAdminRoute ? "/admin/boards" : "/user/boards";
   const [postTitle, setPostTitle] = useState("");
   const [newPost, setNewPost] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -99,7 +103,7 @@ export default function UserBoardDetailPage() {
     },
     onSuccess: () => {
       toast.success("Board deleted");
-      navigate("/user/boards");
+      navigate(boardsPath);
     },
     onError: () => toast.error("Failed to delete board"),
   });
@@ -290,10 +294,13 @@ export default function UserBoardDetailPage() {
     return data.publicUrl;
   };
 
-  if (!board) return <UserLayout><div className="p-6 text-muted-foreground text-sm">Loading...</div></UserLayout>;
+  if (!board) {
+    const LoadingWrapper = isAdminRoute ? AdminLayout : UserLayout;
+    return <LoadingWrapper><div className="p-6 text-muted-foreground text-sm">Loading...</div></LoadingWrapper>;
+  }
 
-  return (
-    <UserLayout secondaryBackPath="/user/boards" secondaryBackLabel="BOARDS">
+  const boardContent = (
+    <>
       {/* Board Header */}
       <div className="border-b border-border px-4 sm:px-6 py-3">
         <h1 className="text-[11px] text-foreground glow-text tracking-[0.3em] font-bold">{board.name.toUpperCase()}</h1>
@@ -470,6 +477,16 @@ export default function UserBoardDetailPage() {
           </div>
         </div>
       )}
+    </>
+  );
+
+  if (isAdminRoute) {
+    return <AdminLayout>{boardContent}</AdminLayout>;
+  }
+
+  return (
+    <UserLayout secondaryBackPath={boardsPath} secondaryBackLabel="BOARDS">
+      {boardContent}
     </UserLayout>
   );
 }

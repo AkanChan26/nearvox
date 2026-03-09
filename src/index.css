@@ -34,10 +34,10 @@ body {
     --primary-foreground: 0 0% 0%;
 
     --secondary: 0 0% 5%;
-    --secondary-foreground: 145 50% 40%;
+    --secondary-foreground: 145 50% 45%;
 
     --muted: 0 0% 4%;
-    --muted-foreground: 145 25% 30%;
+    --muted-foreground: 145 30% 35%;
 
     --accent: 145 80% 56%;
     --accent-foreground: 0 0% 0%;
@@ -45,7 +45,7 @@ body {
     --destructive: 0 85% 50%;
     --destructive-foreground: 0 0% 0%;
 
-    --border: 145 50% 8%;
+    --border: 145 50% 12%;
     --input: 0 0% 4%;
     --ring: 145 80% 56%;
 
@@ -151,10 +151,10 @@ body {
     @apply flex-1 mx-2 border-b border-dotted border-border;
   }
   .glow-text {
-    text-shadow: 0 0 8px hsl(145 80% 56% / 0.5), 0 0 20px hsl(145 80% 56% / 0.2), 0 0 40px hsl(145 80% 56% / 0.1);
+    text-shadow: 0 0 10px hsl(145 80% 56% / 0.6), 0 0 25px hsl(145 80% 56% / 0.3), 0 0 50px hsl(145 80% 56% / 0.15);
   }
   .glow-admin {
-    text-shadow: 0 0 8px hsl(199 91% 56% / 0.5), 0 0 20px hsl(199 91% 56% / 0.2);
+    text-shadow: 0 0 10px hsl(199 91% 56% / 0.6), 0 0 25px hsl(199 91% 56% / 0.3), 0 0 50px hsl(199 91% 56% / 0.15);
   }
   .scanline {
     background: repeating-linear-gradient(
@@ -191,7 +191,7 @@ body {
   .admin-box {
     background: hsl(var(--admin-bg));
     border: 1px solid hsl(var(--admin-border));
-    box-shadow: 0 0 15px hsl(199 91% 56% / 0.08), inset 0 0 30px hsl(199 91% 56% / 0.03);
+    box-shadow: 0 0 20px hsl(199 91% 56% / 0.1), inset 0 0 30px hsl(199 91% 56% / 0.04);
   }
   .admin-text {
     color: hsl(var(--admin));

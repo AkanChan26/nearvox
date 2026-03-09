@@ -10,7 +10,7 @@ import {
   Activity, Wifi,
 } from "lucide-react";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
-import { TOPIC_CATEGORIES } from "@/lib/categories";
+import { TOPIC_CATEGORIES, getCategoryColor } from "@/lib/categories";
 import { ProfileAvatar } from "@/components/Avatars";
 
 export default function UserDashboard() {
@@ -172,17 +172,31 @@ export default function UserDashboard() {
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 sm:gap-4">
             {allCommunityModules.map((mod) => {
               const Icon = mod.icon;
+              const catValue = TOPIC_CATEGORIES.find(c => c.cmd === mod.cmd)?.value || "";
+              const clr = catValue ? getCategoryColor(catValue) : "145 80% 56%";
               return (
                 <button
                   key={mod.cmd}
                   onClick={() => navigate(mod.path)}
-                  className="text-left p-3 sm:p-4 h-[80px] sm:h-[100px] border border-border bg-card hover:border-foreground/30 hover:bg-foreground/[0.03] hover:shadow-[0_0_12px_hsl(var(--foreground)/0.05)] transition-all duration-150 group flex flex-col justify-between"
+                  className="text-left p-3 sm:p-4 h-[80px] sm:h-[100px] border bg-card transition-all duration-150 group flex flex-col justify-between"
+                  style={{
+                    borderColor: `hsl(${clr} / 0.18)`,
+                    boxShadow: `inset 0 0 20px hsl(${clr} / 0.03)`,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = `hsl(${clr} / 0.45)`;
+                    e.currentTarget.style.boxShadow = `0 0 15px hsl(${clr} / 0.1), inset 0 0 20px hsl(${clr} / 0.05)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = `hsl(${clr} / 0.18)`;
+                    e.currentTarget.style.boxShadow = `inset 0 0 20px hsl(${clr} / 0.03)`;
+                  }}
                 >
                   <div className="flex items-center gap-1.5">
                     <span className="text-[8px] text-muted-foreground/50 font-mono">[{mod.cmd}]</span>
-                    <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors" style={{ color: `hsl(${clr})` }} />
                   </div>
-                  <p className="text-[8px] sm:text-[9px] text-foreground group-hover:glow-text tracking-wider leading-tight">
+                  <p className="text-[8px] sm:text-[9px] tracking-wider leading-tight" style={{ color: `hsl(${clr})`, textShadow: `0 0 8px hsl(${clr} / 0.35)` }}>
                     {mod.label}
                   </p>
                 </button>
