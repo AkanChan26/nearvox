@@ -535,7 +535,7 @@ export default function UserPostsPage() {
         )}
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
-          {unified.length} ITEMS
+          {unified.length} ITEMS{(() => { const unread = unified.filter((i) => !readPosts?.has(i.id) && i.user_id !== user?.id).length; return unread > 0 ? ` · ${unread} UNREAD` : ""; })()}
         </p>
 
         {isLoading ? (
