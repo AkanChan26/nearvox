@@ -103,7 +103,7 @@ export default function UserBoardDetailPage() {
     },
     onSuccess: () => {
       toast.success("Board deleted");
-      navigate("/user/boards");
+      navigate(boardsPath);
     },
     onError: () => toast.error("Failed to delete board"),
   });
