@@ -86,43 +86,43 @@ body {
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 11px;
-    line-height: 1.9;
-    letter-spacing: 0.02em;
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
     word-spacing: 0.1em;
   }
 
   h1, h2, h3, h4, h5, h6,
   button, input, textarea, select, label, span, p, a, div, li, td, th {
-    font-family: 'Press Start 2P', cursive;
+    font-family: 'VT323', monospace;
   }
 
   /* Mobile-responsive base sizes */
-  h1 { font-size: 0.85rem; line-height: 1.7; margin-bottom: 0.5em; }
-  h2 { font-size: 0.75rem; line-height: 1.7; margin-bottom: 0.4em; }
-  h3 { font-size: 0.65rem; line-height: 1.7; margin-bottom: 0.3em; }
-  p { font-size: 11px; line-height: 1.9; margin-bottom: 0.4em; }
+  h1 { font-size: 1.4rem; line-height: 1.5; margin-bottom: 0.5em; }
+  h2 { font-size: 1.2rem; line-height: 1.5; margin-bottom: 0.4em; }
+  h3 { font-size: 1.05rem; line-height: 1.5; margin-bottom: 0.3em; }
+  p { font-size: 16px; line-height: 1.6; margin-bottom: 0.4em; }
   span, a, label, li, td, th, div { font-size: inherit; }
-  button { font-size: 11px; padding: 0.5em 0.8em; }
-  input, textarea, select { font-size: 14px; line-height: 1.8; padding: 0.6em 0.8em; }
+  button { font-size: 15px; padding: 0.5em 0.8em; }
+  input, textarea, select { font-size: 16px; line-height: 1.6; padding: 0.6em 0.8em; }
 
   @media (min-width: 640px) {
-    body { font-size: 11px; }
-    h1 { font-size: 1rem; }
-    h2 { font-size: 0.85rem; }
-    h3 { font-size: 0.72rem; }
-    p, button { font-size: 11px; }
-    input, textarea, select { font-size: 14px; }
+    body { font-size: 17px; }
+    h1 { font-size: 1.6rem; }
+    h2 { font-size: 1.3rem; }
+    h3 { font-size: 1.1rem; }
+    p, button { font-size: 17px; }
+    input, textarea, select { font-size: 17px; }
   }
 
   @media (min-width: 1024px) {
-    body { font-size: 12px; }
-    h1 { font-size: 1.1rem; }
-    h2 { font-size: 0.9rem; }
-    h3 { font-size: 0.78rem; }
-    p, button { font-size: 12px; }
-    input, textarea, select { font-size: 14px; }
+    body { font-size: 18px; }
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.4rem; }
+    h3 { font-size: 1.2rem; }
+    p, button { font-size: 18px; }
+    input, textarea, select { font-size: 18px; }
   }
 
   ::-webkit-scrollbar { width: 4px; }
