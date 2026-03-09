@@ -100,12 +100,36 @@ export default function UserPostsPage() {
 
   // Helper: check if location matches user's region
   const isNearby = (itemLocation: string | null | undefined): boolean => {
-    if (!userLocation || !itemLocation) return true; // show global posts
+    if (!userLocation || !itemLocation) return true;
     const norm = (s: string) => s.toLowerCase().trim();
     const userParts = norm(userLocation).split(/[,\s]+/);
     const itemParts = norm(itemLocation).split(/[,\s]+/);
     return userParts.some((part) => itemParts.some((ip) => ip.includes(part) || part.includes(ip)));
   };
+
+  // Creators - fetch based on raw posts/topics user_ids
+  const creatorIds = useMemo(() => {
+    const postIds = (posts || []).map((p) => p.user_id);
+    const topicIds = (topics || []).map((t) => t.user_id);
+    return [...new Set([...postIds, ...topicIds])];
+  }, [posts, topics]);
+
+  const { data: creators } = useQuery({
+    queryKey: ["post-creators", creatorIds],
+    queryFn: async () => {
+      if (creatorIds.length === 0) return [];
+      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
+      return data || [];
+    },
+    enabled: creatorIds.length > 0,
+  });
+
+  const getCreatorName = useCallback((userId: string) => {
+    const creator = creators?.find((c) => c.user_id === userId);
+    if (!creator) return "Unknown";
+    if (creator.is_admin) return creator.username || "ADMIN";
+    return creator.anonymous_name || "Anonymous";
+  }, [creators]);
 
   // Merge into unified list
   const unified: UnifiedItem[] = useMemo(() => {
@@ -163,14 +187,7 @@ export default function UserPostsPage() {
     return all.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [posts, topics, isMine, regionFilter, userLocation, searchQuery, creators]);
-
-  const getCreatorName = useCallback((userId: string) => {
-    const creator = creators?.find((c) => c.user_id === userId);
-    if (!creator) return "Unknown";
-    if (creator.is_admin) return creator.username || "ADMIN";
-    return creator.anonymous_name || "Anonymous";
-  }, [creators]);
+  }, [posts, topics, isMine, regionFilter, userLocation, searchQuery, getCreatorName]);
 
   // Likes (posts)
   const { data: myLikes } = useQuery({
@@ -202,18 +219,6 @@ export default function UserPostsPage() {
     enabled: !!user,
   });
 
-  // Creators
-  const creatorIds = [...new Set(unified.map((p) => p.user_id))];
-  const { data: creators } = useQuery({
-    queryKey: ["post-creators", creatorIds],
-    queryFn: async () => {
-      if (creatorIds.length === 0) return [];
-      const { data } = await supabase.from("profiles").select("user_id, anonymous_name, is_admin, username, avatar").in("user_id", creatorIds);
-      return data || [];
-    },
-    enabled: creatorIds.length > 0,
-  });
-
   // Comments for expanded post
   const { data: comments } = useQuery({
     queryKey: ["post-comments", expandedComments],
@@ -235,8 +240,6 @@ export default function UserPostsPage() {
     },
     enabled: commentUserIds.length > 0,
   });
-
-  // getCreatorName already defined above as useCallback
 
   const isCreatorAdmin = (userId: string) => creators?.find((c) => c.user_id === userId)?.is_admin || false;
   const getCreatorAvatar = (userId: string) => (creators?.find((c) => c.user_id === userId) as any)?.avatar || "user-1";
