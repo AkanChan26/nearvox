@@ -146,10 +146,31 @@ export default function UserPostsPage() {
       all = all.filter((item) => isNearby(item.location));
     }
     
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      all = all.filter((item) => {
+        const creatorName = getCreatorName(item.user_id).toLowerCase();
+        return (
+          item.content.toLowerCase().includes(q) ||
+          (item.title || "").toLowerCase().includes(q) ||
+          creatorName.includes(q) ||
+          (item.location || "").toLowerCase().includes(q)
+        );
+      });
+    }
+
     return all.sort(
       (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
-  }, [posts, topics, isMine, regionFilter, userLocation]);
+  }, [posts, topics, isMine, regionFilter, userLocation, searchQuery, creators]);
+
+  const getCreatorName = useCallback((userId: string) => {
+    const creator = creators?.find((c) => c.user_id === userId);
+    if (!creator) return "Unknown";
+    if (creator.is_admin) return creator.username || "ADMIN";
+    return creator.anonymous_name || "Anonymous";
+  }, [creators]);
 
   // Likes (posts)
   const { data: myLikes } = useQuery({
