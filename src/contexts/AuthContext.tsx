@@ -48,6 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const ids = new Set<string>(Object.keys(state));
         setOnlineUsers(ids);
       })
+      .on("presence", { event: "leave" }, () => {
+        const state = channel.presenceState();
+        const ids = new Set<string>(Object.keys(state));
+        setOnlineUsers(ids);
+      })
       .subscribe(async (status) => {
         if (status === "SUBSCRIBED") {
           await channel.track({ online_at: new Date().toISOString() });
@@ -56,7 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     channelRef.current = channel;
 
+    // Heartbeat to keep presence alive
+    const heartbeat = setInterval(async () => {
+      if (channelRef.current) {
+        await channelRef.current.track({ online_at: new Date().toISOString() });
+      }
+    }, 30000);
+
     return () => {
+      clearInterval(heartbeat);
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
