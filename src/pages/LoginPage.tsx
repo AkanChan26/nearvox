@@ -65,7 +65,7 @@ export default function LoginPage() {
             <div className="border border-foreground/30 bg-foreground/5 p-2.5 mb-4">
               <p className="text-xs text-foreground glow-text flex items-center gap-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-foreground animate-pulse" />
-                ACCOUNT CREATED — VERIFY EMAIL TO CONTINUE
+                ACCOUNT CREATED — LOGIN TO CONTINUE
               </p>
             </div>
           )}

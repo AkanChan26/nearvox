@@ -29,7 +29,6 @@ export default function UsersPage() {
     },
   });
 
-  // Admin's tickets
   const { data: tickets, refetch: refetchTickets } = useQuery({
     queryKey: ["admin-tickets", user?.id],
     queryFn: async () => {
@@ -44,7 +43,6 @@ export default function UsersPage() {
     enabled: !!user,
   });
 
-  // Activity logs
   const { data: activityLogs } = useQuery({
     queryKey: ["admin-activity-logs"],
     queryFn: async () => {
@@ -87,34 +85,34 @@ export default function UsersPage() {
     <AdminLayout>
       <PageHeader title="USER REGISTRY" description="// MANAGE AND MONITOR USER ACCOUNTS">
         <input
-          placeholder="> SEARCH USER..."
+          placeholder="> SEARCH..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-56 bg-input border border-border text-foreground placeholder:text-muted-foreground text-xs px-3 py-2 focus:outline-none focus:border-foreground"
+          className="w-32 sm:w-56 bg-input border border-border text-foreground placeholder:text-muted-foreground text-xs px-2 sm:px-3 py-1.5 sm:py-2 focus:outline-none focus:border-foreground"
         />
       </PageHeader>
 
-      <div className="p-6 space-y-6">
+      <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
         {/* Invite Ticket Generator */}
         <div className="terminal-box">
-          <div className="terminal-header flex items-center justify-between">
-            <span>INVITE TICKETS — {tickets?.length ?? 0} AVAILABLE</span>
+          <div className="terminal-header flex items-center justify-between gap-2 flex-wrap">
+            <span className="text-[9px] sm:text-[10px]">INVITE TICKETS — {tickets?.length ?? 0} AVAILABLE</span>
             <button
               onClick={generateTicket}
               disabled={generating}
-              className="flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-2 py-1 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50 tracking-normal"
+              className="flex items-center gap-1 text-[9px] sm:text-[10px] text-foreground border border-foreground px-1.5 sm:px-2 py-0.5 sm:py-1 hover:bg-foreground hover:text-primary-foreground transition-none disabled:opacity-50 tracking-normal"
             >
-              <Ticket className="h-3 w-3" />
-              {generating ? "GENERATING..." : "[+ GENERATE TICKET]"}
+              <Ticket className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              {generating ? "..." : "[+ GENERATE]"}
             </button>
           </div>
           {tickets && tickets.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {tickets.map((ticket) => (
-                <div key={ticket.id} className="flex items-center justify-between border border-border p-2">
-                  <span className="text-xs text-foreground font-mono tracking-wider">{ticket.invite_code}</span>
-                  <div className="flex items-center gap-1 ml-2">
-                    <button onClick={() => copyTicketLink(ticket.invite_code)} className="text-muted-foreground hover:text-foreground">
+                <div key={ticket.id} className="flex items-center justify-between border border-border p-1.5 sm:p-2">
+                  <span className="text-[10px] sm:text-xs text-foreground font-mono tracking-wider truncate">{ticket.invite_code}</span>
+                  <div className="flex items-center gap-1 ml-1 shrink-0">
+                    <button onClick={() => copyTicketLink(ticket.invite_code)} className="text-muted-foreground hover:text-foreground p-0.5">
                       {copiedCode === ticket.invite_code ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
                     </button>
                     <button
@@ -123,7 +121,7 @@ export default function UsersPage() {
                         if (error) toast.error("Failed to delete ticket");
                         else { toast.success("Ticket deleted"); refetchTickets(); }
                       }}
-                      className="text-muted-foreground hover:text-destructive"
+                      className="text-muted-foreground hover:text-destructive p-0.5"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -138,7 +136,7 @@ export default function UsersPage() {
 
         {/* User List */}
         <div className="terminal-box">
-          <div className="terminal-header">REGISTERED USERS — {users?.length ?? 0} RECORDS</div>
+          <div className="terminal-header text-[9px] sm:text-[10px]">REGISTERED USERS — {users?.length ?? 0} RECORDS</div>
 
           {isLoading ? (
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
@@ -169,28 +167,28 @@ export default function UsersPage() {
                       )}
                     </div>
                   </div>
-                  {/* Mobile stacked */}
-                  <div className="sm:hidden px-2 py-2 hover:bg-muted/50 transition-none space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                  {/* Mobile stacked - compact */}
+                  <div className="sm:hidden px-2 py-1.5 hover:bg-muted/50 transition-none">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className={`text-[10px] truncate flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
                         {u.username}
-                        {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
+                        {u.is_admin && <span className="admin-badge ml-1 text-[7px]">ADM</span>}
                       </span>
-                      <span className={`text-[9px] ${
+                      <span className={`text-[8px] shrink-0 ${
                         u.status === "active" ? "text-foreground" :
                         u.status === "suspended" ? "text-warning" : "text-destructive"
                       }`}>{u.status?.toUpperCase()}</span>
                     </div>
-                    <div className="flex items-center justify-between text-[9px] text-muted-foreground">
-                      <span>{u.location || "—"}</span>
-                      <div className="flex items-center gap-1.5">
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className="text-[8px] text-muted-foreground">{u.location || "—"}</span>
+                      <div className="flex items-center gap-1">
                         <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground" title="View">
-                          <Eye className="h-3 w-3" />
+                          <Eye className="h-2.5 w-2.5" />
                         </button>
-                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-warning hover:underline">SUS</button>
-                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-destructive hover:underline">BAN</button>
+                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[8px] text-warning hover:underline px-0.5">S</button>
+                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[8px] text-destructive hover:underline px-0.5">B</button>
                         {u.status !== "active" && (
-                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-foreground hover:underline">ACT</button>
+                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[8px] text-foreground hover:underline px-0.5">A</button>
                         )}
                       </div>
                     </div>
@@ -205,21 +203,20 @@ export default function UsersPage() {
 
         {/* Recent Activity Logs */}
         <div className="terminal-box">
-          <div className="terminal-header">USER ACTIVITY LOG</div>
+          <div className="terminal-header text-[9px] sm:text-[10px]">USER ACTIVITY LOG</div>
           {activityLogs && activityLogs.length > 0 ? (
             <div className="space-y-0.5">
               {activityLogs.map((log: any) => {
                 const logUser = users?.find((u) => u.user_id === log.user_id);
                 return (
-                  <div key={log.id} className="text-[11px] flex items-start gap-2">
+                  <div key={log.id} className="text-[10px] sm:text-[11px] flex items-start gap-1 sm:gap-2">
                     <span className="text-muted-foreground shrink-0">
                       [{new Date(log.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
                     </span>
-                    <span className="text-foreground">
+                    <span className="text-foreground truncate">
                       <span className="text-foreground/70">{logUser?.anonymous_name || log.user_id.slice(0, 8)}</span>
                       {" → "}
                       {log.action.replace(/_/g, " ").toUpperCase()}
-                      {log.details?.content_preview && ` — "${log.details.content_preview}"`}
                     </span>
                   </div>
                 );
