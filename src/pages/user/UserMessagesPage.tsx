@@ -569,9 +569,9 @@ export default function UserMessagesPage() {
   return (
     <div className="fixed inset-0 z-30 bg-background flex flex-col">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-2.5 border-b border-border bg-card/95 backdrop-blur-sm shrink-0">
-        <button onClick={() => navigate("/dashboard")} className="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-muted/30 transition-colors">
-          <ArrowLeft className="h-4 w-4" />
+      <div className="flex items-center gap-3 px-4 pt-[env(safe-area-inset-top,8px)] pb-2.5 border-b border-border bg-card/95 backdrop-blur-sm shrink-0" style={{ paddingTop: "max(env(safe-area-inset-top, 0px), 12px)" }}>
+        <button onClick={() => navigate("/dashboard")} className="text-muted-foreground hover:text-foreground p-2 rounded-md hover:bg-muted/30 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center">
+          <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="h-4 w-px bg-border" />
         <p className="text-xs font-semibold text-foreground tracking-[0.15em]">NEARVOX</p>
