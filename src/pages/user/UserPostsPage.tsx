@@ -777,7 +777,12 @@ export default function UserPostsPage() {
                     {/* Edit (own) */}
                     {(isOwner || userIsAdmin) && (
                       <button
-                        onClick={() => { setEditingPost(item.id); setEditContent(item.content); }}
+                        onClick={() => { 
+                          setEditingPost(item.id); 
+                          setEditContent(item.content); 
+                          setEditTitle(item.title || "");
+                          setEditLocation(item.location || "");
+                        }}
                         className="flex items-center gap-0.5 hover:text-foreground"
                         title="Edit"
                       >
