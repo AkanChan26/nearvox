@@ -616,16 +616,39 @@ export default function UserPostsPage() {
 
                   {/* Content or Edit form */}
                   {editingPost === item.id ? (
-                    <div className="mb-2">
-                      <textarea
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        rows={3}
-                        className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none mb-1"
-                      />
+                    <div className="mb-2 space-y-1.5">
+                      {item.type === "topic" && (
+                        <div>
+                          <p className="text-[9px] text-muted-foreground mb-0.5">&gt; TITLE:</p>
+                          <input
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            className="w-full bg-input border border-border text-foreground text-xs px-2 py-1.5 focus:outline-none focus:border-foreground"
+                            placeholder="Title"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-[9px] text-muted-foreground mb-0.5">&gt; CONTENT:</p>
+                        <textarea
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          rows={3}
+                          className="w-full bg-input border border-border text-foreground text-sm px-3 py-2 focus:outline-none focus:border-foreground resize-none"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-muted-foreground mb-0.5">&gt; REGION:</p>
+                        <input
+                          value={editLocation}
+                          onChange={(e) => setEditLocation(e.target.value)}
+                          className="w-full bg-input border border-border text-foreground text-xs px-2 py-1.5 focus:outline-none focus:border-foreground"
+                          placeholder="Location (optional)"
+                        />
+                      </div>
                       <div className="flex gap-2">
                         <button onClick={() => handleUpdate(item)} disabled={!editContent.trim()} className="text-[10px] text-foreground border border-foreground px-2 py-0.5 hover:bg-foreground hover:text-primary-foreground disabled:opacity-30">[SAVE]</button>
-                        <button onClick={() => { setEditingPost(null); setEditContent(""); }} className="text-[10px] text-muted-foreground border border-border px-2 py-0.5 hover:text-foreground">[CANCEL]</button>
+                        <button onClick={() => { setEditingPost(null); setEditContent(""); setEditTitle(""); setEditLocation(""); }} className="text-[10px] text-muted-foreground border border-border px-2 py-0.5 hover:text-foreground">[CANCEL]</button>
                       </div>
                     </div>
                   ) : (
