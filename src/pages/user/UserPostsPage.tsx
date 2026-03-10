@@ -329,16 +329,23 @@ export default function UserPostsPage() {
   const handleUpdate = async (item: UnifiedItem) => {
     if (!editContent.trim()) return;
     if (item.type === "post") {
-      const { error } = await supabase.from("posts").update({ content: editContent.trim() }).eq("id", item.id);
+      const { error } = await supabase.from("posts").update({ 
+        content: editContent.trim(),
+        location: editLocation.trim() || null,
+      }).eq("id", item.id);
       if (error) toast.error("Failed to update");
       else { toast.success("Post updated"); queryClient.invalidateQueries({ queryKey: ["user-posts-feed"] }); }
     } else {
-      const { error } = await supabase.from("topics").update({ content: editContent.trim() }).eq("id", item.id);
+      const updateData: any = { content: editContent.trim(), location: editLocation.trim() || null };
+      if (editTitle.trim()) updateData.title = editTitle.trim();
+      const { error } = await supabase.from("topics").update(updateData).eq("id", item.id);
       if (error) toast.error("Failed to update");
       else { toast.success("Topic updated"); queryClient.invalidateQueries({ queryKey: ["user-topics-feed"] }); }
     }
     setEditingPost(null);
     setEditContent("");
+    setEditTitle("");
+    setEditLocation("");
   };
 
   const handleReport = async (itemId: string, itemType: "post" | "topic" = "post") => {
