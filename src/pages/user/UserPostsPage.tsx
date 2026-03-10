@@ -60,6 +60,8 @@ export default function UserPostsPage() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [editingPost, setEditingPost] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [editTitle, setEditTitle] = useState("");
+  const [editLocation, setEditLocation] = useState("");
 
   // Fetch user profile for region filtering
   const { data: myProfile } = useQuery({
