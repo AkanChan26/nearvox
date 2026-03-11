@@ -53,7 +53,8 @@ type Reaction = {
   emoji: string;
 };
 
-const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "💯", "🤔", "😍", "👎", "😡", "🙏", "💀", "✨"];
+const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
+const ALL_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "💯", "🤔", "😍", "👎", "😡", "🙏", "💀", "✨", "🥺", "😤", "🤣", "😘", "🥰", "😎", "🤩", "😭", "🫡"];
 
 export default function UserMessagesPage() {
   const { user } = useAuth();
