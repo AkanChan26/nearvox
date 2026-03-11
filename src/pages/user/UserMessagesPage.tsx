@@ -81,6 +81,8 @@ export default function UserMessagesPage() {
   const [showConvoMenu, setShowConvoMenu] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showFullReactionPicker, setShowFullReactionPicker] = useState<string | null>(null);
+  const [showFullEmojiInput, setShowFullEmojiInput] = useState(false);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<any>(null);
   const { isOnline } = useAuth();
