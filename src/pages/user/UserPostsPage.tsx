@@ -65,7 +65,13 @@ export default function UserPostsPage() {
   const [editLocation, setEditLocation] = useState("");
   const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
 
-  // Fetch user profile for region filtering
+  // Close action menu on outside click
+  useEffect(() => {
+    const handler = () => setOpenActionMenu(null);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
+
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile-region", user?.id],
     queryFn: async () => {
