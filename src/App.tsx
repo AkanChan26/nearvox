@@ -37,14 +37,13 @@ import InstallPage from "./pages/InstallPage";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+function AppRoutes() {
+  useHardwareBackButton();
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+
             <Route path="/login" element={<LoginPage />} />
             <Route path="/join" element={<JoinPage />} />
             <Route path="/install" element={<InstallPage />} />
