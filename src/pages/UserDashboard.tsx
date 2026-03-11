@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  MessageSquare, LogOut, ChevronRight,
+  MessageSquare, LogOut, ChevronRight, ChevronDown,
   Terminal, TrendingUp, Hash, Plus,
   Megaphone, Mail, Settings, Ticket, FileText, Bell, LayoutGrid,
   Activity, Wifi,
@@ -17,6 +17,7 @@ export default function UserDashboard() {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [announcementsOpen, setAnnouncementsOpen] = useState(false);
 
   const { data: profile } = useQuery({
     queryKey: ["my-profile", user?.id],
@@ -106,6 +107,20 @@ export default function UserDashboard() {
   const now = new Date();
   const timeStr = now.toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" });
 
+  // Module accent colors (one per module, consistent)
+  const moduleAccents: Record<string, string> = {
+    "01": "45 90% 50%",    // Job Hunting — amber
+    "02": "280 70% 55%",   // Promotions — purple
+    "03": "145 80% 56%",   // Discussions — green
+    "04": "340 75% 55%",   // Confessions — pink
+    "05": "199 91% 56%",   // Local Help — cyan
+    "06": "25 90% 55%",    // Marketplace — orange
+    "07": "170 70% 50%",   // Events — teal
+    "08": "0 85% 55%",     // Alerts — red
+    "09": "55 85% 55%",    // Ideas — yellow
+    "10": "220 70% 55%",   // All Posts — blue
+  };
+
   const allCommunityModules = [
     ...TOPIC_CATEGORIES.map(c => ({
       cmd: c.cmd, label: c.label.toUpperCase(), icon: c.icon,
@@ -164,7 +179,70 @@ export default function UserDashboard() {
           </div>
         </div>
 
-        {/* ── COMMUNITY MODULES — 5 per row, fixed height ── */}
+        {/* ── ANNOUNCEMENTS COLLAPSIBLE BANNER ── */}
+        {announcements && announcements.length > 0 && (
+          <div className="mb-4 border border-[hsl(var(--admin-border))] bg-card">
+            <button
+              onClick={() => setAnnouncementsOpen(!announcementsOpen)}
+              className="w-full flex items-center gap-2 px-3 py-2 hover:bg-muted/10 transition-colors"
+            >
+              <Megaphone className="h-3 w-3 text-[hsl(var(--admin))]" />
+              <span className="text-[9px] sm:text-[10px] admin-text tracking-[0.3em] flex-1 text-left">
+                {announcements.length} ANNOUNCEMENT{announcements.length !== 1 ? "S" : ""}
+              </span>
+              <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${announcementsOpen ? "rotate-180" : ""}`} />
+            </button>
+            {announcementsOpen && (
+              <div className="px-3 pb-3 space-y-2">
+                {announcements.slice(0, 3).map((ann: any) => (
+                  <div key={ann.id} className="admin-box px-3 py-2.5">
+                    <p className="text-[9px] sm:text-[10px] admin-text font-bold leading-relaxed">{ann.title}</p>
+                    <p className="text-[8px] sm:text-[9px] text-secondary-foreground truncate mt-1">{ann.content}</p>
+                  </div>
+                ))}
+                <button onClick={() => navigate("/user/announcements")} className="text-[8px] text-muted-foreground hover:text-foreground tracking-wider">[VIEW ALL]</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── RECENT ACTIVITY (moved to top) ── */}
+        <section className="mb-5 sm:mb-7">
+          <div className="border border-border bg-card p-3.5 sm:p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Activity className="h-3 w-3 text-foreground" />
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
+              <span className="text-[8px] text-muted-foreground ml-auto">{timeStr}</span>
+            </div>
+            {recentTopics && recentTopics.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
+                {recentTopics.map((topic) => (
+                  <button
+                    key={topic.id}
+                    onClick={() => navigate(`/topic/${topic.id}`)}
+                    className="w-full text-left flex items-center gap-2 hover:bg-foreground/5 px-2 py-1.5 transition-colors group"
+                  >
+                    <span className="text-muted-foreground shrink-0 text-[8px] font-mono">
+                      [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
+                    </span>
+                    <span className={`text-[9px] sm:text-[10px] truncate flex-1 ${topic.is_announcement ? "admin-text" : "text-foreground/70"}`}>
+                      {topic.title}
+                    </span>
+                    <span className="text-muted-foreground shrink-0 flex items-center gap-1 text-[8px]">
+                      <MessageSquare className="h-2.5 w-2.5" />
+                      {topic.replies_count}
+                      <ChevronRight className="h-2.5 w-2.5" />
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[9px] text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
+            )}
+          </div>
+        </section>
+
+        {/* ── COMMUNITY MODULES — grid with ALL POSTS full-width ── */}
         <section className="mb-5 sm:mb-7">
           <p className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em] mb-3 sm:mb-4 flex items-center gap-1.5">
             <span className="text-foreground">&gt;</span> COMMUNITY MODULES
@@ -172,13 +250,13 @@ export default function UserDashboard() {
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 sm:gap-4">
             {allCommunityModules.map((mod) => {
               const Icon = mod.icon;
-              const catValue = TOPIC_CATEGORIES.find(c => c.cmd === mod.cmd)?.value || "";
-              const clr = catValue ? getCategoryColor(catValue) : "145 80% 56%";
+              const clr = moduleAccents[mod.cmd] || "145 80% 56%";
+              const isAllPosts = mod.cmd === "10";
               return (
                 <button
                   key={mod.cmd}
                   onClick={() => navigate(mod.path)}
-                  className="text-left p-3 sm:p-4 h-[80px] sm:h-[100px] border bg-card transition-all duration-150 group flex flex-col justify-between"
+                  className={`text-left p-3 sm:p-4 h-[80px] sm:h-[100px] border bg-card transition-all duration-150 group flex flex-col justify-between ${isAllPosts ? "col-span-3 sm:col-span-5 h-[60px] sm:h-[70px] flex-row items-center" : ""}`}
                   style={{
                     borderColor: `hsl(${clr} / 0.18)`,
                     boxShadow: `inset 0 0 20px hsl(${clr} / 0.03)`,
@@ -196,9 +274,12 @@ export default function UserDashboard() {
                     <span className="text-[8px] text-muted-foreground/50 font-mono">[{mod.cmd}]</span>
                     <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors" style={{ color: `hsl(${clr})` }} />
                   </div>
-                  <p className="text-[8px] sm:text-[9px] tracking-wider leading-tight" style={{ color: `hsl(${clr})`, textShadow: `0 0 8px hsl(${clr} / 0.35)` }}>
+                  <p className={`tracking-wider leading-tight ${isAllPosts ? "text-[10px] sm:text-xs ml-2" : "text-[8px] sm:text-[9px]"}`} style={{ color: `hsl(${clr})`, textShadow: `0 0 8px hsl(${clr} / 0.35)` }}>
                     {mod.label}
                   </p>
+                  {isAllPosts && (
+                    <ChevronRight className="h-3.5 w-3.5 ml-auto" style={{ color: `hsl(${clr} / 0.5)` }} />
+                  )}
                 </button>
               );
             })}
@@ -234,35 +315,14 @@ export default function UserDashboard() {
                 </button>
               );
             })}
-            {/* Fill empty grid cells so last row aligns */}
             {personalModules.length % 4 !== 0 && Array.from({ length: 4 - (personalModules.length % 4) }).map((_, i) => (
               <div key={`spacer-${i}`} className="h-[65px] sm:hidden" />
             ))}
           </div>
         </section>
 
-        {/* ── INFO PANELS ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-5">
-          {/* Announcements */}
-          {announcements && announcements.length > 0 && (
-            <div className="border border-[hsl(var(--admin-border))] bg-card p-3.5 sm:p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Megaphone className="h-3 w-3 text-[hsl(var(--admin))]" />
-                <span className="text-[9px] sm:text-[10px] admin-text tracking-[0.3em]">ANNOUNCEMENTS</span>
-                <button onClick={() => navigate("/user/announcements")} className="text-[8px] text-muted-foreground hover:text-foreground ml-auto tracking-wider">[ALL]</button>
-              </div>
-              <div className="space-y-2">
-                {announcements.slice(0, 2).map((ann: any) => (
-                  <div key={ann.id} className="admin-box px-3 py-2.5">
-                    <p className="text-[9px] sm:text-[10px] admin-text font-bold leading-relaxed">{ann.title}</p>
-                    <p className="text-[8px] sm:text-[9px] text-secondary-foreground truncate mt-1">{ann.content}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Trending */}
+        {/* ── TRENDING ── */}
+        <div className="grid grid-cols-1 gap-3 sm:gap-5">
           <div className="border border-border bg-card p-3.5 sm:p-4">
             <div className="flex items-center gap-2 mb-3">
               <TrendingUp className="h-3 w-3 text-foreground" />
@@ -289,40 +349,6 @@ export default function UserDashboard() {
               </div>
             ) : (
               <p className="text-[9px] text-muted-foreground">NO TRENDING TOPICS YET</p>
-            )}
-          </div>
-
-          {/* Recent Activity */}
-          <div className="border border-border bg-card p-3.5 sm:p-4 lg:col-span-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Activity className="h-3 w-3 text-foreground" />
-              <span className="text-[9px] sm:text-[10px] text-muted-foreground tracking-[0.3em]">RECENT ACTIVITY</span>
-              <span className="text-[8px] text-muted-foreground ml-auto">{timeStr}</span>
-            </div>
-            {recentTopics && recentTopics.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
-                {recentTopics.map((topic) => (
-                  <button
-                    key={topic.id}
-                    onClick={() => navigate(`/topic/${topic.id}`)}
-                    className="w-full text-left flex items-center gap-2 hover:bg-foreground/5 px-2 py-1.5 transition-colors group"
-                  >
-                    <span className="text-muted-foreground shrink-0 text-[8px] font-mono">
-                      [{new Date(topic.created_at).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit" })}]
-                    </span>
-                    <span className={`text-[9px] sm:text-[10px] truncate flex-1 ${topic.is_announcement ? "admin-text" : "text-foreground/70"}`}>
-                      {topic.title}
-                    </span>
-                    <span className="text-muted-foreground shrink-0 flex items-center gap-1 text-[8px]">
-                      <MessageSquare className="h-2.5 w-2.5" />
-                      {topic.replies_count}
-                      <ChevronRight className="h-2.5 w-2.5" />
-                    </span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[9px] text-muted-foreground cursor-blink">NO RECENT ACTIVITY</p>
             )}
           </div>
         </div>
