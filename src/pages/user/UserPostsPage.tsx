@@ -507,6 +507,10 @@ export default function UserPostsPage() {
         {showCreate && (
           <div className="terminal-box mb-4">
             <div className="terminal-header">CREATE POST</div>
+            <div className="flex items-center gap-1.5 mb-2 px-1 py-1.5 border border-foreground/10 bg-foreground/[0.03]">
+              <Shield className="h-3 w-3 text-muted-foreground shrink-0" />
+              <p className="text-[9px] text-muted-foreground">Remember: you are posting anonymously. Don't include personal info.</p>
+            </div>
             <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
