@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import { useHardwareBackButton } from "@/hooks/useHardwareBackButton";
 import Index from "./pages/Index";
 import AdminUserProfilePage from "./pages/AdminUserProfilePage";
 
@@ -35,14 +37,13 @@ import InstallPage from "./pages/InstallPage";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+function AppRoutes() {
+  useHardwareBackButton();
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+
             <Route path="/login" element={<LoginPage />} />
             <Route path="/join" element={<JoinPage />} />
             <Route path="/install" element={<InstallPage />} />
@@ -78,7 +79,19 @@ const App = () => (
             <Route path="/analytics" element={<AdminRoute><AnalyticsPage /></AdminRoute>} />
             <Route path="/settings" element={<AdminRoute><SettingsPage /></AdminRoute>} />
             <Route path="*" element={<NotFound />} />
-          </Routes>
+      </Routes>
+    </>
+  );
+}
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
