@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
   ChevronDown, ChevronUp, Edit2, Hash, Tag, Search, CheckCheck,
+  MoreVertical, Shield,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -62,8 +63,15 @@ export default function UserPostsPage() {
   const [editContent, setEditContent] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editLocation, setEditLocation] = useState("");
+  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
 
-  // Fetch user profile for region filtering
+  // Close action menu on outside click
+  useEffect(() => {
+    const handler = () => setOpenActionMenu(null);
+    document.addEventListener("click", handler);
+    return () => document.removeEventListener("click", handler);
+  }, []);
+
   const { data: myProfile } = useQuery({
     queryKey: ["my-profile-region", user?.id],
     queryFn: async () => {
@@ -505,6 +513,10 @@ export default function UserPostsPage() {
         {showCreate && (
           <div className="terminal-box mb-4">
             <div className="terminal-header">CREATE POST</div>
+            <div className="flex items-center gap-1.5 mb-2 px-1 py-1.5 border border-foreground/10 bg-foreground/[0.03]">
+              <Shield className="h-3 w-3 text-muted-foreground shrink-0" />
+              <p className="text-[9px] text-muted-foreground">Remember: you are posting anonymously. Don't include personal info.</p>
+            </div>
             <textarea
               value={newContent}
               onChange={(e) => setNewContent(e.target.value)}
@@ -702,7 +714,7 @@ export default function UserPostsPage() {
                   </div>
 
                   {/* Action bar */}
-                  <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-muted-foreground pt-1 border-t border-border flex-wrap">
+                  <div className="flex items-center gap-2 text-[9px] sm:text-[10px] text-muted-foreground pt-1 border-t border-border">
                     {/* Like */}
                     {item.type === "post" ? (
                       <button
@@ -749,59 +761,57 @@ export default function UserPostsPage() {
                         className="flex items-center gap-0.5 hover:text-foreground"
                       >
                         <Eye className="h-2.5 w-2.5" />
-                        <span className="hidden sm:inline">VIEW</span>
                       </button>
                     )}
 
-                    {/* Report (any post/topic — not own) */}
-                    {!isOwner && (() => {
-                      const existingReport = myReports?.find((r) => {
-                        if (item.type === "post") return r.reported_post_id === item.id;
-                        return r.report_type === "message" && r.reason?.includes(`[topic:${item.id}]`);
-                      });
-                      return existingReport ? (
-                        <button onClick={() => handleUndoReport(existingReport.id)} className="flex items-center gap-0.5 text-warning" title="Undo Report">
-                          <Flag className="h-2.5 w-2.5 fill-current" /> <span className="hidden sm:inline">UNDO</span>
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => setReportingPost(reportingPost === item.id ? null : item.id)}
-                          className="flex items-center gap-0.5 hover:text-warning"
-                          title="Report"
+                    {/* ⋯ More actions menu */}
+                    <div className="relative ml-auto">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenActionMenu(openActionMenu === item.id ? null : item.id); }}
+                        className="p-1 hover:text-foreground rounded"
+                      >
+                        <MoreVertical className="h-3 w-3" />
+                      </button>
+                      {openActionMenu === item.id && (
+                        <div
+                          className="absolute right-0 top-full mt-1 z-50 border border-border bg-card min-w-[140px] shadow-xl rounded-md overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <Flag className="h-2.5 w-2.5" /> <span className="hidden sm:inline">REPORT</span>
-                        </button>
-                      );
-                    })()}
-
-                    {/* Edit (own) */}
-                    {(isOwner || userIsAdmin) && (
-                      <button
-                        onClick={() => { 
-                          setEditingPost(item.id); 
-                          setEditContent(item.content); 
-                          setEditTitle(item.title || "");
-                          setEditLocation(item.location || "");
-                        }}
-                        className="flex items-center gap-0.5 hover:text-foreground"
-                        title="Edit"
-                      >
-                        <Edit2 className="h-2.5 w-2.5" />
-                        <span className="hidden sm:inline">EDIT</span>
-                      </button>
-                    )}
-
-                    {/* Delete (own) */}
-                    {(isOwner || userIsAdmin) && (
-                      <button
-                        onClick={() => handleDelete(item)}
-                        className="flex items-center gap-0.5 text-destructive hover:underline ml-auto"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-2.5 w-2.5" />
-                        <span className="hidden sm:inline">DELETE</span>
-                      </button>
-                    )}
+                          {/* Report */}
+                          {!isOwner && (() => {
+                            const existingReport = myReports?.find((r) => {
+                              if (item.type === "post") return r.reported_post_id === item.id;
+                              return r.report_type === "message" && r.reason?.includes(`[topic:${item.id}]`);
+                            });
+                            return existingReport ? (
+                              <button onClick={() => { handleUndoReport(existingReport.id); setOpenActionMenu(null); }}
+                                className="w-full text-left text-[10px] px-3 py-2 hover:bg-muted/30 text-warning flex items-center gap-2">
+                                <Flag className="h-3 w-3 fill-current" /> Undo Report
+                              </button>
+                            ) : (
+                              <button onClick={() => { setReportingPost(reportingPost === item.id ? null : item.id); setOpenActionMenu(null); }}
+                                className="w-full text-left text-[10px] px-3 py-2 hover:bg-muted/30 text-foreground flex items-center gap-2">
+                                <Flag className="h-3 w-3" /> Report
+                              </button>
+                            );
+                          })()}
+                          {/* Edit */}
+                          {(isOwner || userIsAdmin) && (
+                            <button onClick={() => { setEditingPost(item.id); setEditContent(item.content); setEditTitle(item.title || ""); setEditLocation(item.location || ""); setOpenActionMenu(null); }}
+                              className="w-full text-left text-[10px] px-3 py-2 hover:bg-muted/30 text-foreground flex items-center gap-2">
+                              <Edit2 className="h-3 w-3" /> Edit
+                            </button>
+                          )}
+                          {/* Delete */}
+                          {(isOwner || userIsAdmin) && (
+                            <button onClick={() => { handleDelete(item); setOpenActionMenu(null); }}
+                              className="w-full text-left text-[10px] px-3 py-2 hover:bg-destructive/10 text-destructive flex items-center gap-2">
+                              <Trash2 className="h-3 w-3" /> Delete
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Report form */}
@@ -881,8 +891,16 @@ export default function UserPostsPage() {
           </div>
         ) : (
           <div className="terminal-box text-center py-8">
+            <Shield className="h-6 w-6 text-muted-foreground mx-auto mb-3 opacity-30" />
             <p className="text-xs text-muted-foreground mb-2">NO POSTS OR TOPICS YET</p>
-            <p className="text-[10px] text-muted-foreground">Create a post or start a topic in any category</p>
+            <p className="text-[10px] text-muted-foreground mb-4">Create a post or start a topic in any category</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none"
+            >
+              <Plus className="h-3 w-3" />
+              NEW POST
+            </button>
           </div>
         )}
       </div>

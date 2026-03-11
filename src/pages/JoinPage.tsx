@@ -123,9 +123,14 @@ export default function JoinPage() {
           </div>
 
           {/* Step indicator */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className={`h-1 flex-1 ${step >= 1 ? "bg-foreground" : "bg-border"}`} />
-            <div className={`h-1 flex-1 ${step >= 2 ? "bg-foreground" : "bg-border"}`} />
+          <div className="mb-4">
+            <p className="text-[10px] text-muted-foreground tracking-wider mb-1.5">
+              STEP {step} OF 2
+            </p>
+            <div className="flex items-center gap-2">
+              <div className={`h-1 flex-1 ${step >= 1 ? "bg-foreground" : "bg-border"}`} />
+              <div className={`h-1 flex-1 ${step >= 2 ? "bg-foreground" : "bg-border"}`} />
+            </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3">

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { MessageSquare, Eye, Clock, Plus } from "lucide-react";
+import { MessageSquare, Eye, Clock, Plus, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES, getCategoryLabel, getCategoryIcon } from "@/lib/categories";
@@ -126,31 +126,33 @@ export default function UserTopicsPage() {
       </PageHeader>
 
       <div className="px-4 py-4">
-        {/* Category filter tabs */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          <button
-            onClick={() => navigate(baseTopicsPath)}
-            className={`text-[9px] px-2 py-1 border transition-none ${
-              !categoryFilter
-                ? "border-foreground text-foreground bg-foreground/10"
-                : "border-border text-muted-foreground hover:border-foreground/30"
-            }`}
-          >
-            ALL
-          </button>
-          {TOPIC_CATEGORIES.map((cat) => (
+        {/* Category filter tabs — horizontal scroll */}
+        <div className="overflow-x-auto mb-4 -mx-4 px-4">
+          <div className="flex gap-1 min-w-max">
             <button
-              key={cat.value}
-              onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
-              className={`text-[9px] px-2 py-1 border transition-none ${
-                categoryFilter === cat.value
+              onClick={() => navigate(baseTopicsPath)}
+              className={`text-[9px] px-2 py-1 border transition-none whitespace-nowrap ${
+                !categoryFilter
                   ? "border-foreground text-foreground bg-foreground/10"
                   : "border-border text-muted-foreground hover:border-foreground/30"
               }`}
             >
-              {cat.label.split(" & ")[0].toUpperCase()}
+              ALL
             </button>
-          ))}
+            {TOPIC_CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
+                className={`text-[9px] px-2 py-1 border transition-none whitespace-nowrap ${
+                  categoryFilter === cat.value
+                    ? "border-foreground text-foreground bg-foreground/10"
+                    : "border-border text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                {cat.label.split(" & ")[0].toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
@@ -209,8 +211,16 @@ export default function UserTopicsPage() {
           </div>
         ) : (
           <div className="terminal-box text-center py-8">
+            <Shield className="h-6 w-6 text-muted-foreground mx-auto mb-3 opacity-30" />
             <p className="text-xs text-muted-foreground mb-2">NO TOPICS FOUND</p>
-            <p className="text-[10px] text-muted-foreground">Be the first to start a discussion</p>
+            <p className="text-[10px] text-muted-foreground mb-4">Be the first to start a discussion</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none"
+            >
+              <Plus className="h-3 w-3" />
+              NEW TOPIC
+            </button>
           </div>
         )}
       </div>
