@@ -211,8 +211,16 @@ export default function UserTopicsPage() {
           </div>
         ) : (
           <div className="terminal-box text-center py-8">
+            <Shield className="h-6 w-6 text-muted-foreground mx-auto mb-3 opacity-30" />
             <p className="text-xs text-muted-foreground mb-2">NO TOPICS FOUND</p>
-            <p className="text-[10px] text-muted-foreground">Be the first to start a discussion</p>
+            <p className="text-[10px] text-muted-foreground mb-4">Be the first to start a discussion</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none"
+            >
+              <Plus className="h-3 w-3" />
+              NEW TOPIC
+            </button>
           </div>
         )}
       </div>
