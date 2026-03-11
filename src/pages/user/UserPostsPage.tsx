@@ -63,6 +63,7 @@ export default function UserPostsPage() {
   const [editContent, setEditContent] = useState("");
   const [editTitle, setEditTitle] = useState("");
   const [editLocation, setEditLocation] = useState("");
+  const [openActionMenu, setOpenActionMenu] = useState<string | null>(null);
 
   // Fetch user profile for region filtering
   const { data: myProfile } = useQuery({
