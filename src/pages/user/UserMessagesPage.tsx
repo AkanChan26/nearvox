@@ -56,6 +56,9 @@ type Reaction = {
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "😮", "😢"];
 const ALL_EMOJIS = ["👍", "❤️", "😂", "😮", "😢", "🔥", "👏", "🎉", "💯", "🤔", "😍", "👎", "😡", "🙏", "💀", "✨", "🥺", "😤", "🤣", "😘", "🥰", "😎", "🤩", "😭", "🫡"];
 
+const [showFullReactionPicker, setShowFullReactionPicker] = useState<string | null>(null);
+const [showFullEmojiInput, setShowFullEmojiInput] = useState(false);
+
 export default function UserMessagesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
