@@ -126,31 +126,33 @@ export default function UserTopicsPage() {
       </PageHeader>
 
       <div className="px-4 py-4">
-        {/* Category filter tabs */}
-        <div className="flex flex-wrap gap-1 mb-4">
-          <button
-            onClick={() => navigate(baseTopicsPath)}
-            className={`text-[9px] px-2 py-1 border transition-none ${
-              !categoryFilter
-                ? "border-foreground text-foreground bg-foreground/10"
-                : "border-border text-muted-foreground hover:border-foreground/30"
-            }`}
-          >
-            ALL
-          </button>
-          {TOPIC_CATEGORIES.map((cat) => (
+        {/* Category filter tabs — horizontal scroll */}
+        <div className="overflow-x-auto mb-4 -mx-4 px-4">
+          <div className="flex gap-1 min-w-max">
             <button
-              key={cat.value}
-              onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
-              className={`text-[9px] px-2 py-1 border transition-none ${
-                categoryFilter === cat.value
+              onClick={() => navigate(baseTopicsPath)}
+              className={`text-[9px] px-2 py-1 border transition-none whitespace-nowrap ${
+                !categoryFilter
                   ? "border-foreground text-foreground bg-foreground/10"
                   : "border-border text-muted-foreground hover:border-foreground/30"
               }`}
             >
-              {cat.label.split(" & ")[0].toUpperCase()}
+              ALL
             </button>
-          ))}
+            {TOPIC_CATEGORIES.map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => navigate(`${baseTopicsPath}?category=${cat.value}`)}
+                className={`text-[9px] px-2 py-1 border transition-none whitespace-nowrap ${
+                  categoryFilter === cat.value
+                    ? "border-foreground text-foreground bg-foreground/10"
+                    : "border-border text-muted-foreground hover:border-foreground/30"
+                }`}
+              >
+                {cat.label.split(" & ")[0].toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
 
         <p className="text-[10px] text-muted-foreground tracking-[0.3em] mb-4">
