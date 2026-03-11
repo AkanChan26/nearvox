@@ -1039,13 +1039,29 @@ export default function UserMessagesPage() {
                         <Smile className="h-5 w-5" />
                       </button>
                       {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 border border-border bg-card grid grid-cols-8 gap-1 p-2.5 z-50 shadow-xl rounded-xl w-[280px]">
-                          {QUICK_EMOJIS.map((emoji) => (
-                            <button key={emoji} onClick={() => insertEmoji(emoji)}
-                              className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
-                              {emoji}
+                        <div className="absolute bottom-full left-0 mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-0.5">
+                            {QUICK_EMOJIS.map((emoji) => (
+                              <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
+                                {emoji}
+                              </button>
+                            ))}
+                            <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
+                              className="hover:bg-muted/40 p-2 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                              +
                             </button>
-                          ))}
+                          </div>
+                          {showFullEmojiInput && (
+                            <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
+                              {ALL_EMOJIS.filter(e => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                  className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
+                                  {emoji}
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
