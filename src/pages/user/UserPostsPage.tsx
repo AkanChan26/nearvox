@@ -10,6 +10,7 @@ import {
   MessageSquare, Heart, Clock, MapPin, Plus, Trash2,
   Image, FileText, Paperclip, X, Eye, Flag, Send,
   ChevronDown, ChevronUp, Edit2, Hash, Tag, Search, CheckCheck,
+  MoreVertical, Shield,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
