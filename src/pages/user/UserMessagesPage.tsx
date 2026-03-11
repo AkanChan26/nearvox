@@ -869,14 +869,30 @@ export default function UserMessagesPage() {
 
                             {/* Reaction picker */}
                             {showReactions === msg.id && (
-                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-2 border border-border bg-card grid grid-cols-8 gap-1 p-2 z-50 shadow-xl rounded-xl`}
+                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-1.5`}
                                 onClick={(e) => e.stopPropagation()}>
-                                {QUICK_EMOJIS.map((emoji) => (
-                                  <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
-                                    className="hover:bg-muted/40 p-1.5 text-base leading-none rounded-md transition-colors">
-                                    {emoji}
+                                <div className="flex items-center gap-0.5">
+                                  {QUICK_EMOJIS.map((emoji) => (
+                                    <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
+                                      className="hover:bg-muted/40 p-1.5 text-lg leading-none rounded-md transition-colors">
+                                      {emoji}
+                                    </button>
+                                  ))}
+                                  <button onClick={(e) => { e.stopPropagation(); setShowFullReactionPicker(showFullReactionPicker === msg.id ? null : msg.id); }}
+                                    className="hover:bg-muted/40 p-1.5 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                    +
                                   </button>
-                                ))}
+                                </div>
+                                {showFullReactionPicker === msg.id && (
+                                  <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
+                                    {ALL_EMOJIS.filter(e => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                      <button key={emoji} onClick={() => { toggleReaction(msg.id, emoji); setShowFullReactionPicker(null); }}
+                                        className="hover:bg-muted/40 p-1.5 text-lg leading-none rounded-md transition-colors">
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             )}
 
