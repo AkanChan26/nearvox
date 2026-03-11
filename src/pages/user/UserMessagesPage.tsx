@@ -330,7 +330,7 @@ export default function UserMessagesPage() {
   useEffect(() => { if (activeConvo && user) markAsRead(activeConvo); }, [activeConvo, user]);
 
   useEffect(() => {
-    const handler = () => { setContextMenu(null); setShowReactions(null); setShowConvoMenu(false); setShowEmojiPicker(false); };
+    const handler = () => { setContextMenu(null); setShowReactions(null); setShowConvoMenu(false); setShowEmojiPicker(false); setShowFullReactionPicker(null); setShowFullEmojiInput(false); };
     document.addEventListener("click", handler);
     return () => document.removeEventListener("click", handler);
   }, []);
