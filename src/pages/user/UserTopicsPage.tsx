@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { UserLayout } from "@/components/UserLayout";
 import { PageHeader } from "@/components/PageHeader";
-import { MessageSquare, Eye, Clock, Plus } from "lucide-react";
+import { MessageSquare, Eye, Clock, Plus, Shield } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { CreateTopicDialog } from "@/components/CreateTopicDialog";
 import { TOPIC_CATEGORIES, getCategoryLabel, getCategoryIcon } from "@/lib/categories";
