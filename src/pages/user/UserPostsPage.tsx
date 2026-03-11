@@ -885,8 +885,16 @@ export default function UserPostsPage() {
           </div>
         ) : (
           <div className="terminal-box text-center py-8">
+            <Shield className="h-6 w-6 text-muted-foreground mx-auto mb-3 opacity-30" />
             <p className="text-xs text-muted-foreground mb-2">NO POSTS OR TOPICS YET</p>
-            <p className="text-[10px] text-muted-foreground">Create a post or start a topic in any category</p>
+            <p className="text-[10px] text-muted-foreground mb-4">Create a post or start a topic in any category</p>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="inline-flex items-center gap-1.5 text-[10px] text-foreground border border-foreground px-3 py-1.5 hover:bg-foreground hover:text-primary-foreground transition-none"
+            >
+              <Plus className="h-3 w-3" />
+              NEW POST
+            </button>
           </div>
         )}
       </div>
