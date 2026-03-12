@@ -6,13 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { Ticket, Copy, Check, X, Eye } from "lucide-react";
+import { Ticket, Copy, Check, X, Eye, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -64,6 +65,24 @@ export default function UsersPage() {
     }
   };
 
+  const handleDeleteAccount = async (userId: string) => {
+    if (!confirm("⚠ DELETE THIS ACCOUNT PERMANENTLY? This cannot be undone.")) return;
+    setDeletingUser(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
+        body: { target_user_id: userId },
+      });
+      if (error) throw error;
+      toast.success("Account deleted permanently");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    } catch (e: any) {
+      toast.error("Failed to delete account");
+    } finally {
+      setDeletingUser(null);
+    }
+  };
+
   const generateTicket = async () => {
     if (!user) return;
     setGenerating(true);
@@ -79,6 +98,22 @@ export default function UsersPage() {
     setCopiedCode(code);
     toast.success("Invite link copied!");
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const getStatusActions = (u: any) => {
+    const actions: { label: string; mobileLabel: string; action: () => void; color: string }[] = [];
+
+    if (u.status === "active") {
+      actions.push({ label: "[SUS]", mobileLabel: "S", action: () => handleStatusChange(u.user_id, "suspended"), color: "text-warning" });
+      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+    } else if (u.status === "suspended") {
+      actions.push({ label: "[UNSUS]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
+      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+    } else if (u.status === "banned") {
+      actions.push({ label: "[UNBAN]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
+    }
+
+    return actions;
   };
 
   return (
@@ -142,59 +177,74 @@ export default function UsersPage() {
             <p className="text-xs text-muted-foreground py-2 cursor-blink">LOADING</p>
           ) : users && users.length > 0 ? (
             <div className="space-y-1">
-              {users.map((u) => (
-                <div key={u.id} className="border border-border">
-                  {/* Desktop row */}
-                  <div className="hidden sm:flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
-                    <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
-                    <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
-                      {u.username}
-                      {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
-                    </span>
-                    <span className="w-20 text-muted-foreground text-[10px]">{u.location || "—"}</span>
-                    <span className={`w-20 text-[10px] ${
-                      u.status === "active" ? "text-foreground" :
-                      u.status === "suspended" ? "text-warning" : "text-destructive"
-                    }`}>{u.status?.toUpperCase()}</span>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground p-0.5" title="View profile">
-                        <Eye className="h-3 w-3" />
-                      </button>
-                      <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[10px] text-warning hover:underline">[SUS]</button>
-                      <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[10px] text-destructive hover:underline">[BAN]</button>
-                      {u.status !== "active" && (
-                        <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[10px] text-foreground hover:underline">[ACTIVATE]</button>
-                      )}
-                    </div>
-                  </div>
-                  {/* Mobile stacked - compact */}
-                  <div className="sm:hidden px-2 py-1.5 hover:bg-muted/50 transition-none">
-                    <div className="flex items-center justify-between gap-1">
-                      <span className={`text-[10px] truncate flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+              {users.map((u) => {
+                const statusActions = getStatusActions(u);
+                return (
+                  <div key={u.id} className="border border-border">
+                    {/* Desktop row */}
+                    <div className="hidden sm:flex items-center text-xs py-2 px-2 hover:bg-muted/50 transition-none">
+                      <span className="w-20 text-muted-foreground text-[10px]">{u.id.slice(0, 8)}</span>
+                      <span className={`flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
                         {u.username}
-                        {u.is_admin && <span className="admin-badge ml-1 text-[7px]">ADM</span>}
+                        {u.is_admin && <span className="admin-badge ml-1">ADMIN</span>}
                       </span>
-                      <span className={`text-[8px] shrink-0 ${
+                      <span className="w-20 text-muted-foreground text-[10px]">{u.location || "—"}</span>
+                      <span className={`w-20 text-[10px] ${
                         u.status === "active" ? "text-foreground" :
                         u.status === "suspended" ? "text-warning" : "text-destructive"
                       }`}>{u.status?.toUpperCase()}</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-[8px] text-muted-foreground">{u.location || "—"}</span>
                       <div className="flex items-center gap-1">
-                        <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground" title="View">
-                          <Eye className="h-2.5 w-2.5" />
+                        <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground p-0.5" title="View profile">
+                          <Eye className="h-3 w-3" />
                         </button>
-                        <button onClick={() => handleStatusChange(u.user_id, "suspended")} className="text-[8px] text-warning hover:underline px-0.5">S</button>
-                        <button onClick={() => handleStatusChange(u.user_id, "banned")} className="text-[8px] text-destructive hover:underline px-0.5">B</button>
-                        {u.status !== "active" && (
-                          <button onClick={() => handleStatusChange(u.user_id, "active")} className="text-[8px] text-foreground hover:underline px-0.5">A</button>
-                        )}
+                        {statusActions.map((a, i) => (
+                          <button key={i} onClick={a.action} className={`text-[10px] ${a.color} hover:underline`}>{a.label}</button>
+                        ))}
+                        <button
+                          onClick={() => handleDeleteAccount(u.user_id)}
+                          disabled={deletingUser === u.user_id}
+                          className="text-muted-foreground hover:text-destructive p-0.5 ml-1"
+                          title="Delete account"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
+                    </div>
+                    {/* Mobile stacked - compact */}
+                    <div className="sm:hidden px-2 py-1.5 hover:bg-muted/50 transition-none">
+                      <div className="flex items-center justify-between gap-1">
+                        <span className={`text-[10px] truncate flex-1 ${u.is_admin ? "admin-text glow-admin font-bold" : "text-foreground"}`}>
+                          {u.username}
+                          {u.is_admin && <span className="admin-badge ml-1 text-[7px]">ADM</span>}
+                        </span>
+                        <span className={`text-[8px] shrink-0 ${
+                          u.status === "active" ? "text-foreground" :
+                          u.status === "suspended" ? "text-warning" : "text-destructive"
+                        }`}>{u.status?.toUpperCase()}</span>
+                      </div>
+                      <div className="flex items-center justify-between mt-0.5">
+                        <span className="text-[8px] text-muted-foreground">{u.location || "—"}</span>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => navigate(`/users/${u.user_id}`)} className="text-muted-foreground hover:text-foreground" title="View">
+                            <Eye className="h-2.5 w-2.5" />
+                          </button>
+                          {statusActions.map((a, i) => (
+                            <button key={i} onClick={a.action} className={`text-[8px] ${a.color} hover:underline px-0.5`}>{a.mobileLabel}</button>
+                          ))}
+                          <button
+                            onClick={() => handleDeleteAccount(u.user_id)}
+                            disabled={deletingUser === u.user_id}
+                            className="text-muted-foreground hover:text-destructive"
+                            title="Delete"
+                          >
+                            <Trash2 className="h-2.5 w-2.5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-xs text-muted-foreground py-2">NO USERS FOUND</p>

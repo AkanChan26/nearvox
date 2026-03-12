@@ -22,7 +22,7 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // Verify the user
+    // Verify the caller
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -34,8 +34,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userId = user.id;
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
+
+    // Check if a target_user_id was provided (admin deleting another user)
+    let targetUserId = user.id;
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      // No body = self-delete
+    }
+
+    if (body?.target_user_id && body.target_user_id !== user.id) {
+      // Verify caller is admin
+      const { data: callerRole } = await adminClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      
+      if (!callerRole) {
+        return new Response(JSON.stringify({ error: "Only admins can delete other accounts" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      targetUserId = body.target_user_id;
+    }
 
     // Delete all user data from public tables
     const tables = [
@@ -67,14 +93,14 @@ Deno.serve(async (req) => {
     ];
 
     for (const { table, column } of tables) {
-      await adminClient.from(table).delete().eq(column, userId);
+      await adminClient.from(table).delete().eq(column, targetUserId);
     }
 
     // Delete conversations created by user (that are now empty)
-    await adminClient.from("conversations").delete().eq("created_by", userId);
+    await adminClient.from("conversations").delete().eq("created_by", targetUserId);
 
     // Delete the auth user
-    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(targetUserId);
     if (deleteError) {
       console.error("Failed to delete auth user:", deleteError);
       return new Response(JSON.stringify({ error: "Failed to delete account" }), {
