@@ -628,7 +628,7 @@ export default function UserMessagesPage() {
   };
 
   const activeConversation = conversations?.find((c) => c.id === activeConvo);
-  const totalUnread = conversations?.filter((c) => hasUnread(c.id)).length || 0;
+  const totalUnread = visibleConversations.filter((c) => hasUnread(c.id)).length;
   const otherUserId = activeConversation ? getOtherUserId(activeConversation) : null;
   const otherIsBlocked = otherUserId ? isBlocked(otherUserId) : false;
 
