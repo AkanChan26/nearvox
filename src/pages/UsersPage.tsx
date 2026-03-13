@@ -7,13 +7,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Ticket, Copy, Check, X, Eye, Trash2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { runAdminDeleteAccount, runAdminModeration, type AdminModerationAction } from "@/lib/adminModeration";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
+  const [moderatingKey, setModeratingKey] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -56,12 +57,28 @@ export default function UsersPage() {
     },
   });
 
-  const handleStatusChange = async (userId: string, newStatus: "active" | "suspended" | "banned") => {
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("user_id", userId);
-    if (error) toast.error("Failed to update user status");
-    else {
-      toast.success(`User ${newStatus}`);
+  const handleModerationAction = async (userId: string, action: AdminModerationAction) => {
+    const key = `${action}:${userId}`;
+    setModeratingKey(key);
+
+    try {
+      await runAdminModeration(userId, action);
+      const label =
+        action === "suspend"
+          ? "User suspended"
+          : action === "unsuspend"
+            ? "User unsuspended"
+            : action === "block"
+              ? "User blocked"
+              : "User unblocked";
+
+      toast.success(label);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update user status");
+    } finally {
+      setModeratingKey(null);
     }
   };
 
@@ -69,15 +86,11 @@ export default function UsersPage() {
     if (!confirm("⚠ DELETE THIS ACCOUNT PERMANENTLY? This cannot be undone.")) return;
     setDeletingUser(userId);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-account", {
-        headers: { Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
-        body: { target_user_id: userId },
-      });
-      if (error) throw error;
+      await runAdminDeleteAccount(userId);
       toast.success("Account deleted permanently");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e: any) {
-      toast.error("Failed to delete account");
+      toast.error(e?.message || "Failed to delete account");
     } finally {
       setDeletingUser(null);
     }
@@ -101,16 +114,16 @@ export default function UsersPage() {
   };
 
   const getStatusActions = (u: any) => {
-    const actions: { label: string; mobileLabel: string; action: () => void; color: string }[] = [];
+    const actions: { label: string; mobileLabel: string; action: () => void; color: string; key: string }[] = [];
 
     if (u.status === "active") {
-      actions.push({ label: "[SUS]", mobileLabel: "S", action: () => handleStatusChange(u.user_id, "suspended"), color: "text-warning" });
-      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+      actions.push({ label: "[SUS]", mobileLabel: "S", action: () => handleModerationAction(u.user_id, "suspend"), color: "text-warning", key: `suspend:${u.user_id}` });
+      actions.push({ label: "[BLK]", mobileLabel: "B", action: () => handleModerationAction(u.user_id, "block"), color: "text-destructive", key: `block:${u.user_id}` });
     } else if (u.status === "suspended") {
-      actions.push({ label: "[UNSUS]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
-      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+      actions.push({ label: "[UNSUS]", mobileLabel: "U", action: () => handleModerationAction(u.user_id, "unsuspend"), color: "text-foreground", key: `unsuspend:${u.user_id}` });
+      actions.push({ label: "[BLK]", mobileLabel: "B", action: () => handleModerationAction(u.user_id, "block"), color: "text-destructive", key: `block:${u.user_id}` });
     } else if (u.status === "banned") {
-      actions.push({ label: "[UNBAN]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
+      actions.push({ label: "[UNBLK]", mobileLabel: "U", action: () => handleModerationAction(u.user_id, "unblock"), color: "text-foreground", key: `unblock:${u.user_id}` });
     }
 
     return actions;
@@ -198,12 +211,19 @@ export default function UsersPage() {
                           <Eye className="h-3 w-3" />
                         </button>
                         {statusActions.map((a, i) => (
-                          <button key={i} onClick={a.action} className={`text-[10px] ${a.color} hover:underline`}>{a.label}</button>
+                          <button
+                            key={i}
+                            onClick={a.action}
+                            disabled={moderatingKey === a.key}
+                            className={`text-[10px] ${a.color} hover:underline disabled:opacity-50 disabled:no-underline`}
+                          >
+                            {a.label}
+                          </button>
                         ))}
                         <button
                           onClick={() => handleDeleteAccount(u.user_id)}
                           disabled={deletingUser === u.user_id}
-                          className="text-muted-foreground hover:text-destructive p-0.5 ml-1"
+                          className="text-muted-foreground hover:text-destructive p-0.5 ml-1 disabled:opacity-50"
                           title="Delete account"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -229,12 +249,19 @@ export default function UsersPage() {
                             <Eye className="h-2.5 w-2.5" />
                           </button>
                           {statusActions.map((a, i) => (
-                            <button key={i} onClick={a.action} className={`text-[8px] ${a.color} hover:underline px-0.5`}>{a.mobileLabel}</button>
+                            <button
+                              key={i}
+                              onClick={a.action}
+                              disabled={moderatingKey === a.key}
+                              className={`text-[8px] ${a.color} hover:underline px-0.5 disabled:opacity-50 disabled:no-underline`}
+                            >
+                              {a.mobileLabel}
+                            </button>
                           ))}
                           <button
                             onClick={() => handleDeleteAccount(u.user_id)}
                             disabled={deletingUser === u.user_id}
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-muted-foreground hover:text-destructive disabled:opacity-50"
                             title="Delete"
                           >
                             <Trash2 className="h-2.5 w-2.5" />

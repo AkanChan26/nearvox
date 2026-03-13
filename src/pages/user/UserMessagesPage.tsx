@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, format, isToday, isYesterday, isSameDay } from "date-fns";
 import { OnlineIndicator } from "@/components/OnlineIndicator";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Conversation = {
   id: string;
@@ -86,6 +87,7 @@ export default function UserMessagesPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<any>(null);
   const { isOnline } = useAuth();
+  const isMobile = useIsMobile();
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({
@@ -366,20 +368,92 @@ export default function UserMessagesPage() {
 
   const isBlocked = (userId: string) => blockedUsers?.includes(userId) || false;
 
+  const visibleConversations = useMemo(() => {
+    if (!conversations) return [];
+
+    const latestDirectByUser = new Map<string, Conversation>();
+    const groupedConversations: Conversation[] = [];
+
+    for (const convo of conversations) {
+      if (convo.type !== "direct") {
+        groupedConversations.push(convo);
+        continue;
+      }
+
+      const convoMembers = allMembers?.filter((m) => m.conversation_id === convo.id) || [];
+      const otherUserId = convoMembers.find((m) => m.user_id !== user?.id)?.user_id ?? convo.id;
+      const existing = latestDirectByUser.get(otherUserId);
+
+      if (!existing || new Date(convo.updated_at).getTime() > new Date(existing.updated_at).getTime()) {
+        latestDirectByUser.set(otherUserId, convo);
+      }
+    }
+
+    return [...groupedConversations, ...latestDirectByUser.values()]
+      .filter((convo) => {
+        if (convo.type !== "direct") return true;
+        const hasMessages = Boolean(lastMessages?.[convo.id]);
+        return hasMessages || convo.id === activeConvo;
+      })
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }, [conversations, allMembers, lastMessages, activeConvo, user?.id]);
+
+  const findExistingDirectConversation = async (targetUserId: string) => {
+    if (!user) return null;
+
+    for (const convo of conversations || []) {
+      if (convo.type !== "direct") continue;
+      const members = allMembers?.filter((m) => m.conversation_id === convo.id) || [];
+      const memberIds = members.map((m) => m.user_id);
+      if (memberIds.includes(user.id) && memberIds.includes(targetUserId) && memberIds.length === 2) {
+        return convo.id;
+      }
+    }
+
+    const { data: myMemberships, error: myMembershipError } = await supabase
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", user.id);
+
+    if (myMembershipError || !myMemberships?.length) return null;
+
+    const myConversationIds = myMemberships.map((row: { conversation_id: string }) => row.conversation_id);
+
+    const { data: sharedMemberships, error: sharedMembershipError } = await supabase
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", targetUserId)
+      .in("conversation_id", myConversationIds);
+
+    if (sharedMembershipError || !sharedMemberships?.length) return null;
+
+    const sharedConversationIds = [...new Set(sharedMemberships.map((row: { conversation_id: string }) => row.conversation_id))];
+
+    const { data: possibleConversations, error: conversationError } = await supabase
+      .from("conversations")
+      .select("id, updated_at")
+      .eq("type", "direct")
+      .in("id", sharedConversationIds)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (conversationError) return null;
+
+    return possibleConversations?.[0]?.id || null;
+  };
+
   // ── ACTIONS ──
   const startDm = async (targetUser: MemberProfile) => {
     if (!user) return;
-    for (const c of conversations || []) {
-      if (c.type !== "direct") continue;
-      const members = allMembers?.filter((m) => m.conversation_id === c.id) || [];
-      const memberIds = members.map((m) => m.user_id);
-      if (memberIds.includes(targetUser.user_id) && memberIds.includes(user.id) && memberIds.length === 2) {
-        setActiveConvo(c.id);
-        setShowNewDm(false);
-        setDmSearch("");
-        return;
-      }
+
+    const existingConvoId = await findExistingDirectConversation(targetUser.user_id);
+    if (existingConvoId) {
+      setActiveConvo(existingConvoId);
+      setShowNewDm(false);
+      setDmSearch("");
+      return;
     }
+
     const convoId = crypto.randomUUID();
     const { error: convoErr } = await supabase
       .from("conversations")
@@ -554,7 +628,7 @@ export default function UserMessagesPage() {
   };
 
   const activeConversation = conversations?.find((c) => c.id === activeConvo);
-  const totalUnread = conversations?.filter((c) => hasUnread(c.id)).length || 0;
+  const totalUnread = visibleConversations.filter((c) => hasUnread(c.id)).length;
   const otherUserId = activeConversation ? getOtherUserId(activeConversation) : null;
   const otherIsBlocked = otherUserId ? isBlocked(otherUserId) : false;
 
@@ -677,8 +751,8 @@ export default function UserMessagesPage() {
           <div className="flex-1 overflow-y-auto">
             {convosLoading ? (
               <p className="text-xs text-muted-foreground p-5 tracking-wider animate-pulse">Loading chats...</p>
-            ) : conversations && conversations.length > 0 ? (
-              conversations.map((convo) => {
+            ) : visibleConversations.length > 0 ? (
+              visibleConversations.map((convo) => {
                 const isActive = activeConvo === convo.id;
                 const isGroup = convo.type === "group";
                 const dmOtherId = !isGroup ? getOtherUserId(convo) : null;
@@ -848,7 +922,7 @@ export default function UserMessagesPage() {
                           </div>
                         )}
                         <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-[6px] group/msg relative`}>
-                          <div className="relative" style={{ maxWidth: "45%" }}>
+                          <div className="relative max-w-[78vw] sm:max-w-[65%] lg:max-w-[45%]">
                             {/* Hover actions */}
                             <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover/msg:opacity-100 flex items-center gap-0.5 px-1 z-20 transition-opacity`}>
                               <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
@@ -869,31 +943,78 @@ export default function UserMessagesPage() {
 
                             {/* Reaction picker */}
                             {showReactions === msg.id && (
-                              <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-1.5`}
-                                onClick={(e) => e.stopPropagation()}>
-                                <div className="flex items-center gap-0.5">
-                                  {QUICK_EMOJIS.map((emoji) => (
-                                    <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
-                                      className="hover:bg-muted/40 p-1.5 text-lg leading-none rounded-md transition-colors">
-                                      {emoji}
+                              isMobile ? (
+                                <div
+                                  className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+74px)] border border-border bg-card z-50 shadow-xl rounded-xl p-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <p className="text-[10px] text-muted-foreground tracking-wider">ADD REACTION</p>
+                                    <button
+                                      onClick={() => { setShowReactions(null); setShowFullReactionPicker(null); }}
+                                      className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/30"
+                                    >
+                                      <X className="h-3.5 w-3.5" />
                                     </button>
-                                  ))}
-                                  <button onClick={(e) => { e.stopPropagation(); setShowFullReactionPicker(showFullReactionPicker === msg.id ? null : msg.id); }}
-                                    className="hover:bg-muted/40 p-1.5 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
-                                    +
-                                  </button>
+                                  </div>
+                                  <div className="flex items-center justify-between gap-1">
+                                    {QUICK_EMOJIS.map((emoji) => (
+                                      <button
+                                        key={emoji}
+                                        onClick={() => toggleReaction(msg.id, emoji)}
+                                        className="hover:bg-muted/40 p-2.5 text-xl leading-none rounded-md transition-colors flex-1"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); setShowFullReactionPicker(showFullReactionPicker === msg.id ? null : msg.id); }}
+                                      className="hover:bg-muted/40 p-2 text-base leading-none rounded-md transition-colors text-muted-foreground font-bold"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  {showFullReactionPicker === msg.id && (
+                                    <div className="grid grid-cols-5 gap-1.5 mt-2 pt-2 border-t border-border/50 max-h-40 overflow-y-auto">
+                                      {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                        <button
+                                          key={emoji}
+                                          onClick={() => { toggleReaction(msg.id, emoji); setShowFullReactionPicker(null); }}
+                                          className="hover:bg-muted/40 p-2 text-xl leading-none rounded-md transition-colors"
+                                        >
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
                                 </div>
-                                {showFullReactionPicker === msg.id && (
-                                  <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
-                                    {ALL_EMOJIS.filter(e => !QUICK_EMOJIS.includes(e)).map((emoji) => (
-                                      <button key={emoji} onClick={() => { toggleReaction(msg.id, emoji); setShowFullReactionPicker(null); }}
+                              ) : (
+                                <div className={`absolute bottom-full ${isMine ? "right-0" : "left-0"} mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-1.5`}
+                                  onClick={(e) => e.stopPropagation()}>
+                                  <div className="flex items-center gap-0.5">
+                                    {QUICK_EMOJIS.map((emoji) => (
+                                      <button key={emoji} onClick={() => toggleReaction(msg.id, emoji)}
                                         className="hover:bg-muted/40 p-1.5 text-lg leading-none rounded-md transition-colors">
                                         {emoji}
                                       </button>
                                     ))}
+                                    <button onClick={(e) => { e.stopPropagation(); setShowFullReactionPicker(showFullReactionPicker === msg.id ? null : msg.id); }}
+                                      className="hover:bg-muted/40 p-1.5 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                      +
+                                    </button>
                                   </div>
-                                )}
-                              </div>
+                                  {showFullReactionPicker === msg.id && (
+                                    <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
+                                      {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                        <button key={emoji} onClick={() => { toggleReaction(msg.id, emoji); setShowFullReactionPicker(null); }}
+                                          className="hover:bg-muted/40 p-1.5 text-lg leading-none rounded-md transition-colors">
+                                          {emoji}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )
                             )}
 
                             {/* Sender name */}
@@ -1039,30 +1160,63 @@ export default function UserMessagesPage() {
                         <Smile className="h-5 w-5" />
                       </button>
                       {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-0.5">
-                            {QUICK_EMOJIS.map((emoji) => (
-                              <button key={emoji} onClick={() => insertEmoji(emoji)}
-                                className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
-                                {emoji}
+                        isMobile ? (
+                          <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+74px)] border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <p className="text-[10px] text-muted-foreground tracking-wider">EMOJIS</p>
+                              <button onClick={() => { setShowEmojiPicker(false); setShowFullEmojiInput(false); }} className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/30">
+                                <X className="h-3.5 w-3.5" />
                               </button>
-                            ))}
-                            <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
-                              className="hover:bg-muted/40 p-2 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
-                              +
-                            </button>
+                            </div>
+                            <div className="flex items-center justify-between gap-1">
+                              {QUICK_EMOJIS.map((emoji) => (
+                                <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                  className="hover:bg-muted/40 p-2.5 text-xl leading-none rounded-md transition-colors flex-1 text-center">
+                                  {emoji}
+                                </button>
+                              ))}
+                              <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
+                                className="hover:bg-muted/40 p-2 text-base leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                +
+                              </button>
+                            </div>
+                            {showFullEmojiInput && (
+                              <div className="grid grid-cols-5 gap-1.5 mt-2 pt-2 border-t border-border/50 max-h-40 overflow-y-auto">
+                                {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                  <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                    className="hover:bg-muted/40 p-2 text-xl leading-none rounded-md transition-colors text-center">
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          {showFullEmojiInput && (
-                            <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
-                              {ALL_EMOJIS.filter(e => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                        ) : (
+                          <div className="absolute bottom-full left-0 mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-0.5">
+                              {QUICK_EMOJIS.map((emoji) => (
                                 <button key={emoji} onClick={() => insertEmoji(emoji)}
                                   className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
                                   {emoji}
                                 </button>
                               ))}
+                              <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
+                                className="hover:bg-muted/40 p-2 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                +
+                              </button>
                             </div>
-                          )}
-                        </div>
+                            {showFullEmojiInput && (
+                              <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
+                                {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                  <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                    className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
                       )}
                     </div>
                     <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}

@@ -1,20 +1,26 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 import { ProfileAvatar } from "@/components/Avatars";
+import { toast } from "sonner";
+import { runAdminDeleteAccount, runAdminModeration, type AdminModerationAction } from "@/lib/adminModeration";
 import {
   User, MapPin, Ticket, Clock, Shield,
   ArrowLeft, UserCheck, MessageSquare, Heart, Eye,
-  FileText, Hash, Tag, Flag, AlertTriangle,
+  FileText, Hash, Tag, Flag, AlertTriangle, Trash2,
 } from "lucide-react";
 
 export default function AdminUserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [moderatingAction, setModeratingAction] = useState<AdminModerationAction | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Profile
   const { data: profile, isLoading } = useQuery({
@@ -175,6 +181,88 @@ export default function AdminUserProfilePage() {
 
   const getCatLabel = (val: string) => TOPIC_CATEGORIES.find((c) => c.value === val)?.label || val;
 
+  const refreshAdminUserData = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-posts", userId] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-topics", userId] });
+  };
+
+  const handleModeration = async (action: AdminModerationAction) => {
+    if (!profile?.user_id) return;
+    setModeratingAction(action);
+
+    try {
+      await runAdminModeration(profile.user_id, action);
+      const label =
+        action === "suspend"
+          ? "User suspended"
+          : action === "unsuspend"
+            ? "User unsuspended"
+            : action === "block"
+              ? "User blocked"
+              : "User unblocked";
+      toast.success(label);
+      refreshAdminUserData();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update user status");
+    } finally {
+      setModeratingAction(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!profile?.user_id) return;
+    if (!confirm("⚠ DELETE THIS ACCOUNT PERMANENTLY? This cannot be undone.")) return;
+
+    setDeleting(true);
+    try {
+      await runAdminDeleteAccount(profile.user_id);
+      toast.success("Account deleted permanently");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      navigate("/users");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete account");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const moderationButtons =
+    profile?.status === "active"
+      ? [
+          {
+            key: "suspend" as AdminModerationAction,
+            label: "SUSPEND",
+            className: "text-warning border-warning/40 hover:bg-warning/10",
+          },
+          {
+            key: "block" as AdminModerationAction,
+            label: "BLOCK",
+            className: "text-destructive border-destructive/40 hover:bg-destructive/10",
+          },
+        ]
+      : profile?.status === "suspended"
+        ? [
+            {
+              key: "unsuspend" as AdminModerationAction,
+              label: "UNSUSPEND",
+              className: "text-foreground border-border hover:bg-muted/30",
+            },
+            {
+              key: "block" as AdminModerationAction,
+              label: "BLOCK",
+              className: "text-destructive border-destructive/40 hover:bg-destructive/10",
+            },
+          ]
+        : [
+            {
+              key: "unblock" as AdminModerationAction,
+              label: "UNBLOCK",
+              className: "text-foreground border-border hover:bg-muted/30",
+            },
+          ];
+
   return (
     <AdminLayout>
       <PageHeader title="USER PROFILE" description="// DETAILED USER INFORMATION">
@@ -211,6 +299,32 @@ export default function AdminUserProfilePage() {
                   <p className="text-[9px] text-muted-foreground">@{profile.username}</p>
                 </div>
               </div>
+
+              {!profile.is_admin && (
+                <div className="border border-border rounded-md p-2 mb-3 bg-muted/10">
+                  <p className="text-[9px] tracking-[0.16em] text-muted-foreground mb-2">MODERATION ACTIONS</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {moderationButtons.map((button) => (
+                      <button
+                        key={button.key}
+                        onClick={() => handleModeration(button.key)}
+                        disabled={moderatingAction !== null || deleting}
+                        className={`text-[10px] px-2.5 py-1 border rounded-sm transition-colors disabled:opacity-50 ${button.className}`}
+                      >
+                        {button.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={moderatingAction !== null || deleting}
+                      className="text-[10px] px-2.5 py-1 border border-destructive/50 rounded-sm text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 inline-flex items-center gap-1"
+                    >
+                      <Trash2 className="h-3 w-3" /> DELETE
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-[11px]">
                 <div>
                   <span className="text-muted-foreground">USERNAME: </span>
