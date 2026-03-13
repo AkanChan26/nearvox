@@ -87,6 +87,7 @@ export default function UserMessagesPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const presenceChannelRef = useRef<any>(null);
   const { isOnline } = useAuth();
+  const isMobile = useIsMobile();
 
   // ── QUERIES ──
   const { data: conversations, isLoading: convosLoading } = useQuery({
