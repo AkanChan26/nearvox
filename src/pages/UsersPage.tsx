@@ -211,12 +211,19 @@ export default function UsersPage() {
                           <Eye className="h-3 w-3" />
                         </button>
                         {statusActions.map((a, i) => (
-                          <button key={i} onClick={a.action} className={`text-[10px] ${a.color} hover:underline`}>{a.label}</button>
+                          <button
+                            key={i}
+                            onClick={a.action}
+                            disabled={moderatingKey === a.key}
+                            className={`text-[10px] ${a.color} hover:underline disabled:opacity-50 disabled:no-underline`}
+                          >
+                            {a.label}
+                          </button>
                         ))}
                         <button
                           onClick={() => handleDeleteAccount(u.user_id)}
                           disabled={deletingUser === u.user_id}
-                          className="text-muted-foreground hover:text-destructive p-0.5 ml-1"
+                          className="text-muted-foreground hover:text-destructive p-0.5 ml-1 disabled:opacity-50"
                           title="Delete account"
                         >
                           <Trash2 className="h-3 w-3" />
@@ -242,12 +249,19 @@ export default function UsersPage() {
                             <Eye className="h-2.5 w-2.5" />
                           </button>
                           {statusActions.map((a, i) => (
-                            <button key={i} onClick={a.action} className={`text-[8px] ${a.color} hover:underline px-0.5`}>{a.mobileLabel}</button>
+                            <button
+                              key={i}
+                              onClick={a.action}
+                              disabled={moderatingKey === a.key}
+                              className={`text-[8px] ${a.color} hover:underline px-0.5 disabled:opacity-50 disabled:no-underline`}
+                            >
+                              {a.mobileLabel}
+                            </button>
                           ))}
                           <button
                             onClick={() => handleDeleteAccount(u.user_id)}
                             disabled={deletingUser === u.user_id}
-                            className="text-muted-foreground hover:text-destructive"
+                            className="text-muted-foreground hover:text-destructive disabled:opacity-50"
                             title="Delete"
                           >
                             <Trash2 className="h-2.5 w-2.5" />
