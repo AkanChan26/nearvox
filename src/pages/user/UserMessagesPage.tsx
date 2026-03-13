@@ -922,7 +922,7 @@ export default function UserMessagesPage() {
                           </div>
                         )}
                         <div className={`flex ${isMine ? "justify-end" : "justify-start"} mb-[6px] group/msg relative`}>
-                          <div className="relative" style={{ maxWidth: "45%" }}>
+                          <div className="relative max-w-[78vw] sm:max-w-[65%] lg:max-w-[45%]">
                             {/* Hover actions */}
                             <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? "left-0 -translate-x-full" : "right-0 translate-x-full"} opacity-0 group-hover/msg:opacity-100 flex items-center gap-0.5 px-1 z-20 transition-opacity`}>
                               <button onClick={(e) => { e.stopPropagation(); setReplyTo(msg); }}
