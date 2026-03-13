@@ -12,7 +12,7 @@ import { runAdminDeleteAccount, runAdminModeration, type AdminModerationAction }
 import {
   User, MapPin, Ticket, Clock, Shield,
   ArrowLeft, UserCheck, MessageSquare, Heart, Eye,
-  FileText, Hash, Tag, Flag, AlertTriangle, Ban, Trash2,
+  FileText, Hash, Tag, Flag, AlertTriangle, Trash2,
 } from "lucide-react";
 
 export default function AdminUserProfilePage() {
