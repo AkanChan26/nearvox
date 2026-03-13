@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminLayout } from "@/components/AdminLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { formatDistanceToNow } from "date-fns";
 import { TOPIC_CATEGORIES } from "@/lib/categories";
 import { ProfileAvatar } from "@/components/Avatars";
+import { toast } from "sonner";
+import { runAdminDeleteAccount, runAdminModeration, type AdminModerationAction } from "@/lib/adminModeration";
 import {
   User, MapPin, Ticket, Clock, Shield,
   ArrowLeft, UserCheck, MessageSquare, Heart, Eye,
-  FileText, Hash, Tag, Flag, AlertTriangle,
+  FileText, Hash, Tag, Flag, AlertTriangle, Ban, Trash2,
 } from "lucide-react";
 
 export default function AdminUserProfilePage() {
