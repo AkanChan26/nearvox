@@ -57,12 +57,28 @@ export default function UsersPage() {
     },
   });
 
-  const handleStatusChange = async (userId: string, newStatus: "active" | "suspended" | "banned") => {
-    const { error } = await supabase.from("profiles").update({ status: newStatus }).eq("user_id", userId);
-    if (error) toast.error("Failed to update user status");
-    else {
-      toast.success(`User ${newStatus}`);
+  const handleModerationAction = async (userId: string, action: AdminModerationAction) => {
+    const key = `${action}:${userId}`;
+    setModeratingKey(key);
+
+    try {
+      await runAdminModeration(userId, action);
+      const label =
+        action === "suspend"
+          ? "User suspended"
+          : action === "unsuspend"
+            ? "User unsuspended"
+            : action === "block"
+              ? "User blocked"
+              : "User unblocked";
+
+      toast.success(label);
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update user status");
+    } finally {
+      setModeratingKey(null);
     }
   };
 
@@ -70,15 +86,11 @@ export default function UsersPage() {
     if (!confirm("⚠ DELETE THIS ACCOUNT PERMANENTLY? This cannot be undone.")) return;
     setDeletingUser(userId);
     try {
-      const { data, error } = await supabase.functions.invoke("delete-account", {
-        headers: { Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}` },
-        body: { target_user_id: userId },
-      });
-      if (error) throw error;
+      await runAdminDeleteAccount(userId);
       toast.success("Account deleted permanently");
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
     } catch (e: any) {
-      toast.error("Failed to delete account");
+      toast.error(e?.message || "Failed to delete account");
     } finally {
       setDeletingUser(null);
     }
