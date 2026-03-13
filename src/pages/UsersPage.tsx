@@ -7,13 +7,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { Ticket, Copy, Check, X, Eye, Trash2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { runAdminDeleteAccount, runAdminModeration, type AdminModerationAction } from "@/lib/adminModeration";
 
 export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [deletingUser, setDeletingUser] = useState<string | null>(null);
+  const [moderatingKey, setModeratingKey] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const navigate = useNavigate();
