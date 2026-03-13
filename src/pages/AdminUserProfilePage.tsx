@@ -299,6 +299,32 @@ export default function AdminUserProfilePage() {
                   <p className="text-[9px] text-muted-foreground">@{profile.username}</p>
                 </div>
               </div>
+
+              {!profile.is_admin && (
+                <div className="border border-border rounded-md p-2 mb-3 bg-muted/10">
+                  <p className="text-[9px] tracking-[0.16em] text-muted-foreground mb-2">MODERATION ACTIONS</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {moderationButtons.map((button) => (
+                      <button
+                        key={button.key}
+                        onClick={() => handleModeration(button.key)}
+                        disabled={moderatingAction !== null || deleting}
+                        className={`text-[10px] px-2.5 py-1 border rounded-sm transition-colors disabled:opacity-50 ${button.className}`}
+                      >
+                        {button.label}
+                      </button>
+                    ))}
+                    <button
+                      onClick={handleDeleteAccount}
+                      disabled={moderatingAction !== null || deleting}
+                      className="text-[10px] px-2.5 py-1 border border-destructive/50 rounded-sm text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 inline-flex items-center gap-1"
+                    >
+                      <Trash2 className="h-3 w-3" /> DELETE
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-[11px]">
                 <div>
                   <span className="text-muted-foreground">USERNAME: </span>
