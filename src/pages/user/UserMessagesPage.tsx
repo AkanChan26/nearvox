@@ -751,8 +751,8 @@ export default function UserMessagesPage() {
           <div className="flex-1 overflow-y-auto">
             {convosLoading ? (
               <p className="text-xs text-muted-foreground p-5 tracking-wider animate-pulse">Loading chats...</p>
-            ) : conversations && conversations.length > 0 ? (
-              conversations.map((convo) => {
+            ) : visibleConversations.length > 0 ? (
+              visibleConversations.map((convo) => {
                 const isActive = activeConvo === convo.id;
                 const isGroup = convo.type === "group";
                 const dmOtherId = !isGroup ? getOtherUserId(convo) : null;
