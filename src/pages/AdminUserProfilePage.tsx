@@ -181,6 +181,88 @@ export default function AdminUserProfilePage() {
 
   const getCatLabel = (val: string) => TOPIC_CATEGORIES.find((c) => c.value === val)?.label || val;
 
+  const refreshAdminUserData = () => {
+    queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-profile", userId] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-posts", userId] });
+    queryClient.invalidateQueries({ queryKey: ["admin-user-topics", userId] });
+  };
+
+  const handleModeration = async (action: AdminModerationAction) => {
+    if (!profile?.user_id) return;
+    setModeratingAction(action);
+
+    try {
+      await runAdminModeration(profile.user_id, action);
+      const label =
+        action === "suspend"
+          ? "User suspended"
+          : action === "unsuspend"
+            ? "User unsuspended"
+            : action === "block"
+              ? "User blocked"
+              : "User unblocked";
+      toast.success(label);
+      refreshAdminUserData();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to update user status");
+    } finally {
+      setModeratingAction(null);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!profile?.user_id) return;
+    if (!confirm("⚠ DELETE THIS ACCOUNT PERMANENTLY? This cannot be undone.")) return;
+
+    setDeleting(true);
+    try {
+      await runAdminDeleteAccount(profile.user_id);
+      toast.success("Account deleted permanently");
+      queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      navigate("/users");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete account");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const moderationButtons =
+    profile?.status === "active"
+      ? [
+          {
+            key: "suspend" as AdminModerationAction,
+            label: "SUSPEND",
+            className: "text-warning border-warning/40 hover:bg-warning/10",
+          },
+          {
+            key: "block" as AdminModerationAction,
+            label: "BLOCK",
+            className: "text-destructive border-destructive/40 hover:bg-destructive/10",
+          },
+        ]
+      : profile?.status === "suspended"
+        ? [
+            {
+              key: "unsuspend" as AdminModerationAction,
+              label: "UNSUSPEND",
+              className: "text-foreground border-border hover:bg-muted/30",
+            },
+            {
+              key: "block" as AdminModerationAction,
+              label: "BLOCK",
+              className: "text-destructive border-destructive/40 hover:bg-destructive/10",
+            },
+          ]
+        : [
+            {
+              key: "unblock" as AdminModerationAction,
+              label: "UNBLOCK",
+              className: "text-foreground border-border hover:bg-muted/30",
+            },
+          ];
+
   return (
     <AdminLayout>
       <PageHeader title="USER PROFILE" description="// DETAILED USER INFORMATION">
