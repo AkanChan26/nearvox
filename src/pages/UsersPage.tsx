@@ -114,16 +114,16 @@ export default function UsersPage() {
   };
 
   const getStatusActions = (u: any) => {
-    const actions: { label: string; mobileLabel: string; action: () => void; color: string }[] = [];
+    const actions: { label: string; mobileLabel: string; action: () => void; color: string; key: string }[] = [];
 
     if (u.status === "active") {
-      actions.push({ label: "[SUS]", mobileLabel: "S", action: () => handleStatusChange(u.user_id, "suspended"), color: "text-warning" });
-      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+      actions.push({ label: "[SUS]", mobileLabel: "S", action: () => handleModerationAction(u.user_id, "suspend"), color: "text-warning", key: `suspend:${u.user_id}` });
+      actions.push({ label: "[BLK]", mobileLabel: "B", action: () => handleModerationAction(u.user_id, "block"), color: "text-destructive", key: `block:${u.user_id}` });
     } else if (u.status === "suspended") {
-      actions.push({ label: "[UNSUS]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
-      actions.push({ label: "[BAN]", mobileLabel: "B", action: () => handleStatusChange(u.user_id, "banned"), color: "text-destructive" });
+      actions.push({ label: "[UNSUS]", mobileLabel: "U", action: () => handleModerationAction(u.user_id, "unsuspend"), color: "text-foreground", key: `unsuspend:${u.user_id}` });
+      actions.push({ label: "[BLK]", mobileLabel: "B", action: () => handleModerationAction(u.user_id, "block"), color: "text-destructive", key: `block:${u.user_id}` });
     } else if (u.status === "banned") {
-      actions.push({ label: "[UNBAN]", mobileLabel: "U", action: () => handleStatusChange(u.user_id, "active"), color: "text-foreground" });
+      actions.push({ label: "[UNBLK]", mobileLabel: "U", action: () => handleModerationAction(u.user_id, "unblock"), color: "text-foreground", key: `unblock:${u.user_id}` });
     }
 
     return actions;
