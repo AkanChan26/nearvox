@@ -1160,30 +1160,63 @@ export default function UserMessagesPage() {
                         <Smile className="h-5 w-5" />
                       </button>
                       {showEmojiPicker && (
-                        <div className="absolute bottom-full left-0 mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center gap-0.5">
-                            {QUICK_EMOJIS.map((emoji) => (
-                              <button key={emoji} onClick={() => insertEmoji(emoji)}
-                                className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
-                                {emoji}
+                        isMobile ? (
+                          <div className="fixed inset-x-3 bottom-[calc(env(safe-area-inset-bottom,0px)+74px)] border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <p className="text-[10px] text-muted-foreground tracking-wider">EMOJIS</p>
+                              <button onClick={() => { setShowEmojiPicker(false); setShowFullEmojiInput(false); }} className="text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-muted/30">
+                                <X className="h-3.5 w-3.5" />
                               </button>
-                            ))}
-                            <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
-                              className="hover:bg-muted/40 p-2 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
-                              +
-                            </button>
+                            </div>
+                            <div className="flex items-center justify-between gap-1">
+                              {QUICK_EMOJIS.map((emoji) => (
+                                <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                  className="hover:bg-muted/40 p-2.5 text-xl leading-none rounded-md transition-colors flex-1 text-center">
+                                  {emoji}
+                                </button>
+                              ))}
+                              <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
+                                className="hover:bg-muted/40 p-2 text-base leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                +
+                              </button>
+                            </div>
+                            {showFullEmojiInput && (
+                              <div className="grid grid-cols-5 gap-1.5 mt-2 pt-2 border-t border-border/50 max-h-40 overflow-y-auto">
+                                {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                  <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                    className="hover:bg-muted/40 p-2 text-xl leading-none rounded-md transition-colors text-center">
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          {showFullEmojiInput && (
-                            <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
-                              {ALL_EMOJIS.filter(e => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                        ) : (
+                          <div className="absolute bottom-full left-0 mb-2 border border-border bg-card z-50 shadow-xl rounded-xl p-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-0.5">
+                              {QUICK_EMOJIS.map((emoji) => (
                                 <button key={emoji} onClick={() => insertEmoji(emoji)}
                                   className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
                                   {emoji}
                                 </button>
                               ))}
+                              <button onClick={() => setShowFullEmojiInput(!showFullEmojiInput)}
+                                className="hover:bg-muted/40 p-2 text-sm leading-none rounded-md transition-colors text-muted-foreground font-bold">
+                                +
+                              </button>
                             </div>
-                          )}
-                        </div>
+                            {showFullEmojiInput && (
+                              <div className="grid grid-cols-5 gap-1 mt-1.5 pt-1.5 border-t border-border/50">
+                                {ALL_EMOJIS.filter((e) => !QUICK_EMOJIS.includes(e)).map((emoji) => (
+                                  <button key={emoji} onClick={() => insertEmoji(emoji)}
+                                    className="hover:bg-muted/40 p-2 text-lg leading-none rounded-md transition-colors text-center">
+                                    {emoji}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
                       )}
                     </div>
                     <input value={msgText} onChange={(e) => { setMsgText(e.target.value); broadcastTyping(); }} onKeyDown={handleKeyDown}
