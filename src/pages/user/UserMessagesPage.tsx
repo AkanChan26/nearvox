@@ -11,6 +11,7 @@ import {
   CheckCheck, Reply, CornerDownRight, Smile,
 } from "lucide-react";
 import { formatDistanceToNow, format, isToday, isYesterday, isSameDay } from "date-fns";
+import { OnlineIndicator } from "@/components/OnlineIndicator";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 type Conversation = {
