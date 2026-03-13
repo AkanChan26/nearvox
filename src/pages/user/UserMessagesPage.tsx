@@ -368,20 +368,92 @@ export default function UserMessagesPage() {
 
   const isBlocked = (userId: string) => blockedUsers?.includes(userId) || false;
 
+  const visibleConversations = useMemo(() => {
+    if (!conversations) return [];
+
+    const latestDirectByUser = new Map<string, Conversation>();
+    const groupedConversations: Conversation[] = [];
+
+    for (const convo of conversations) {
+      if (convo.type !== "direct") {
+        groupedConversations.push(convo);
+        continue;
+      }
+
+      const convoMembers = allMembers?.filter((m) => m.conversation_id === convo.id) || [];
+      const otherUserId = convoMembers.find((m) => m.user_id !== user?.id)?.user_id ?? convo.id;
+      const existing = latestDirectByUser.get(otherUserId);
+
+      if (!existing || new Date(convo.updated_at).getTime() > new Date(existing.updated_at).getTime()) {
+        latestDirectByUser.set(otherUserId, convo);
+      }
+    }
+
+    return [...groupedConversations, ...latestDirectByUser.values()]
+      .filter((convo) => {
+        if (convo.type !== "direct") return true;
+        const hasMessages = Boolean(lastMessages?.[convo.id]);
+        return hasMessages || convo.id === activeConvo;
+      })
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+  }, [conversations, allMembers, lastMessages, activeConvo, user?.id]);
+
+  const findExistingDirectConversation = async (targetUserId: string) => {
+    if (!user) return null;
+
+    for (const convo of conversations || []) {
+      if (convo.type !== "direct") continue;
+      const members = allMembers?.filter((m) => m.conversation_id === convo.id) || [];
+      const memberIds = members.map((m) => m.user_id);
+      if (memberIds.includes(user.id) && memberIds.includes(targetUserId) && memberIds.length === 2) {
+        return convo.id;
+      }
+    }
+
+    const { data: myMemberships, error: myMembershipError } = await supabase
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", user.id);
+
+    if (myMembershipError || !myMemberships?.length) return null;
+
+    const myConversationIds = myMemberships.map((row: { conversation_id: string }) => row.conversation_id);
+
+    const { data: sharedMemberships, error: sharedMembershipError } = await supabase
+      .from("conversation_members")
+      .select("conversation_id")
+      .eq("user_id", targetUserId)
+      .in("conversation_id", myConversationIds);
+
+    if (sharedMembershipError || !sharedMemberships?.length) return null;
+
+    const sharedConversationIds = [...new Set(sharedMemberships.map((row: { conversation_id: string }) => row.conversation_id))];
+
+    const { data: possibleConversations, error: conversationError } = await supabase
+      .from("conversations")
+      .select("id, updated_at")
+      .eq("type", "direct")
+      .in("id", sharedConversationIds)
+      .order("updated_at", { ascending: false })
+      .limit(1);
+
+    if (conversationError) return null;
+
+    return possibleConversations?.[0]?.id || null;
+  };
+
   // ── ACTIONS ──
   const startDm = async (targetUser: MemberProfile) => {
     if (!user) return;
-    for (const c of conversations || []) {
-      if (c.type !== "direct") continue;
-      const members = allMembers?.filter((m) => m.conversation_id === c.id) || [];
-      const memberIds = members.map((m) => m.user_id);
-      if (memberIds.includes(targetUser.user_id) && memberIds.includes(user.id) && memberIds.length === 2) {
-        setActiveConvo(c.id);
-        setShowNewDm(false);
-        setDmSearch("");
-        return;
-      }
+
+    const existingConvoId = await findExistingDirectConversation(targetUser.user_id);
+    if (existingConvoId) {
+      setActiveConvo(existingConvoId);
+      setShowNewDm(false);
+      setDmSearch("");
+      return;
     }
+
     const convoId = crypto.randomUUID();
     const { error: convoErr } = await supabase
       .from("conversations")
