@@ -18,6 +18,9 @@ import {
 export default function AdminUserProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [moderatingAction, setModeratingAction] = useState<AdminModerationAction | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Profile
   const { data: profile, isLoading } = useQuery({
