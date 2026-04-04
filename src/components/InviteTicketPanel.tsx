@@ -58,8 +58,18 @@ export function InviteTicketPanel({ onClose, embedded = false }: Props) {
   const availableTickets = tickets?.filter((t) => !t.is_used) || [];
   const usedTickets = tickets?.filter((t) => t.is_used) || [];
 
+  const getShareOrigin = () => {
+    const origin = window.location.origin;
+    // Use published URL if available, avoid localhost/preview URLs for sharing
+    if (origin.includes("localhost") || origin.includes("preview")) {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      if (projectId) return `https://${projectId}.lovable.app`;
+    }
+    return origin;
+  };
+
   const copyInviteLink = (code: string, ticketId: string) => {
-    const link = `${window.location.origin}/join?code=${code}`;
+    const link = `${getShareOrigin()}/join?code=${code}`;
     navigator.clipboard.writeText(link);
     setCopiedId(ticketId);
     toast.success("Invite link copied!");

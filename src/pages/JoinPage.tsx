@@ -262,6 +262,7 @@ export default function JoinPage() {
                       {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                   </div>
+                  <p className="text-[9px] text-warning/80 mt-1">⚠ Password cannot be changed later. Choose wisely.</p>
                 </div>
 
                 {error && (
