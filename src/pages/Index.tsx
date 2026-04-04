@@ -177,9 +177,9 @@ const Index = () => {
   };
 
   const copyTicketLink = (code: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/join?code=${code}`);
+    navigator.clipboard.writeText(code);
     setCopiedCode(code);
-    toast.success("Copied!");
+    toast.success("Invite code copied!");
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
