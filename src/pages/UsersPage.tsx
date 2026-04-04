@@ -105,8 +105,17 @@ export default function UsersPage() {
     setGenerating(false);
   };
 
+  const getShareOrigin = () => {
+    const origin = window.location.origin;
+    if (origin.includes("localhost") || origin.includes("preview")) {
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      if (projectId) return `https://${projectId}.lovable.app`;
+    }
+    return origin;
+  };
+
   const copyTicketLink = (code: string) => {
-    const link = `${window.location.origin}/join?code=${code}`;
+    const link = `${getShareOrigin()}/join?code=${code}`;
     navigator.clipboard.writeText(link);
     setCopiedCode(code);
     toast.success("Invite link copied!");
