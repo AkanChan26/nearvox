@@ -85,6 +85,7 @@ Deno.serve(async (req) => {
       { table: "invite_tickets", column: "owner_id" },
       { table: "blocked_users", column: "blocker_id" },
       { table: "blocked_users", column: "blocked_id" },
+      { table: "read_posts", column: "user_id" },
       { table: "messages", column: "sender_id" },
       { table: "messages", column: "recipient_id" },
       { table: "activity_logs", column: "user_id" },
